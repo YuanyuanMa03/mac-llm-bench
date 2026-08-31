@@ -115,7 +115,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt01](PROMPT.md#prompt01) | 2026-08-30 | ✅ done | `6720bcb` |
 | [prompt02](PROMPT.md#prompt02) | 2026-08-30 | ⬜ not done | `bab6ac4`（补提交） |
 | [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ done | `bab6ac4`（补提交） |
-| [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ done | （见下一提交） |
+| [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ done | `d0e36d3` |
 <!-- prompt-log:end -->
 
 ## Documentation
