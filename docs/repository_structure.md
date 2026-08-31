@@ -86,6 +86,10 @@ Codex 等 Coding Agent 的项目级工作规范。
 
 项目主页。
 
+两个 README 各含一个自动镜像节（`prompt-log:begin/end` 标记内），
+由 `scripts/prompt_log.py sync` 从 PROMPT.md 生成，禁止手工编辑；
+其余部分（含语义状态表）手工维护。
+
 后续主要包含：
 
 * 项目简介
@@ -440,7 +444,18 @@ results/raw/
 
 ```text
 scripts/run_experiment.py
+scripts/prompt_log.py
 ```
+
+`scripts/prompt_log.py` 是正式任务 prompt 的台账 harness（已实现，含测试）：
+
+```text
+begin   登记正式 prompt：原文逐字入账 + 元数据表加行 + 提交
+finish  终结：状态/产出（须附真实验证 evidence）+ 任务全部产出一次提交
+sync    重建两个 README 中的自动镜像节（--check 核对漂移，--init 首次插入）
+```
+
+规则见 `.claude/skills/prompt-log/SKILL.md`；元数据表与镜像节不允许手工编辑。
 
 后续可能增加：
 
@@ -611,6 +626,13 @@ figure
 # 8. `tests/`
 
 自动化测试。
+
+现有：
+
+```text
+tests/test_prompt_log.py   台账 harness（begin/finish/sync，临时 git 仓库集成测试）
+tests/test_supervisor.py   Experiment Supervisor（待实现 benchmark.supervisor 后启用）
+```
 
 主要验证：
 

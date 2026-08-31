@@ -105,6 +105,18 @@ Core rules (full list in [AGENTS.md](AGENTS.md)):
 5. Failed/OOM experiments are retained as valid results.
 6. Missing values are `null` — never `0`, never estimated.
 
+## Prompt log
+
+Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the markers.
+
+<!-- prompt-log:begin: 由 scripts/prompt_log.py 自动生成，请勿手工编辑 -->
+| Prompt | Date | Status | Commit |
+| --- | --- | --- | --- |
+| [prompt01](PROMPT.md#prompt01) | 2026-08-30 | ✅ done | `6720bcb` |
+| [prompt02](PROMPT.md#prompt02) | 2026-08-30 | ⬜ not done | `bab6ac4`（补提交） |
+| [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ done | `bab6ac4`（补提交） |
+<!-- prompt-log:end -->
+
 ## Documentation
 
 - [AGENTS.md](AGENTS.md) — binding working rules for agents and humans

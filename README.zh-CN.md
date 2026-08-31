@@ -105,6 +105,18 @@ results/figures/      从原始结果程序化生成
 5. 失败/OOM 实验作为有效结果保留。
 6. 缺失值为 `null`——绝不是 `0`，绝不估计。
 
+## Prompt 台账
+
+[PROMPT.md](PROMPT.md) 的自动镜像——标记区内请勿手工编辑。
+
+<!-- prompt-log:begin: 由 scripts/prompt_log.py 自动生成，请勿手工编辑 -->
+| Prompt | 日期 | 状态 | 提交 |
+| --- | --- | --- | --- |
+| [prompt01](PROMPT.md#prompt01) | 2026-08-30 | ✅ 已完成 | `6720bcb` |
+| [prompt02](PROMPT.md#prompt02) | 2026-08-30 | ⬜ 未完成 | `bab6ac4`（补提交） |
+| [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ 已完成 | `bab6ac4`（补提交） |
+<!-- prompt-log:end -->
+
 ## 文档
 
 - [AGENTS.md](AGENTS.md) — 对 agent 与人类均有约束力的工作规范
