@@ -116,6 +116,7 @@ results/figures/      从原始结果程序化生成
 | [prompt02](PROMPT.md#prompt02) | 2026-08-30 | ⬜ 未完成 | `bab6ac4`（补提交） |
 | [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ 已完成 | `bab6ac4`（补提交） |
 | [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ 已完成 | `d0e36d3` |
+| [prompt05](PROMPT.md#prompt05) | 2026-08-31 | 🔄 进行中 | （进行中） |
 <!-- prompt-log:end -->
 
 ## 文档

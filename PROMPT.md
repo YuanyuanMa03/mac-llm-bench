@@ -6,6 +6,7 @@
 | [prompt02](#prompt02) | 2026-08-30 | 未完成 | `bab6ac4`（补提交） | [tests/test_supervisor.py](tests/test_supervisor.py)（仅测试，实现缺失） |
 | [prompt03](#prompt03) | 2026-08-31 | 已完成 | `bab6ac4`（补提交） | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
 | [prompt04](#prompt04) | 2026-08-31 | 已完成 | `d0e36d3` | [docs/models_disk_usage.md](docs/models_disk_usage.md) |
+| [prompt05](#prompt05) | 2026-08-31 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -496,3 +497,99 @@ The next task should most likely be implementing a minimal experiment runner and
 # prompt04:
 
 统计 models/ 目录下 4 个已下载 Qwen3 仓库的实际磁盘占用（含内部 .cache），连同各仓库的 revision 一起写入 docs/models_disk_usage.md，数据必须来自真实运行的命令输出。
+
+---
+
+# prompt05:
+
+先读一下 AGENTS.md、docs/experiment_protocol.md、docs/result_schema.md、仓库结构文档，以及 models/MANIFEST.md。
+
+环境和模型下载已经完成。现在开始补 Experiment Supervisor。
+
+这一步先不要训练 Qwen，也不要运行 LoRA/QLoRA。我要先把实验执行和记录这一层做可靠。
+
+请实现一个 Experiment Supervisor v0，让以后所有训练实验都必须通过它启动。
+
+我希望它完成这些事情：
+
+1. 读取并验证实验 YAML 配置。
+2. 自动生成唯一的 experiment ID。
+3. 在实验开始前记录真实环境：
+
+   * Git commit
+   * Git dirty status
+   * macOS
+   * Python
+   * MLX / mlx-lm
+   * 当前硬件信息
+   * 实验开始前的内存和 swap 状态（仅限目前已经确认可以可靠获取的指标）。
+4. 启动一个 subprocess，并保存：
+
+   * exact command
+   * stdout
+   * stderr
+   * start time
+   * end time
+   * wall time
+   * exit code
+5. 根据真实退出情况分类：
+
+   * success
+   * timeout
+   * user_interrupted
+   * configuration_error
+   * dependency_error
+   * model_load_error
+   * runtime_error
+   * unknown_failure
+   * 如果能够可靠识别 OOM，则记录 oom；不能可靠识别时不要猜。
+6. 即使 subprocess 失败，也必须产生完整 result，不允许因为失败而什么都不保存。
+7. 最终结果严格按照 docs/result_schema.md 写入 results/raw/。
+8. raw result 完成后原子 finalize，生成 SHA-256 manifest。
+9. 已 finalize 的 raw result 不允许后续代码直接覆盖或修改。
+10. 对暂时没有可靠 measurement 方法的字段继续使用 null，不要补估算值。
+
+先不要接真正的训练命令。
+
+先用三个最小 integration case 验证 Supervisor：
+
+* 一个明确成功的命令，例如 `/usr/bin/true`
+* 一个明确失败并返回非零 exit code 的命令
+* 一个会超过 timeout 的命令
+
+这三个 case 都必须真正执行，并分别产生对应的 raw result。
+
+另外请补测试，至少覆盖：
+
+* YAML config validation
+* experiment ID generation
+* Git provenance
+* subprocess success
+* subprocess failure
+* timeout
+* stdout/stderr preservation
+* result JSON serialization
+* atomic finalization
+* SHA-256 manifest
+* 已 finalize raw result 无法被普通流程覆盖
+
+如果现有代码结构不适合，不要把所有逻辑都塞进 scripts/run_experiment.py。CLI 保持尽量薄，核心逻辑放进 src/benchmark/ 下。
+
+完成后实际运行测试和三个 integration cases。
+
+最后告诉我：
+
+* 创建和修改了哪些文件
+* 测试实际运行结果
+* 三个 integration case 的 experiment ID
+* 每个 case 的 terminal status 和 exit code
+* raw result 实际保存在哪里
+* manifest 是否校验通过
+* Git commit 和 dirty status 是否成功进入 result
+* 哪些 measurement 仍然保持 null，以及为什么
+
+最后停下来。
+
+不要继续做 Qwen 训练。
+
+下一步我会让你把 Qwen3-0.6B-Base 接进 Supervisor，开始第一次 20-step LoRA Experiment 0。
