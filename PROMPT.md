@@ -5,6 +5,7 @@
 | [prompt01](#prompt01) | 2026-08-30 | 已完成 | `6720bcb` | [docs/experiment_protocol.md](docs/experiment_protocol.md)<br>[docs/result_schema.md](docs/result_schema.md)<br>[configs/experiment.example.yaml](configs/experiment.example.yaml) |
 | [prompt02](#prompt02) | 2026-08-30 | 未完成 | `bab6ac4`（补提交） | [tests/test_supervisor.py](tests/test_supervisor.py)（仅测试，实现缺失） |
 | [prompt03](#prompt03) | 2026-08-31 | 已完成 | `bab6ac4`（补提交） | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
+| [prompt04](#prompt04) | 2026-08-31 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -489,3 +490,9 @@ The next task should most likely be implementing a minimal experiment runner and
 # prompt03:
 
 先在项目根目录用 uv 创建 .venv，把 MLX、mlx-lm、huggingface_hub 和 pyyaml 作为项目依赖锁进 pyproject.toml/uv.lock。验证 Python 和各依赖的实际版本，并确认当前解释器来自项目 .venv。这一步完成后再开始下载 Qwen3，不要使用系统 Python。
+
+---
+
+# prompt04:
+
+统计 models/ 目录下 4 个已下载 Qwen3 仓库的实际磁盘占用（含内部 .cache），连同各仓库的 revision 一起写入 docs/models_disk_usage.md，数据必须来自真实运行的命令输出。
