@@ -1,0 +1,11 @@
+[project]
+name = "mac-llm-bench"
+version = "0.1.0"
+description = "Reproducible LLM fine-tuning benchmarks on 16 GB Apple Silicon Mac"
+requires-python = ">=3.13"
+dependencies = [
+    "huggingface-hub>=1.29.0",
+    "mlx>=0.32.2",
+    "mlx-lm>=0.31.3",
+    "pyyaml>=6.0.3",
+]
