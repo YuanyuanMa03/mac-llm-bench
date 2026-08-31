@@ -3,15 +3,15 @@
 | Prompt | 日期 | 状态 | Git | 产出文件 |
 | --- | --- | --- | --- | --- |
 | [prompt01](#prompt01) | 2026-08-30 | 已完成 | `6720bcb` | [docs/experiment_protocol.md](docs/experiment_protocol.md)<br>[docs/result_schema.md](docs/result_schema.md)<br>[configs/experiment.example.yaml](configs/experiment.example.yaml) |
-| [prompt02](#prompt02) | 2026-08-30 | 未完成 | 未提交（staged） | [tests/test_supervisor.py](tests/test_supervisor.py)（仅测试，实现缺失） |
-| [prompt03](#prompt03) | 2026-08-31 | 已完成 | 未提交 | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
+| [prompt02](#prompt02) | 2026-08-30 | 未完成 | `bab6ac4`（补提交） | [tests/test_supervisor.py](tests/test_supervisor.py)（仅测试，实现缺失） |
+| [prompt03](#prompt03) | 2026-08-31 | 已完成 | `bab6ac4`（补提交） | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
 
 状态含义：
 
-- 已完成 = 产出齐备且经实际验证（prompt01 三份产出已提交于 commit `6720bcb`；prompt03 环境经 import 实测、模型经字节数校验，产出尚未提交）
+- 已完成 = 产出齐备且经实际验证（prompt01 三份产出已提交于 commit `6720bcb`；prompt03 环境经 import 实测、模型经字节数校验）
 - 未完成 = 产出不完整（prompt02 要求的 `benchmark/supervisor` 实现全库不存在，测试 import 目标缺失；`.pytest_cache/v/cache/lastfailed` 记录该测试文件上次运行失败）
 
-日期来源：prompt01 取 commit `6720bcb` 提交时间（2026-08-30 21:52:52 +0800）；prompt02 产出未提交，取 `tests/test_supervisor.py` 文件修改时间（2026-08-30 21:58，据 mtime 推断）。
+日期来源：prompt01 取 commit `6720bcb` 提交时间（2026-08-30 21:52:52 +0800）；prompt02 取 `tests/test_supervisor.py` 文件修改时间（2026-08-30 21:58，据 mtime 推断）；prompt03 为任务执行日。自 2026-08-31 起由 `scripts/prompt_log.py` 自动登记。
 
 ---
 
