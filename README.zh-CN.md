@@ -80,9 +80,7 @@ uv run python scripts/run_experiment.py \
   [--timeout 3600] -- <精确命令 argv...>
 ```
 
-Supervisor 负责验证配置、生成 experiment ID、采集环境 provenance（git、macOS、Python、MLX、硬件、运行前内存/swap）、监督子进程并完整保留 stdout/stderr、分类终态（`success` / `timeout` / `runtime_error` / …；OOM 仅在可可靠识别时记录），最后原子 finalize 出带 SHA-256 manifest 的不可变 raw result。失败同样产出完整结果——不丢弃任何观测。
-
-所有训练任务都将经由 Experiment Supervisor 运行：验证配置、采集环境元数据、记录 git provenance、监督子进程、写入不可变的 raw result——成功与失败一视同仁。实验变量写在 `configs/experiments/` 的配置里，实验逻辑写在代码里。
+Supervisor 负责验证配置、生成 experiment ID、采集环境 provenance（git、macOS、Python、MLX、硬件、运行前内存/swap）、监督子进程并完整保留 stdout/stderr、分类终态（`success` / `timeout` / `runtime_error` / …；OOM 仅在可可靠识别时记录），最后原子 finalize 出带 SHA-256 manifest 的不可变 raw result。失败同样产出完整结果——不丢弃任何观测。实验变量写在 `configs/experiments/` 的配置里，实验逻辑写在代码里。
 
 ## 实验结果
 

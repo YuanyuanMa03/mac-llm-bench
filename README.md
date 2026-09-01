@@ -80,9 +80,7 @@ uv run python scripts/run_experiment.py \
   [--timeout 3600] -- <exact command argv...>
 ```
 
-The supervisor validates the config, generates the experiment ID, captures environment provenance (git, macOS, Python, MLX, hardware, pre-run memory/swap), supervises the subprocess with full stdout/stderr retention, classifies the terminal state (`success` / `timeout` / `runtime_error` / …; OOM only when reliably identifiable), and atomically finalizes an immutable raw result with a SHA-256 manifest. Failures produce complete results too — nothing is discarded.
-
-All training jobs are intended to go through an Experiment Supervisor that validates the config, captures environment metadata, records git provenance, supervises the subprocess, and writes an immutable raw result — for successes and failures alike. Configs live in `configs/experiments/`; experiment logic lives in code, experiment variables live in configs.
+The supervisor validates the config, generates the experiment ID, captures environment provenance (git, macOS, Python, MLX, hardware, pre-run memory/swap), supervises the subprocess with full stdout/stderr retention, classifies the terminal state (`success` / `timeout` / `runtime_error` / …; OOM only when reliably identifiable), and atomically finalizes an immutable raw result with a SHA-256 manifest. Failures produce complete results too — nothing is discarded. Configs live in `configs/experiments/`; experiment logic lives in code, experiment variables live in configs.
 
 ## Results
 
