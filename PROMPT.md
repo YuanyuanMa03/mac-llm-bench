@@ -7,6 +7,7 @@
 | [prompt03](#prompt03) | 2026-08-31 | 已完成 | `bab6ac4`（补提交） | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
 | [prompt04](#prompt04) | 2026-08-31 | 已完成 | `d0e36d3` | [docs/models_disk_usage.md](docs/models_disk_usage.md) |
 | [prompt05](#prompt05) | 2026-08-31 | 已完成 | `f8f41f7` | [src/benchmark/__init__.py](src/benchmark/__init__.py)<br>[src/benchmark/ids.py](src/benchmark/ids.py)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/benchmark/schema.py](src/benchmark/schema.py)<br>[src/benchmark/artifacts.py](src/benchmark/artifacts.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[scripts/run_experiment.py](scripts/run_experiment.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[results/validation/supervisor-v0](results/validation/supervisor-v0) |
+| [prompt06](#prompt06) | 2026-09-01 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -593,3 +594,9 @@ The next task should most likely be implementing a minimal experiment runner and
 不要继续做 Qwen 训练。
 
 下一步我会让你把 Qwen3-0.6B-Base 接进 Supervisor，开始第一次 20-step LoRA Experiment 0。
+
+---
+
+# prompt06:
+
+真实接入模型训练：把 Qwen3-0.6B-Base 接进 Supervisor，跑第一次 20-step LoRA Experiment 0
