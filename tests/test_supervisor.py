@@ -306,3 +306,45 @@ def test_timeout_is_terminal_and_retains_result(tmp_path: Path) -> None:
         _assert_manifest_matches_files(result_dir)
     finally:
         _make_tree_writable(result_dir)
+
+
+def test_git_provenance_recorded_in_result(tmp_path: Path) -> None:
+    config_path = tmp_path / "experiment.yaml"
+    _write_config(config_path, tmp_path / "raw")
+    result_dir = run_experiment(config_path, ["/usr/bin/true"])
+    try:
+        result = _read_result(result_dir)
+        assert re.fullmatch(r"[0-9a-f]{40}", result["software"]["git_commit_sha"])
+        assert isinstance(result["software"]["git_dirty"], bool)
+    finally:
+        _make_tree_writable(result_dir)
+
+
+def test_result_json_serializes_without_nan(tmp_path: Path) -> None:
+    config_path = tmp_path / "experiment.yaml"
+    _write_config(config_path, tmp_path / "raw")
+    result_dir = run_experiment(config_path, ["/usr/bin/true"])
+    try:
+        text = (result_dir / "result.json").read_text(encoding="utf-8")
+        json.loads(text, parse_constant=lambda c: (_ for _ in ()).throw(
+            ValueError(f"non-finite constant: {c}")))
+        json.dumps(json.loads(text), allow_nan=False)
+    finally:
+        _make_tree_writable(result_dir)
+
+
+def test_finalized_raw_result_rejects_overwrite(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import benchmark.supervisor as supervisor_module
+
+    config_path = tmp_path / "experiment.yaml"
+    _write_config(config_path, tmp_path / "raw")
+    monkeypatch.setattr(supervisor_module, "generate_experiment_id",
+                        lambda config: "fixed-id-for-overwrite-test")
+    result_dir = run_experiment(config_path, ["/usr/bin/true"])
+    assert (result_dir / "result.json").is_file()
+    try:
+        with pytest.raises(RuntimeError, match="拒绝覆盖"):
+            run_experiment(config_path, ["/usr/bin/true"])
+    finally:
+        _make_tree_writable(result_dir)

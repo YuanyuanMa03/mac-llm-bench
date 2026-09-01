@@ -631,7 +631,7 @@ figure
 
 ```text
 tests/test_prompt_log.py   台账 harness（begin/finish/sync，临时 git 仓库集成测试）
-tests/test_supervisor.py   Experiment Supervisor（待实现 benchmark.supervisor 后启用）
+tests/test_supervisor.py   Experiment Supervisor v0（配置验证/ID/provenance/子进程/manifest/防覆盖）
 ```
 
 主要验证：

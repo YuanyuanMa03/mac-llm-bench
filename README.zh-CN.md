@@ -28,7 +28,7 @@ Loadable（可加载）→ Trainable（可训练）→ Practical（实用）→ 
 | 示例配置 | ✅ 完成 — [configs/experiment.example.yaml](configs/experiment.example.yaml) |
 | Python 环境（uv 锁定） | ✅ 完成并验证 — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 模型下载 | ✅ 完成 — 4 个仓库，已按字节校验（见[模型](#模型)） |
-| Experiment Supervisor | ⬜ 未实现 — 测试已存在（[tests/test_supervisor.py](tests/test_supervisor.py)），实现待补 |
+| Experiment Supervisor | ✅ v0 已实现 — 8/8 测试通过，3 个验证运行见 [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
 | 训练 / benchmark 运行 | ⬜ 未开始 — `results/` 为空 |
 | Feasibility map、图表、论文 | ⬜ 未开始 |
 
@@ -72,12 +72,15 @@ uv run python -c "import mlx.core as mx; print(mx.metal.is_available())"  # 自�
 
 ## 使用方法
 
-命令行入口**尚未实现**。计划中的入口（依据 [docs/repository_structure.md](docs/repository_structure.md)）：
+所有训练任务经由 Experiment Supervisor（`src/benchmark/`）启动：
 
 ```bash
 uv run python scripts/run_experiment.py \
-  --config configs/experiments/exp0_qwen3_0.6b_lora.yaml
+  --config configs/experiments/exp0_qwen3_0.6b_lora.yaml \
+  [--timeout 3600] -- <精确命令 argv...>
 ```
+
+Supervisor 负责验证配置、生成 experiment ID、采集环境 provenance（git、macOS、Python、MLX、硬件、运行前内存/swap）、监督子进程并完整保留 stdout/stderr、分类终态（`success` / `timeout` / `runtime_error` / …；OOM 仅在可可靠识别时记录），最后原子 finalize 出带 SHA-256 manifest 的不可变 raw result。失败同样产出完整结果——不丢弃任何观测。
 
 所有训练任务都将经由 Experiment Supervisor 运行：验证配置、采集环境元数据、记录 git provenance、监督子进程、写入不可变的 raw result——成功与失败一视同仁。实验变量写在 `configs/experiments/` 的配置里，实验逻辑写在代码里。
 
@@ -116,7 +119,7 @@ results/figures/      从原始结果程序化生成
 | [prompt02](PROMPT.md#prompt02) | 2026-08-30 | ⬜ 未完成 | `bab6ac4`（补提交） |
 | [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ 已完成 | `bab6ac4`（补提交） |
 | [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ 已完成 | `d0e36d3` |
-| [prompt05](PROMPT.md#prompt05) | 2026-08-31 | 🔄 进行中 | （进行中） |
+| [prompt05](PROMPT.md#prompt05) | 2026-08-31 | ✅ 已完成 | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## 文档

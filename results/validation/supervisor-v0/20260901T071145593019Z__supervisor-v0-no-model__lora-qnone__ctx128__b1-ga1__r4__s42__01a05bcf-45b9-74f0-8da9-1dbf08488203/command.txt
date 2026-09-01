@@ -1,0 +1,8 @@
+{
+  "argv": [
+    "/usr/bin/true"
+  ],
+  "display": "/usr/bin/true",
+  "working_directory": "<volume>/mac-llm-bench",
+  "timeout_seconds": null
+}

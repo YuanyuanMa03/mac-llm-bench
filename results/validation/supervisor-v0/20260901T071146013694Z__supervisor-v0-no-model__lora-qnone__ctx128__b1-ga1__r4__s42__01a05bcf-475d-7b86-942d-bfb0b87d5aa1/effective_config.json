@@ -1,0 +1,123 @@
+{
+  "dataset": {
+    "data_files_sha256": null,
+    "local_paths": [],
+    "max_sequence_length": 128,
+    "name": "supervisor-v0-no-dataset",
+    "preprocessing": {
+      "add_special_tokens": true,
+      "deduplication": null,
+      "field_mapping": null,
+      "filtering": null,
+      "label_mask_policy": null,
+      "normalization": null,
+      "packing": false,
+      "padding_side": "right",
+      "prompt_template": null,
+      "truncation": true
+    },
+    "revision": null,
+    "shuffle": false,
+    "source": "local-infrastructure-validation",
+    "split_seed": 42,
+    "test_split": null,
+    "tokenizer": {
+      "id": null,
+      "revision": null,
+      "use_fast": null
+    },
+    "train_split": "train",
+    "validation_split": null
+  },
+  "experiment": {
+    "comparison_group_id": "supervisor-v0-validation",
+    "parent_experiment_id": null,
+    "repeat_index": 0,
+    "run_kind": "warmup",
+    "supersedes_experiment_id": null,
+    "tags": [
+      "supervisor-v0",
+      "infrastructure-validation"
+    ]
+  },
+  "model": {
+    "id": "supervisor-v0-no-model",
+    "local_path": null,
+    "provider": "local",
+    "repository": null,
+    "revision": null,
+    "tokenizer_id": null,
+    "tokenizer_revision": null,
+    "trust_remote_code": false
+  },
+  "monitoring": {
+    "capture_energy": false,
+    "capture_power_source": true,
+    "capture_process_time_l": false,
+    "capture_swap_usage": true,
+    "capture_thermal_state": false,
+    "capture_vm_stat": true,
+    "enabled": true,
+    "fail_run_on_collector_error": false,
+    "interval_seconds": 1.0,
+    "required_raw_logs": true
+  },
+  "output": {
+    "figures_root": "results/figures",
+    "immutable_after_finalize": true,
+    "processed_root": "results/processed",
+    "raw_root": "results/validation/supervisor-v0",
+    "write_sha256_manifest": true
+  },
+  "protocol_version": "0.1.0",
+  "schema_version": "0.1.0",
+  "training": {
+    "checkpoint_interval_steps": null,
+    "epochs": null,
+    "evaluation_interval_steps": null,
+    "gradient_accumulation_steps": 1,
+    "gradient_checkpointing": false,
+    "learning_rate": 1e-05,
+    "logging_interval_steps": 1,
+    "lora": {
+      "alpha": 8,
+      "dropout": 0.0,
+      "rank": 4,
+      "target_modules": [
+        "supervisor_validation_target"
+      ]
+    },
+    "max_steps": 1,
+    "method": "lora",
+    "micro_batch_size": 1,
+    "optimizer": {
+      "name": "adamw",
+      "parameters": null
+    },
+    "precision": {
+      "compute_dtype": null,
+      "optimizer_state_dtype": null,
+      "parameter_dtype": null
+    },
+    "quantization": {
+      "bits": null,
+      "group_size": null,
+      "scheme": null
+    },
+    "resume_checkpoint": null,
+    "scheduler": {
+      "name": "constant",
+      "parameters": null
+    },
+    "seed": 42,
+    "sequence_length": 128,
+    "stop_criteria": {
+      "early_stopping": false
+    },
+    "trainable_layers": null,
+    "warmup": {
+      "ratio": null,
+      "steps": 0
+    }
+  }
+}

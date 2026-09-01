@@ -28,7 +28,7 @@ Planned experiment axes: model scaling (Qwen3-0.6B → 1.7B → 4B → …), con
 | Example config | ✅ done — [configs/experiment.example.yaml](configs/experiment.example.yaml) |
 | Python environment (uv, locked) | ✅ done & verified — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 model downloads | ✅ done — 4 repos, byte-verified (see [Models](#models)) |
-| Experiment Supervisor | ⬜ not implemented — tests exist ([tests/test_supervisor.py](tests/test_supervisor.py)), implementation pending |
+| Experiment Supervisor | ✅ v0 implemented — 8/8 tests, 3 validation runs in [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
 | Training / benchmark runs | ⬜ not started — `results/` is empty |
 | Feasibility map, figures, paper | ⬜ not started |
 
@@ -72,12 +72,15 @@ Verified environment of the current development machine (2026-08-31):
 
 ## Usage
 
-The CLI is **not implemented yet**. Planned entry point (per [docs/repository_structure.md](docs/repository_structure.md)):
+Every training job goes through the Experiment Supervisor (`src/benchmark/`):
 
 ```bash
 uv run python scripts/run_experiment.py \
-  --config configs/experiments/exp0_qwen3_0.6b_lora.yaml
+  --config configs/experiments/exp0_qwen3_0.6b_lora.yaml \
+  [--timeout 3600] -- <exact command argv...>
 ```
+
+The supervisor validates the config, generates the experiment ID, captures environment provenance (git, macOS, Python, MLX, hardware, pre-run memory/swap), supervises the subprocess with full stdout/stderr retention, classifies the terminal state (`success` / `timeout` / `runtime_error` / …; OOM only when reliably identifiable), and atomically finalizes an immutable raw result with a SHA-256 manifest. Failures produce complete results too — nothing is discarded.
 
 All training jobs are intended to go through an Experiment Supervisor that validates the config, captures environment metadata, records git provenance, supervises the subprocess, and writes an immutable raw result — for successes and failures alike. Configs live in `configs/experiments/`; experiment logic lives in code, experiment variables live in configs.
 
@@ -116,7 +119,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt02](PROMPT.md#prompt02) | 2026-08-30 | ⬜ not done | `bab6ac4`（补提交） |
 | [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ done | `bab6ac4`（补提交） |
 | [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ done | `d0e36d3` |
-| [prompt05](PROMPT.md#prompt05) | 2026-08-31 | 🔄 in progress | （进行中） |
+| [prompt05](PROMPT.md#prompt05) | 2026-08-31 | ✅ done | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## Documentation

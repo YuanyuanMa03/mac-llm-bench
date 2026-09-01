@@ -6,12 +6,13 @@
 | [prompt02](#prompt02) | 2026-08-30 | 未完成 | `bab6ac4`（补提交） | [tests/test_supervisor.py](tests/test_supervisor.py)（仅测试，实现缺失） |
 | [prompt03](#prompt03) | 2026-08-31 | 已完成 | `bab6ac4`（补提交） | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
 | [prompt04](#prompt04) | 2026-08-31 | 已完成 | `d0e36d3` | [docs/models_disk_usage.md](docs/models_disk_usage.md) |
-| [prompt05](#prompt05) | 2026-08-31 | 进行中 | （进行中） | 待补 |
+
+| [prompt05](#prompt05) | 2026-08-31 | 已完成 | （见下一提交） | [src/benchmark/__init__.py](src/benchmark/__init__.py)<br>[src/benchmark/ids.py](src/benchmark/ids.py)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/benchmark/schema.py](src/benchmark/schema.py)<br>[src/benchmark/artifacts.py](src/benchmark/artifacts.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[scripts/run_experiment.py](scripts/run_experiment.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[results/validation/supervisor-v0](results/validation/supervisor-v0) |
 
 状态含义：
 
 - 已完成 = 产出齐备且经实际验证（prompt01 三份产出已提交于 commit `6720bcb`；prompt03 环境经 import 实测、模型经字节数校验）
-- 未完成 = 产出不完整（prompt02 要求的 `benchmark/supervisor` 实现全库不存在，测试 import 目标缺失；`.pytest_cache/v/cache/lastfailed` 记录该测试文件上次运行失败）
+- 未完成 = 产出不完整（prompt02 会话仅交付测试文件、实现缺失；该实现后由 prompt05 补齐交付，prompt02 自身状态保留为历史记录）
 
 日期来源：prompt01 取 commit `6720bcb` 提交时间（2026-08-30 21:52:52 +0800）；prompt02 取 `tests/test_supervisor.py` 文件修改时间（2026-08-30 21:58，据 mtime 推断）；prompt03 为任务执行日。自 2026-08-31 起由 `scripts/prompt_log.py` 自动登记。
 
