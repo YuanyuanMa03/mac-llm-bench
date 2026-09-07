@@ -124,7 +124,7 @@ results/figures/      从原始结果程序化生成
 | [prompt07](PROMPT.md#prompt07) | 2026-09-07 | ✅ 已完成 | `df008bf` |
 | [prompt08](PROMPT.md#prompt08) | 2026-09-07 | ✅ 已完成 | `bb2a941` |
 | [prompt09](PROMPT.md#prompt09) | 2026-09-07 | ✅ 已完成 | `099092c` |
-| [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ 已完成 | （见下一提交） |
+| [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ 已完成 | `72cc3ca` |
 <!-- prompt-log:end -->
 
 ## 文档
