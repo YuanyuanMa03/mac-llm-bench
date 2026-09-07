@@ -9,6 +9,7 @@
 | [prompt05](#prompt05) | 2026-08-31 | 已完成 | `f8f41f7` | [src/benchmark/__init__.py](src/benchmark/__init__.py)<br>[src/benchmark/ids.py](src/benchmark/ids.py)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/benchmark/schema.py](src/benchmark/schema.py)<br>[src/benchmark/artifacts.py](src/benchmark/artifacts.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[scripts/run_experiment.py](scripts/run_experiment.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[results/validation/supervisor-v0](results/validation/supervisor-v0) |
 | [prompt06](#prompt06) | 2026-09-01 | 已完成 | `a5cb5f2` | [src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/train/__init__.py](src/train/__init__.py)<br>[scripts/train_lora.py](scripts/train_lora.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[configs/experiments/exp0_qwen3_0.6b_lora.yaml](configs/experiments/exp0_qwen3_0.6b_lora.yaml)<br>[data/exp0_smoke.jsonl](data/exp0_smoke.jsonl)<br>[results/raw](results/raw) |
 | [prompt07](#prompt07) | 2026-09-07 | 已完成 | `df008bf` | [src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
+| [prompt08](#prompt08) | 2026-09-07 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -607,3 +608,9 @@ The next task should most likely be implementing a minimal experiment runner and
 # prompt07:
 
 100-step 校准运行.
+
+---
+
+# prompt08:
+
+Model Scaling：0.6B → 1.7B，严格遵循AGENTS.md。
