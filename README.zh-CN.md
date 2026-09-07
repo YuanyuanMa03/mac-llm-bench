@@ -120,7 +120,7 @@ results/figures/      从原始结果程序化生成
 | [prompt05](PROMPT.md#prompt05) | 2026-08-31 | ✅ 已完成 | `f8f41f7` |
 | [prompt06](PROMPT.md#prompt06) | 2026-09-01 | ✅ 已完成 | `a5cb5f2` |
 | [prompt07](PROMPT.md#prompt07) | 2026-09-07 | ✅ 已完成 | `df008bf` |
-| [prompt08](PROMPT.md#prompt08) | 2026-09-07 | ✅ 已完成 | （见下一提交） |
+| [prompt08](PROMPT.md#prompt08) | 2026-09-07 | ✅ 已完成 | `bb2a941` |
 <!-- prompt-log:end -->
 
 ## 文档
