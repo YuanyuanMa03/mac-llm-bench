@@ -119,6 +119,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ done | `d0e36d3` |
 | [prompt05](PROMPT.md#prompt05) | 2026-08-31 | ✅ done | `f8f41f7` |
 | [prompt06](PROMPT.md#prompt06) | 2026-09-01 | ✅ done | `a5cb5f2` |
+| [prompt07](PROMPT.md#prompt07) | 2026-09-07 | 🔄 in progress | （进行中） |
 <!-- prompt-log:end -->
 
 ## Documentation
