@@ -129,7 +129,7 @@ results/figures/      从原始结果程序化生成
 | [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ 已完成 | `72cc3ca` |
 | [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ 已完成 | `56a324d` |
 | [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ 已完成 | `ebb2869` |
-| [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ 已完成 | （见下一提交） |
+| [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ 已完成 | `8b53186` |
 <!-- prompt-log:end -->
 
 ## 文档
