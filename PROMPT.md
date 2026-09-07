@@ -11,6 +11,7 @@
 | [prompt07](#prompt07) | 2026-09-07 | 已完成 | `df008bf` | [src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
 | [prompt08](#prompt08) | 2026-09-07 | 已完成 | `bb2a941` | [configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
 | [prompt09](#prompt09) | 2026-09-07 | 已完成 | `099092c` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_4b_bf16_lora_20step.yaml](configs/experiments/probe_qwen3_4b_bf16_lora_20step.yaml)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[results/raw](results/raw) |
+| [prompt10](#prompt10) | 2026-09-07 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -717,3 +718,9 @@ prompt08 已完成，现在开始下一个正式边界探针。
 同一个 4B 模型、相同 dataset / batch / context / rank / seed / steps，仅将 BF16 LoRA 替换为 4bit QLoRA，形成配对实验。
 
 如果失败，也不要立即改变结论，先报告失败证据和最可能的失败类别。
+
+---
+
+# prompt10:
+
+配对实验：同一 4B 模型、相同 dataset/batch/context/rank/seed/steps，仅将 BF16 LoRA 替换为 4bit QLoRA（mlx-community 4bit 权重已在本地，rev 4dcb3d10 待哈希锚定）——单变量对照，回答"量化把内存边界推开多少、代价多少吞吐"。
