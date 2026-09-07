@@ -29,7 +29,7 @@ Planned experiment axes: model scaling (Qwen3-0.6B → 1.7B → 4B → …), con
 | Python environment (uv, locked) | ✅ done & verified — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 model downloads | ✅ done — 4 repos, byte-verified (see [Models](#models)) |
 | Experiment Supervisor | ✅ v0 implemented — 8/8 tests, 3 validation runs in [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| Training runs | 🔄 8B 4bit QLoRA probe **succeeded** — 20 steps, peak GPU 4.98 GB (31% of budget, 1.94× the 4B run, matching weight-ratio extrapolation); 4B→8B scaling pair complete |
+| Training runs | 🔄 4bit QLoRA scale line measured 4B→8B→14B — 14B probe succeeded (20 steps, peak GPU 8.79 GB = 55% of budget, weight-ratio scaling holds at every point); 4bit Trainable boundary reached ≈14B+ |
 | Feasibility map, figures, paper | ⬜ not started |
 
 ## Hardware
@@ -50,6 +50,7 @@ Qwen3 family, pinned to Hugging Face revisions verified via the Hub API on 2026-
 | `models/Qwen3-4B` | `Qwen/Qwen3-4B` | `1cfa9a720891` | ≈8.05 GB |
 | `models/Qwen3-4B-4bit` | `mlx-community/Qwen3-4B-4bit` | `4dcb3d101c2a` | ≈2.26 GB |
 | `models/Qwen3-8B-4bit` | `mlx-community/Qwen3-8B-4bit` | `545dc4251c05` | ≈4.61 GB |
+| `models/Qwen3-14B-4bit` | `mlx-community/Qwen3-14B-4bit` | `a4d9b2df59d2` | ≈8.31 GB |
 
 `models/` is git-ignored. Model revisions are never inferred from names — they come from actual Hub queries and are recorded in `models/MANIFEST.md`.
 
@@ -128,7 +129,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ done | `72cc3ca` |
 | [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ done | `56a324d` |
 | [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ done | `ebb2869` |
-| [prompt13](PROMPT.md#prompt13) | 2026-09-07 | 🔄 in progress | （进行中） |
+| [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ done | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## Documentation
