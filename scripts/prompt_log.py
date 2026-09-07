@@ -159,7 +159,7 @@ def render_row(number: int, date: str, status: str, git: str, outputs: str) -> s
 
 def replace_row(text: str, row: Row, *, status: str | None = None,
                 git: str | None = None, outputs: str | None = None) -> str:
-    """只重渲染目标行，其余行字节不动（保护富文本单元格）。"""
+    """只重渲染目标行（保留原行终止符风格），其余行字节不动。"""
     new_line = render_row(
         row.number,
         row.date,
@@ -169,7 +169,8 @@ def replace_row(text: str, row: Row, *, status: str | None = None,
     )
     lines = text.splitlines(keepends=True)
     old = lines[row.line_idx]
-    lines[row.line_idx] = old[len(old.rstrip("\r\n")):] + new_line + "\n"
+    terminator = "\r\n" if old.endswith("\r\n") else ("\n" if old.endswith("\n") else "")
+    lines[row.line_idx] = new_line + terminator
     return "".join(lines)
 
 

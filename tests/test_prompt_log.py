@@ -225,3 +225,14 @@ def test_rich_text_neighbor_rows_byte_preserved(repo: Path) -> None:
     after = [l for l in _read(repo, "PROMPT.md").splitlines()
              if l.startswith("| [prompt")]
     assert after[:3] == before  # 既有 3 行字节不动
+
+
+def test_finish_does_not_insert_blank_line_above_row(repo: Path) -> None:
+    """回归：replace_row 曾把行尾换行拼成前缀，导致 finish 后目标行上方多出空行。"""
+    _begin4(repo)
+    (repo / "out.md").write_text("产出", encoding="utf-8")
+    assert pl.main(["finish", "4", "--status", "已完成",
+                    "--outputs", "out.md", "--evidence", "x"]) == 0
+    lines = _read(repo, "PROMPT.md").splitlines()
+    idx = next(i for i, l in enumerate(lines) if l.startswith("| [prompt04]"))
+    assert lines[idx - 1].startswith("| [prompt03]")  # 表行连续，无空行插入
