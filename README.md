@@ -29,7 +29,7 @@ Planned experiment axes: model scaling (Qwen3-0.6B → 1.7B → 4B → …), con
 | Python environment (uv, locked) | ✅ done & verified — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 model downloads | ✅ done — 4 repos, byte-verified (see [Models](#models)) |
 | Experiment Supervisor | ✅ v0 implemented — 8/8 tests, 3 validation runs in [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| Training runs | 🔄 smoke + calibration + first scaling pair done — 0.6B vs 1.7B (3×100-step each): 71.2ms → 161.2ms/step (2.27×), peak GPU 1.34 → 3.64 GB; larger models and sweeps pending |
+| Training runs | 🔄 4B BF16 boundary probe **succeeded** — 20-step LoRA completed at ~335ms median/step, peak GPU 8.36 GB (measured), under real memory pressure; next: paired 4bit QLoRA |
 | Feasibility map, figures, paper | ⬜ not started |
 
 ## Hardware
@@ -47,6 +47,7 @@ Qwen3 family, pinned to Hugging Face revisions verified via the Hub API on 2026-
 | `models/Qwen3-1.7B` | `Qwen/Qwen3-1.7B` | `70d244cc86cc` | ≈4.08 GB |
 | `models/Qwen3-0.6B-4bit` | `mlx-community/Qwen3-0.6B-4bit` | `73e3e38d9813` | ≈0.35 GB |
 | `models/Qwen3-1.7B-4bit` | `mlx-community/Qwen3-1.7B-4bit` | `3b1b1768f8f8` | ≈0.98 GB |
+| `models/Qwen3-4B` | `Qwen/Qwen3-4B` | `1cfa9a720891` | ≈8.05 GB |
 
 `models/` is git-ignored. Model revisions are never inferred from names — they come from actual Hub queries and are recorded in `models/MANIFEST.md`.
 
@@ -121,7 +122,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt06](PROMPT.md#prompt06) | 2026-09-01 | ✅ done | `a5cb5f2` |
 | [prompt07](PROMPT.md#prompt07) | 2026-09-07 | ✅ done | `df008bf` |
 | [prompt08](PROMPT.md#prompt08) | 2026-09-07 | ✅ done | `bb2a941` |
-| [prompt09](PROMPT.md#prompt09) | 2026-09-07 | 🔄 in progress | （进行中） |
+| [prompt09](PROMPT.md#prompt09) | 2026-09-07 | ✅ done | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## Documentation
