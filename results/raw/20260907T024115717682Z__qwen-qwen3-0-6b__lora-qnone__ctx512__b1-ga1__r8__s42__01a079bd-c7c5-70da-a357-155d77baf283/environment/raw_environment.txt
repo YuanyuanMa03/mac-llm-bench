@@ -1,0 +1,126 @@
+# 环境 preflight 证据（由 supervisor 采集）
+
+# 采集时间: 2026-09-07T02:41:15.794948Z
+
+## git rev-parse HEAD
+
+48d2722b713e7d478929b4ef6b80e33e72750bf9
+
+## git status --porcelain=v1
+
+ M src/train/lora_smoke.py
+?? configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml
+?? configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml
+?? configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml
+?? results/raw/.20260907T024115717682Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079bd-c7c5-70da-a357-155d77baf283.staging/
+?? results/raw/20260907T024058016577Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079bd-82a0-7e05-8094-4012df9f2def/
+?? results/raw/20260907T024106970990Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079bd-a59b-799e-ba6b-0ea7a10b3ff2/
+
+
+## sw_vers
+
+ProductVersion=26.5 BuildVersion=25F71
+
+## python
+
+CPython 3.13.11 (main, Dec  9 2025, 20:26:22) [Clang 21.1.4 ]
+
+## system_profiler SPHardwareDataType（序列号已脱敏）
+
+{
+  "SPHardwareDataType": [
+    {
+      "_name": "hardware_overview",
+      "activation_lock_status": "activation_lock_enabled",
+      "boot_rom_version": "18000.120.36",
+      "chip_type": "Apple M4",
+      "machine_model": "Mac16,10",
+      "machine_name": "Mac mini",
+      "model_number": "MU9D3CH/A",
+      "number_processors": "proc 10:4:6:0",
+      "os_loader_version": "18000.120.36",
+      "physical_memory": "16 GB",
+      "platform_UUID": "[REDACTED]",
+      "provisioning_UDID": "[REDACTED]",
+      "serial_number": "[REDACTED]"
+    }
+  ]
+}
+
+## df -kP <raw_root>
+
+filesystem=/dev/disk5s1 free_bytes=659829972992
+
+## vm_stat (before)
+
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                   128522.
+Pages active:                                 254576.
+Pages inactive:                               252801.
+Pages speculative:                               763.
+Pages throttled:                                   0.
+Pages wired down:                             159352.
+Pages purgeable:                                2334.
+"Translation faults":                     1624921909.
+Pages copy-on-write:                        68355817.
+Pages zero filled:                        1710810743.
+Pages reactivated:                          84215558.
+Pages purged:                               22108535.
+File-backed pages:                            203180.
+Anonymous pages:                              304960.
+Pages stored in compressor:                   614862.
+Pages occupied by compressor:                 217485.
+Decompressions:                             43888949.
+Compressions:                               67714819.
+Pageins:                                    83943411.
+Pageouts:                                     478398.
+Swapins:                                      574733.
+Swapouts:                                    1157534.
+
+
+## sysctl vm.swapusage (before)
+
+total = 2048.00M  used = 706.50M  free = 1341.50M  (encrypted)
+
+
+## pmset -g batt (before)
+
+Now drawing from 'AC Power'
+
+
+## vm_stat (after)
+
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                   127599.
+Pages active:                                 255885.
+Pages inactive:                               253796.
+Pages speculative:                               903.
+Pages throttled:                                   0.
+Pages wired down:                             158727.
+Pages purgeable:                                1809.
+"Translation faults":                     1625041201.
+Pages copy-on-write:                        68356719.
+Pages zero filled:                        1710955364.
+Pages reactivated:                          84215594.
+Pages purged:                               22108535.
+File-backed pages:                            203522.
+Anonymous pages:                              307062.
+Pages stored in compressor:                   614715.
+Pages occupied by compressor:                 217453.
+Decompressions:                             43889088.
+Compressions:                               67714819.
+Pageins:                                    83943629.
+Pageouts:                                     478398.
+Swapins:                                      574733.
+Swapouts:                                    1157534.
+
+
+## sysctl vm.swapusage (after)
+
+total = 2048.00M  used = 706.50M  free = 1341.50M  (encrypted)
+
+
+## pmset -g batt (after)
+
+Now drawing from 'AC Power'
+

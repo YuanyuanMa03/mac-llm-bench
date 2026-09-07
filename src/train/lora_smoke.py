@@ -137,7 +137,13 @@ def run(config_path: Path) -> int:
     except Exception:
         peak_gpu_bytes = None
 
-    step_times = [r["step_time_seconds"] for r in step_records]
+    excluded = min(int(train_cfg.get("excluded_warmup_steps", 0)), len(step_records))
+    measured = step_records[excluded:]
+    if not measured:
+        raise SystemExit("excluded_warmup_steps 覆盖了全部步数，无测量区间")
+    measured_step_times = [r["step_time_seconds"] for r in measured]
+    measured_tokens = sum(r["loss_bearing_tokens"] for r in measured)
+    measured_interval_seconds = sum(measured_step_times)
     resolved_rev, rev_source = _resolve_local_revision(Path(model_cfg["local_path"]))
 
     metrics = {
@@ -145,18 +151,21 @@ def run(config_path: Path) -> int:
         "training_loop_seconds": training_loop_seconds,
         "successful_steps": len(step_records),
         "attempted_micro_steps": len(step_records) * batch_size,
-        "measured_steps": len(step_records),
-        "excluded_warmup_steps": 0,
-        "average_step_time_seconds": statistics.fmean(step_times),
-        "median_step_time_seconds": statistics.median(step_times),
-        "tokens_processed": tokens_total,
+        "measured_steps": len(measured),
+        "excluded_warmup_steps": excluded,
+        "average_step_time_seconds": statistics.fmean(measured_step_times),
+        "median_step_time_seconds": statistics.median(measured_step_times),
+        "tokens_processed": measured_tokens,
         "token_count_definition":
             "loss-bearing target tokens（default_loss 掩码后的非 padding 目标 token）",
-        "tokens_per_second": tokens_total / training_loop_seconds,
-        "samples_processed": samples_total,
-        "samples_per_second": samples_total / training_loop_seconds,
+        "tokens_per_second": measured_tokens / measured_interval_seconds,
+        "samples_processed": len(measured) * batch_size,
+        "samples_per_second": len(measured) * batch_size / measured_interval_seconds,
         "throughput_interval_definition":
-            "仅训练循环（不含模型加载）；每步计时含前向+反向+优化器更新+mx.eval",
+            f"训练循环内排除前 {excluded} 个 warmup 步后的测得区间；"
+            "每步计时含前向+反向+优化器更新+mx.eval",
+        "measured_interval_seconds": measured_interval_seconds,
+        "total_tokens_all_steps": tokens_total,
         "training_loss_final": losses[-1] if losses else None,
         "lora_scale": scale,
         "lora_scale_formula": "alpha / rank",

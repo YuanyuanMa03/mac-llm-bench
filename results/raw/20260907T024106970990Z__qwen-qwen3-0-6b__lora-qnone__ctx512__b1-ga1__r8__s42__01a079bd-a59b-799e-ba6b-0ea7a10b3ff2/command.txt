@@ -1,0 +1,10 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/train_lora.py",
+    "configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml"
+  ],
+  "display": ".venv/bin/python scripts/train_lora.py configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml",
+  "working_directory": "<volume>/mac-llm-bench",
+  "timeout_seconds": 1800.0
+}
