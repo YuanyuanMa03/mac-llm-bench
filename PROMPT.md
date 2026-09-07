@@ -12,7 +12,7 @@
 | [prompt08](#prompt08) | 2026-09-07 | 已完成 | `bb2a941` | [configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
 | [prompt09](#prompt09) | 2026-09-07 | 已完成 | `099092c` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_4b_bf16_lora_20step.yaml](configs/experiments/probe_qwen3_4b_bf16_lora_20step.yaml)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[results/raw](results/raw) |
 | [prompt10](#prompt10) | 2026-09-07 | 已完成 | `72cc3ca` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_4b_4bit_qlora_20step.yaml](configs/experiments/probe_qwen3_4b_4bit_qlora_20step.yaml)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[results/raw](results/raw) |
-| [prompt11](#prompt11) | 2026-09-07 | 进行中 | （进行中） | 待补 |
+| [prompt11](#prompt11) | 2026-09-07 | 已完成 | （见下一提交） | [src/analysis/paired_comparison.py](src/analysis/paired_comparison.py)<br>[src/analysis/__init__.py](src/analysis/__init__.py)<br>[scripts/compare_probes.py](scripts/compare_probes.py)<br>[results/processed/comparison_paired_probe.json](results/processed/comparison_paired_probe.json)<br>[results/raw](results/raw) |
 
 状态含义：
 
