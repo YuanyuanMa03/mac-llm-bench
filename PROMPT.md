@@ -12,6 +12,7 @@
 | [prompt08](#prompt08) | 2026-09-07 | 已完成 | `bb2a941` | [configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
 | [prompt09](#prompt09) | 2026-09-07 | 已完成 | `099092c` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_4b_bf16_lora_20step.yaml](configs/experiments/probe_qwen3_4b_bf16_lora_20step.yaml)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[results/raw](results/raw) |
 | [prompt10](#prompt10) | 2026-09-07 | 已完成 | `72cc3ca` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_4b_4bit_qlora_20step.yaml](configs/experiments/probe_qwen3_4b_4bit_qlora_20step.yaml)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[results/raw](results/raw) |
+| [prompt11](#prompt11) | 2026-09-07 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -724,3 +725,205 @@ prompt08 已完成，现在开始下一个正式边界探针。
 # prompt10:
 
 配对实验：同一 4B 模型、相同 dataset/batch/context/rank/seed/steps，仅将 BF16 LoRA 替换为 4bit QLoRA（mlx-community 4bit 权重已在本地，rev 4dcb3d10 待哈希锚定）——单变量对照，回答"量化把内存边界推开多少、代价多少吞吐"。
+
+---
+
+# prompt11:
+
+先读 AGENTS.md、docs/experiment_protocol.md、docs/result_schema.md、当前实验台账、models/MANIFEST.md，以及已经完成的所有正式 probe 结果。
+
+现在开始下一组 controlled probes。
+
+这一步的目标不是做完整 benchmark，而是验证一个具体假设：
+
+> 在相同训练条件下，4bit 量化是否能够显著降低 4B 模型的训练内存压力，同时保持可接受的训练速度，从而扩展 16GB Apple Silicon 上的可训练边界。
+
+目前关于"峰值内存""量化几乎没有速度代价"等说法都只能视为待验证假设，不要把之前的估算写成实验事实。
+
+## 第一部分：4B BF16 LoRA
+
+先检查当前仓库是否已经有与现有 Qwen3 实验系列一致的 4B BF16 模型。
+
+如果没有：
+
+* 从 Hugging Face 获取正确模型；
+* 查询并记录真实 repository revision / commit SHA；
+* 按现有模型管理规范下载；
+* 更新 models/MANIFEST.md；
+* 完成模型文件校验；
+* 不根据模型名称推断 revision、dtype 或参数量。
+
+然后运行：
+
+* model: Qwen3 4B
+* weights: BF16
+* method: LoRA
+* batch size: 1
+* sequence length: 512
+* LoRA rank: 8
+* seed: 42
+* training steps: 20
+
+数据集、prompt template、optimizer、learning rate、target modules 等其他条件必须尽量与之前同类正式实验保持一致。
+
+如果必须改变任何条件，先在配置和结果里明确记录，不要静默修改。
+
+所有训练必须通过现有 Experiment Supervisor 执行。
+
+实验前执行 preflight，并记录：
+
+* Git commit
+* Git dirty status
+* model revision
+* 当前软件环境
+* 当前 memory / swap 状态
+* 是否存在其他训练进程
+* 磁盘空间
+* 配置是否符合 protocol
+
+无论结果是 success、oom、runtime_error 或其他失败，都保留完整 raw result。
+
+如果 BF16 实验失败，不要自动降低 context、rank 或 batch 重新跑。先保留这个配置对应的真实失败 observation。
+
+## 第二部分：4B 4bit QLoRA
+
+第一部分正式结束、raw result 已 finalize 并验证后，再运行配对实验。
+
+使用同一个 4B 模型对应的 4bit MLX 权重。
+
+配置保持：
+
+* model scale: 4B
+* weights: 4bit
+* method: QLoRA
+* batch size: 1
+* sequence length: 512
+* LoRA rank: 8
+* seed: 42
+* training steps: 20
+
+除权重量化和由此必然产生的训练方式差异外，不要主动改变其他变量。
+
+这组实验的目标是形成尽可能干净的 paired comparison：
+
+BF16 LoRA
+vs
+4bit QLoRA
+
+## Measurement
+
+只记录当前已经验证可靠的真实 measurement。
+
+至少保留：
+
+* completed steps
+* wall-clock time
+* step timing
+* throughput，如果当前方法已经通过验证
+* process / system memory，如果当前 collector 已经通过验证
+* swap，如果当前 collector 已经通过验证
+* stdout
+* stderr
+* exit code
+* terminal status
+
+未经验证可靠的 measurement 继续使用 null。
+
+不要为了生成完整表格而估算任何缺失数字。
+
+## 配对检查
+
+两次实验完成后，检查它们是否真正满足 controlled comparison。
+
+生成一份机器可读的 comparison summary，但不要修改 raw results。
+
+只比较真实观测值，例如：
+
+* BF16 是否 trainable
+* 4bit 是否 trainable
+* peak memory difference
+* wall-time difference
+* step-time difference
+* throughput difference
+* swap behavior difference
+
+如果某个 measurement 为 null，就明确写 unavailable，不要计算对应差值。
+
+不要把单次 20-step probe 的结果描述为统计显著结论。
+
+可以描述为：
+
+* preliminary observation
+* probe result
+* evidence motivating the formal benchmark
+
+不要描述为：
+
+* proof
+* zero-cost
+* statistically significant
+* general scaling law
+
+除非后续正式重复实验真的支持这些结论。
+
+## Validation
+
+两组实验结束后实际检查：
+
+1. 两个 result 是否符合 result schema；
+2. raw results 是否 immutable；
+3. manifest 是否校验通过；
+4. Git provenance 是否完整；
+5. model revision 是否完整；
+6. 配置之间除了预定变量之外是否存在额外差异；
+7. 是否存在人工填写或估算的 benchmark 数值；
+8. 是否真的执行了 20 个 training steps；
+9. failure/OOM 是否被完整保留；
+10. comparison summary 是否完全来自 raw result。
+
+## 完成后停止
+
+不要自动继续：
+
+* 8B
+* context scaling
+* batch-size sweep
+* LoRA-rank sweep
+* repeated seeds
+* full fine-tuning
+* 正式 Phase B benchmark
+
+最后报告：
+
+### 4B BF16 observation
+
+只报告真实测量值。
+
+### 4B 4bit observation
+
+只报告真实测量值。
+
+### Controlled comparison
+
+明确区分 observation 和 interpretation。
+
+### Files created or modified
+
+列出真实路径。
+
+### Validation evidence
+
+列出实际运行的检查命令和相关输出。
+
+### Unresolved measurements
+
+说明哪些指标仍然不能可靠使用。
+
+### Recommended next probe
+
+根据这两个 probe 的真实结果，在以下两个方向中只推荐一个：
+
+* 继续 scale 到 8B；
+* 保持 4B，开始 context boundary probing。
+
+说明推荐依据，但不要自动执行。
