@@ -29,7 +29,7 @@ Loadable（可加载）→ Trainable（可训练）→ Practical（实用）→ 
 | Python 环境（uv 锁定） | ✅ 完成并验证 — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 模型下载 | ✅ 完成 — 4 个仓库，已按字节校验（见[模型](#模型)） |
 | Experiment Supervisor | ✅ v0 已实现 — 8/8 测试通过，3 个验证运行见 [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| 训练运行 | 🔄 4B 配对探针完成 — BF16 LoRA vs 4bit QLoRA（单变量）：峰值 GPU 8.36 → 2.57 GB（3.3×），吞吐 45.9 → 76.5 tok/s（+67%）；内存边界被推开且短序列下无吞吐代价 |
+| 训练运行 | 🔄 8B 4bit QLoRA 探针**成功** — 20 步，峰值 GPU 4.98 GB（预算 31%，为 4B 的 1.94×，符合权重比外推）；4B→8B 规模对完成 |
 | Feasibility map、图表、论文 | ⬜ 未开始 |
 
 ## 硬件
@@ -49,6 +49,7 @@ Qwen3 系列，固定到 2026-08-31 经 Hub API 实际核验的 revision：
 | `models/Qwen3-1.7B-4bit` | `mlx-community/Qwen3-1.7B-4bit` | `3b1b1768f8f8` | ≈0.98 GB |
 | `models/Qwen3-4B` | `Qwen/Qwen3-4B` | `1cfa9a720891` | ≈8.05 GB |
 | `models/Qwen3-4B-4bit` | `mlx-community/Qwen3-4B-4bit` | `4dcb3d101c2a` | ≈2.26 GB |
+| `models/Qwen3-8B-4bit` | `mlx-community/Qwen3-8B-4bit` | `545dc4251c05` | ≈4.61 GB |
 
 `models/` 已加入 git-ignore。模型 revision 永远不从名称推断——来自真实 Hub 查询，并记录于 `models/MANIFEST.md`。
 
@@ -126,7 +127,7 @@ results/figures/      从原始结果程序化生成
 | [prompt09](PROMPT.md#prompt09) | 2026-09-07 | ✅ 已完成 | `099092c` |
 | [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ 已完成 | `72cc3ca` |
 | [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ 已完成 | `56a324d` |
-| [prompt12](PROMPT.md#prompt12) | 2026-09-07 | 🔄 进行中 | （进行中） |
+| [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ 已完成 | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## 文档

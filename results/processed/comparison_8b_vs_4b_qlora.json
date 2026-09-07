@@ -1,0 +1,170 @@
+{
+  "kind": "paired-probe-comparison",
+  "epistemic_status": "preliminary observation（单对 20-step probe，非统计显著结论）",
+  "runs": {
+    "a": {
+      "id": "20260907T080735708838Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07ae8-8c1c-72cb-a2fb-351e0e6545a5",
+      "dir": "20260907T080735708838Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07ae8-8c1c-72cb-a2fb-351e0e6545a5"
+    },
+    "b": {
+      "id": "20260907T090653918143Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07b1e-d75e-7f92-88af-6222d8638cbf",
+      "dir": "20260907T090653918143Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07b1e-d75e-7f92-88af-6222d8638cbf"
+    }
+  },
+  "controlled_factors": {
+    "dataset.name": {
+      "a": "exp0-synthetic-smoke",
+      "b": "exp0-synthetic-smoke",
+      "equal": true
+    },
+    "dataset.max_sequence_length": {
+      "a": 512,
+      "b": 512,
+      "equal": true
+    },
+    "training.micro_batch_size": {
+      "a": 1,
+      "b": 1,
+      "equal": true
+    },
+    "training.sequence_length": {
+      "a": 512,
+      "b": 512,
+      "equal": true
+    },
+    "training.lora_rank": {
+      "a": 8,
+      "b": 8,
+      "equal": true
+    },
+    "training.lora_alpha": {
+      "a": 16,
+      "b": 16,
+      "equal": true
+    },
+    "training.seed": {
+      "a": 42,
+      "b": 42,
+      "equal": true
+    },
+    "training.requested_steps": {
+      "a": 20,
+      "b": 20,
+      "equal": true
+    },
+    "training.learning_rate": {
+      "a": 0.0001,
+      "b": 0.0001,
+      "equal": true
+    },
+    "training.optimizer": {
+      "a": "adamw",
+      "b": "adamw",
+      "equal": true
+    },
+    "training.target_modules": {
+      "a": [
+        "self_attn.q_proj",
+        "self_attn.k_proj",
+        "self_attn.v_proj",
+        "self_attn.o_proj"
+      ],
+      "b": [
+        "self_attn.q_proj",
+        "self_attn.k_proj",
+        "self_attn.v_proj",
+        "self_attn.o_proj"
+      ],
+      "equal": true
+    }
+  },
+  "controlled_comparison_valid": true,
+  "declared_variables": {
+    "model.id": {
+      "a": "mlx-community/Qwen3-4B-4bit",
+      "b": "mlx-community/Qwen3-8B-4bit"
+    },
+    "model.repository": {
+      "a": "mlx-community/Qwen3-4B-4bit",
+      "b": "mlx-community/Qwen3-8B-4bit"
+    },
+    "model.resolved_revision": {
+      "a": "4dcb3d101c2a062e5c1d4bb173588c54ea6c4d25",
+      "b": "545dc4251c05440727734bcd94334791f6ab0192"
+    },
+    "training.method": {
+      "a": "qlora",
+      "b": "qlora"
+    },
+    "training.quantization_bits": {
+      "a": 4,
+      "b": 4
+    }
+  },
+  "observations": {
+    "a": {
+      "terminal_state": "success",
+      "exit_code": 0,
+      "completed_steps": 20,
+      "trainable": true,
+      "wall_clock_seconds": 8.910240125027485,
+      "median_step_time_seconds": 0.2192849789862521,
+      "average_step_time_seconds": 0.2185311331122648,
+      "tokens_per_second": 88.77453625810719,
+      "peak_metal_gpu_memory_bytes": 2565941952,
+      "initial_swap_bytes": 6971394621,
+      "peak_process_memory_bytes": null,
+      "model_load_seconds": 2.652720957994461
+    },
+    "b": {
+      "terminal_state": "success",
+      "exit_code": 0,
+      "completed_steps": 20,
+      "trainable": true,
+      "wall_clock_seconds": 14.664639292052016,
+      "median_step_time_seconds": 0.3890201875474304,
+      "average_step_time_seconds": 0.41916791046387514,
+      "tokens_per_second": 46.282168829505224,
+      "peak_metal_gpu_memory_bytes": 4980042880,
+      "initial_swap_bytes": 2816800195,
+      "peak_process_memory_bytes": null,
+      "model_load_seconds": 4.280380167067051
+    }
+  },
+  "differences": {
+    "wall_clock_seconds": {
+      "a_minus_b": -5.7543991670245305,
+      "ratio_b_over_a": 1.6458186408311617
+    },
+    "median_step_time_seconds": {
+      "a_minus_b": -0.1697352085611783,
+      "ratio_b_over_a": 1.7740393771878908
+    },
+    "average_step_time_seconds": {
+      "a_minus_b": -0.20063677735161034,
+      "ratio_b_over_a": 1.9181153023562016
+    },
+    "tokens_per_second": {
+      "a_minus_b": 42.492367428601966,
+      "ratio_b_over_a": 0.5213450926394289
+    },
+    "peak_metal_gpu_memory_bytes": {
+      "a_minus_b": -2414100928,
+      "ratio_b_over_a": 1.940824450887656
+    },
+    "initial_swap_bytes": {
+      "a_minus_b": 4154594426,
+      "ratio_b_over_a": 0.40405117600356827
+    },
+    "peak_process_memory_bytes": "unavailable",
+    "model_load_seconds": {
+      "a_minus_b": -1.6276592090725899,
+      "ratio_b_over_a": 1.613581011665528
+    }
+  },
+  "notes": [
+    "peak_process_memory_bytes / thermal / energy / page faults 仍为 unresolved → unavailable",
+    "口径：4bit 的 parameter_count 为打包存储元素口径，不参与比较",
+    "本文件由 scripts/compare_probes.py 从 raw results 派生，可随时重新生成"
+  ]
+}
