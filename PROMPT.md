@@ -7,8 +7,6 @@
 | [prompt03](#prompt03) | 2026-08-31 | 已完成 | `bab6ac4`（补提交） | [pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[.gitignore](.gitignore)（修改）<br>models/（4 个 Qwen3 仓库，已校验，见 [models/MANIFEST.md](models/MANIFEST.md)，git-ignored） |
 | [prompt04](#prompt04) | 2026-08-31 | 已完成 | `d0e36d3` | [docs/models_disk_usage.md](docs/models_disk_usage.md) |
 | [prompt05](#prompt05) | 2026-08-31 | 已完成 | `f8f41f7` | [src/benchmark/__init__.py](src/benchmark/__init__.py)<br>[src/benchmark/ids.py](src/benchmark/ids.py)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/benchmark/schema.py](src/benchmark/schema.py)<br>[src/benchmark/artifacts.py](src/benchmark/artifacts.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[scripts/run_experiment.py](scripts/run_experiment.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[pyproject.toml](pyproject.toml)<br>[uv.lock](uv.lock)<br>[results/validation/supervisor-v0](results/validation/supervisor-v0) |
-
-
 | [prompt06](#prompt06) | 2026-09-01 | 已完成 | `a5cb5f2` | [src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/train/__init__.py](src/train/__init__.py)<br>[scripts/train_lora.py](scripts/train_lora.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[configs/experiments/exp0_qwen3_0.6b_lora.yaml](configs/experiments/exp0_qwen3_0.6b_lora.yaml)<br>[data/exp0_smoke.jsonl](data/exp0_smoke.jsonl)<br>[results/raw](results/raw) |
 
 状态含义：
