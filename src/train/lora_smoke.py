@@ -61,6 +61,26 @@ def run(config_path: Path) -> int:
 
     # ---- 冻结 + LoRA（mlx_lm.lora 的标准流程） ----
     parameter_count_base = sum(v.size for _, v in tree_flatten(model.parameters()))
+    # 量化检测（在 LoRA 包装前，从真实层读取，不猜）
+    quant_info: list[tuple[int, int]] = []
+
+    def _detect(_path, module):
+        if isinstance(module, nn.QuantizedLinear):
+            quant_info.append((module.bits, module.group_size))
+
+    model.apply_to_modules(_detect)
+    quantization_state = "quantized" if quant_info else "unquantized"
+    quant_bits = quant_info[0][0] if quant_info else None
+    quant_group = quant_info[0][1] if quant_info else None
+    if len(set(quant_info)) > 1:
+        print(f"[警告] 检测到混合量化配置: {set(quant_info)}", flush=True)
+    model_quant_config = {}
+    try:
+        model_quant_config = (json.loads(
+            (Path(model_cfg["local_path"]) / "config.json").read_text(encoding="utf-8"))
+        ).get("quantization") or {}
+    except (OSError, json.JSONDecodeError):
+        pass
     model.freeze()
     lora = train_cfg["lora"]
     rank = lora["rank"]
@@ -181,8 +201,11 @@ def run(config_path: Path) -> int:
         "parameter_count": parameter_count_base,
         "parameter_count_method":
             "sum(array.size) over mlx_lm.load 结果的 parameters()（LoRA 附加前）",
+        "quantization_state": quantization_state,
+        "quantization_bits": quant_bits,
+        "quantization_group_size": quant_group,
+        "quantization_scheme": model_quant_config.get("scheme"),
         "model_dtype": str(next(v for _, v in tree_flatten(model.parameters())).dtype),
-        "quantization_state": "unquantized",
         "resolved_revision": resolved_rev,
         "revision_source": rev_source,
         "peak_metal_gpu_memory_bytes": peak_gpu_bytes,

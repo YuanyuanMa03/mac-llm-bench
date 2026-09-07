@@ -77,6 +77,12 @@ def load_and_validate_config(config_path: Path | str) -> dict:
             raise ConfigValidationError("LoRA/QLoRA 要求 lora.rank 为正整数")
         if not lora.get("target_modules"):
             raise ConfigValidationError("LoRA/QLoRA 要求 lora.target_modules 非空")
+    if training["method"] == "qlora":
+        bits = (training.get("quantization") or {}).get("bits")
+        if not isinstance(bits, int) or bits <= 0:
+            raise ConfigValidationError(
+                "QLoRA 要求 quantization.bits 为正整数（schema 不变量：无量化元数据的 QLoRA 必须拒绝）"
+            )
     output = config["output"]
     if not output.get("raw_root"):
         raise ConfigValidationError("output.raw_root 不能为空")
@@ -498,11 +504,14 @@ def _build_result(*, config, experiment_id, command, working_directory,
         training_section["trainable_parameter_ratio"] = trainable / total
 
     for key in ("parameter_count_method", "quantization_state",
-                "resolved_revision", "revision_source"):
+                "quantization_scheme", "resolved_revision", "revision_source"):
         if tm_str(key) is not None:
             model_section[key] = tm_str(key)
     if tm_str("model_architecture") is not None:
         model_section["architecture"] = tm_str("model_architecture")
+    quant_bits = tm.get("quantization_bits")
+    if isinstance(quant_bits, int) and not isinstance(quant_bits, bool):
+        model_section["quantization_bits"] = quant_bits
     parameter_count = tm.get("parameter_count")
     if isinstance(parameter_count, int) and not isinstance(parameter_count, bool):
         model_section["parameter_count"] = parameter_count

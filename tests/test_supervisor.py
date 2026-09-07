@@ -362,7 +362,7 @@ def test_training_metrics_artifact_enriches_runtime(tmp_path: Path) -> None:
         "  'token_count_definition': 'loss-bearing',\n"
         "  'trainable_parameters': 1000, 'total_parameters': 100000,\n"
         "  'model_architecture': 'qwen3', 'parameter_count': 100000,\n"
-        "  'quantization_state': 'unquantized',\n"
+        "  'quantization_state': 'quantized', 'quantization_bits': 4,\n  'quantization_scheme': 'WQ4B',\n"
         "  'resolved_revision': 'c1899de289a0',\n"
         "  'revision_source': 'hf local cache trees'}\n"
         "d.joinpath('training_metrics.json').write_text(json.dumps(metrics))\n"
@@ -381,7 +381,9 @@ def test_training_metrics_artifact_enriches_runtime(tmp_path: Path) -> None:
         assert result["training"]["trainable_parameter_ratio"] == 0.01
         assert result["model"]["architecture"] == "qwen3"
         assert result["model"]["resolved_revision"] == "c1899de289a0"
-        assert result["model"]["quantization_state"] == "unquantized"
+        assert result["model"]["quantization_state"] == "quantized"
+        assert result["model"]["quantization_bits"] == 4
+        assert result["model"]["quantization_scheme"] == "WQ4B"
         _assert_manifest_matches_files(result_dir)
     finally:
         _make_tree_writable(result_dir)
