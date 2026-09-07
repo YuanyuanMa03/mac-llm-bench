@@ -127,7 +127,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt09](PROMPT.md#prompt09) | 2026-09-07 | ✅ done | `099092c` |
 | [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ done | `72cc3ca` |
 | [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ done | `56a324d` |
-| [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ done | （见下一提交） |
+| [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ done | `ebb2869` |
 <!-- prompt-log:end -->
 
 ## Documentation
