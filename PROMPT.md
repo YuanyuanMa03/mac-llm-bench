@@ -14,6 +14,7 @@
 | [prompt10](#prompt10) | 2026-09-07 | 已完成 | `72cc3ca` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_4b_4bit_qlora_20step.yaml](configs/experiments/probe_qwen3_4b_4bit_qlora_20step.yaml)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[results/raw](results/raw) |
 | [prompt11](#prompt11) | 2026-09-07 | 已完成 | `56a324d` | [src/analysis/paired_comparison.py](src/analysis/paired_comparison.py)<br>[src/analysis/__init__.py](src/analysis/__init__.py)<br>[scripts/compare_probes.py](scripts/compare_probes.py)<br>[results/processed/comparison_paired_probe.json](results/processed/comparison_paired_probe.json)<br>[results/raw](results/raw) |
 | [prompt12](#prompt12) | 2026-09-07 | 已完成 | `ebb2869` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_8b_4bit_qlora_20step.yaml](configs/experiments/probe_qwen3_8b_4bit_qlora_20step.yaml)<br>[results/processed/comparison_8b_vs_4b_qlora.json](results/processed/comparison_8b_vs_4b_qlora.json)<br>[results/raw](results/raw) |
+| [prompt13](#prompt13) | 2026-09-07 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -934,3 +935,9 @@ vs
 # prompt12:
 
 继续 scale 到 8B（4bit QLoRA 探针）。
+
+---
+
+# prompt13:
+
+14B-4bit 探针。
