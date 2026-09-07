@@ -49,7 +49,9 @@ def collect_git_provenance(repo_root: Path = REPO_ROOT) -> dict:
 
     sha_proc = git("rev-parse", "HEAD")
     sha = sha_proc.stdout.strip() if sha_proc.returncode == 0 else None
-    status_proc = git("status", "--porcelain=v1")
+    # 排除 results/：实验产物（staging/finalized 目录）不算源码 dirty——
+    # dirty 的语义是"源码或配置相对 HEAD 有无改动"
+    status_proc = git("status", "--porcelain=v1", "--", ".", ":(exclude)results")
     dirty = bool(status_proc.stdout.strip()) if status_proc.returncode == 0 else None
     return {
         "git_commit_sha": sha,

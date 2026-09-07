@@ -27,13 +27,18 @@ from mlx.utils import tree_flatten
 
 
 def _resolve_local_revision(model_dir: Path) -> tuple[str | None, str | None]:
-    """从本地 hf 缓存 tree 元数据读取已落盘 revision（文件名即完整 sha）。"""
+    """从本地 hf 缓存 tree 元数据或 REVISION sidecar 读取已落盘 revision。"""
     trees = sorted((model_dir / ".cache" / "huggingface" / "trees").glob("*.json"))
     if len(trees) == 1:
         return trees[0].stem, "hf local cache trees/<sha>.json"
-    if not trees:
-        return None, None
-    return None, f"多个 tree 元数据（{len(trees)}），无法唯一定位"
+    if len(trees) > 1:
+        return None, f"多个 tree 元数据（{len(trees)}），无法唯一定位"
+    sidecar = model_dir / "REVISION"
+    if sidecar.is_file():
+        text = sidecar.read_text(encoding="utf-8").strip()
+        if len(text) == 40 and all(c in "0123456789abcdef" for c in text):
+            return text, "REVISION sidecar（见 models/MANIFEST.md 的哈希校验锚定）"
+    return None, None
 
 
 def run(config_path: Path) -> int:

@@ -385,3 +385,34 @@ def test_training_metrics_artifact_enriches_runtime(tmp_path: Path) -> None:
         _assert_manifest_matches_files(result_dir)
     finally:
         _make_tree_writable(result_dir)
+
+
+def test_git_dirty_ignores_results_artifacts(tmp_path: Path) -> None:
+    """回归：results/ 下的实验产物（staging/finalized）不应把源码 dirty 判成 True。"""
+    import benchmark.environment as env_mod
+    repo = tmp_path / "scratch-repo"
+    repo.mkdir()
+    for args in (["init", "-q"], ["config", "user.name", "t"],
+                 ["config", "user.email", "t@t"]):
+        subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
+    (repo / "README.md").write_text("x", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "init"],
+                   check=True, capture_output=True)
+
+    (repo / "results" / "raw" / ".staging-x").mkdir(parents=True)
+    (repo / "results" / "raw" / ".staging-x" / "f").write_text("x", encoding="utf-8")
+    assert env_mod.collect_git_provenance(repo_root=repo)["git_dirty"] is False
+
+    (repo / "src.py").write_text("change", encoding="utf-8")
+    assert env_mod.collect_git_provenance(repo_root=repo)["git_dirty"] is True
+
+
+def test_resolve_local_revision_sidecar(tmp_path: Path) -> None:
+    """ModelScope 等非 hf 缓存布局通过 REVISION sidecar 解析 revision。"""
+    from train.lora_smoke import _resolve_local_revision
+    rev, src = _resolve_local_revision(tmp_path)
+    assert rev is None and src is None
+    (tmp_path / "REVISION").write_text("a" * 40 + "\n", encoding="utf-8")
+    rev, src = _resolve_local_revision(tmp_path)
+    assert rev == "a" * 40 and "sidecar" in src
