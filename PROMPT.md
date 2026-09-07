@@ -10,6 +10,7 @@
 | [prompt06](#prompt06) | 2026-09-01 | 已完成 | `a5cb5f2` | [src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/train/__init__.py](src/train/__init__.py)<br>[scripts/train_lora.py](scripts/train_lora.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[tests/test_supervisor.py](tests/test_supervisor.py)<br>[configs/experiments/exp0_qwen3_0.6b_lora.yaml](configs/experiments/exp0_qwen3_0.6b_lora.yaml)<br>[data/exp0_smoke.jsonl](data/exp0_smoke.jsonl)<br>[results/raw](results/raw) |
 | [prompt07](#prompt07) | 2026-09-07 | 已完成 | `df008bf` | [src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_0.6b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
 | [prompt08](#prompt08) | 2026-09-07 | 已完成 | `bb2a941` | [configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r0.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r1.yaml)<br>[configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml](configs/experiments/calib_qwen3_1.7b_lora_100step_r2.yaml)<br>[results/raw](results/raw) |
+| [prompt09](#prompt09) | 2026-09-07 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -614,3 +615,105 @@ The next task should most likely be implementing a minimal experiment runner and
 # prompt08:
 
 Model Scaling：0.6B → 1.7B，严格遵循AGENTS.md。
+
+---
+
+# prompt09:
+
+先读取 AGENTS.md、实验协议、result schema、当前实验台账以及 prompt08 的全部结果。
+
+prompt08 已完成，现在开始下一个正式边界探针。
+
+这一步选择 4B BF16 路径，而不是先跑 4bit。
+
+目标是回答一个非常具体的问题：
+
+> 在当前 16GB Apple Silicon 机器上，Qwen3 4B 的 BF16 基础权重是否能够以 LoRA 方式完成真实训练步骤？
+
+不要把之前估算的约 8.5GB 峰值内存当成事实。这个数字目前只是预估，本实验要获得真实 measurement。
+
+先检查仓库中是否已经存在与当前实验系列一致的 Qwen3 4B 模型。
+
+如果不存在，按照现有模型获取规范下载并固定准确的 Hugging Face repository 和 revision，更新 model manifest。不要根据模型名字推测 revision、参数量或 dtype。
+
+保持与前面正式实验相同的模型系列和数据集定义，不要在这一轮同时更换数据集、训练模板或评价方法。
+
+本轮配置先固定为：
+
+- model: Qwen3 4B
+- weight dtype: BF16
+- method: LoRA
+- batch size: 1
+- sequence length: 512
+- LoRA rank: 8
+- seed: 42
+- training steps: 20
+
+除非当前已经固定的实验协议要求其他值，否则不要主动扩大 context、batch size 或 rank。
+
+所有训练必须通过现有 Experiment Supervisor。
+
+实验前先执行 preflight，检查：
+
+- 当前 Git provenance
+- 模型 revision
+- 可用磁盘
+- 当前 unified-memory 状态
+- swap 状态
+- 是否存在其他训练进程
+- 当前配置是否符合 protocol
+
+然后真正执行 20-step LoRA。
+
+无论结果是：
+
+- success
+- oom
+- runtime_error
+- resource-related failure
+
+都保留完整 raw result。
+
+不要因为 OOM 而自动降低配置重新跑；如果失败，先把失败作为这一配置的真实 observation 保存下来。
+
+本轮必须尽可能记录经过验证的：
+
+- completed steps
+- wall-clock time
+- step time
+- throughput
+- peak memory
+- swap
+- stdout
+- stderr
+- exit code
+- terminal state
+
+未经验证可靠的 measurement 继续使用 null，不要估算。
+
+实验完成后做一次结果完整性检查：
+
+1. result 是否符合 result schema；
+2. raw result 是否 immutable；
+3. manifest 是否校验通过；
+4. model revision 是否进入结果；
+5. git commit / dirty status 是否进入结果；
+6. 20 个 training steps 是否真实完成；
+7. 是否发生 swap 或明显 memory pressure；
+8. 是否存在任何人工填写、估算或推测值。
+
+完成后停止。
+
+不要自动运行：
+- 4B 4bit
+- QLoRA
+- context 1024
+- 更大的模型
+- full fine-tuning
+
+最后只报告这一次 4B BF16 probe 的真实 observation，并把它与前面同类实验做结构化对比。
+
+如果成功，下一步候选应是：
+同一个 4B 模型、相同 dataset / batch / context / rank / seed / steps，仅将 BF16 LoRA 替换为 4bit QLoRA，形成配对实验。
+
+如果失败，也不要立即改变结论，先报告失败证据和最可能的失败类别。
