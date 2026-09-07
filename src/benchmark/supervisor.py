@@ -229,8 +229,10 @@ def run_experiment(config_path: Path | str, command: list[str],
     try:
         with stdout_path.open("wb") as out, stderr_path.open("wb") as err:
             start_utc = env_mod.utc_now()
+            child_env = {**os.environ,
+                         "BENCH_EXPERIMENT_ARTIFACTS_DIR": str(staging)}
             proc = subprocess.Popen(command, stdout=out, stderr=err,
-                                    cwd=working_directory)
+                                    cwd=working_directory, env=child_env)
             try:
                 returncode = proc.wait(timeout=timeout_seconds)
             except subprocess.TimeoutExpired:
@@ -249,6 +251,7 @@ def run_experiment(config_path: Path | str, command: list[str],
     stderr_text = stderr_path.read_text(encoding="utf-8", errors="replace") \
         if stderr_path.exists() else ""
     classification = _classify(returncode, stderr_text, caught, killed_by_timeout)
+    training_metrics = _load_json_tolerant(staging / "training_metrics.json")
 
     # ---- 终态快照 ----
     after_ts = env_mod.utc_now()
@@ -301,6 +304,7 @@ def run_experiment(config_path: Path | str, command: list[str],
         power_before_value=power_before_value,
         power_after_value=power_after_value,
         classification=classification, staging=staging,
+        training_metrics=training_metrics,
     )
     (staging / "result.json").write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -313,12 +317,21 @@ def _sw_vers_text(software: dict) -> str:
             f"BuildVersion={software['macos_build']}")
 
 
+def _load_json_tolerant(path: Path) -> dict | None:
+    """子进程产出的 metrics 容错读取：不存在/损坏一律 None，不影响主流程。"""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _build_result(*, config, experiment_id, command, working_directory,
                   config_digest, git, software, hardware, filesystem,
                   monitoring, start_utc, end_utc, wall, before_ts, after_ts,
                   vm_before, vm_after, swap_before_value, swap_after_value,
                   power_before_value, power_after_value, classification,
-                  staging) -> dict:
+                  staging, training_metrics=None) -> dict:
     model_section, dataset_section = schema.build_model_dataset_sections(config)
     exp_cfg = config["experiment"]
 
@@ -441,6 +454,59 @@ def _build_result(*, config, experiment_id, command, working_directory,
             raw_artifact_path="environment/raw_environment.txt"),
     }
 
+    # ---- 子进程 training_metrics 回填（存在且类型合法才覆盖，否则保持 null） ----
+    tm = training_metrics or {}
+
+    def tm_num(name: str):
+        value = tm.get(name)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return value
+        return None
+
+    def tm_str(name: str):
+        value = tm.get(name)
+        return value if isinstance(value, str) else None
+
+    for key in ("model_load_seconds", "training_loop_seconds",
+                "successful_steps", "attempted_micro_steps", "measured_steps",
+                "excluded_warmup_steps", "average_step_time_seconds",
+                "median_step_time_seconds", "tokens_processed",
+                "tokens_per_second", "samples_processed", "samples_per_second"):
+        if tm_num(key) is not None:
+            runtime_section[key] = tm_num(key)
+    for key in ("token_count_definition", "throughput_interval_definition"):
+        if tm_str(key) is not None:
+            runtime_section[key] = tm_str(key)
+    step_timing = staging / "step_timings.jsonl"
+    if step_timing.is_file():
+        runtime_section["step_timing_artifact"] = schema.artifact_ref(
+            "step_timings.jsonl", size_bytes=step_timing.stat().st_size,
+            media_type="application/x-ndjson")
+
+    metrics_section = schema.build_metrics_section()
+    if tm_num("training_loss_final") is not None:
+        metrics_section["training_loss_final"] = tm_num("training_loss_final")
+
+    training_section = schema.build_training_section(config)
+    trainable = tm_num("trainable_parameters")
+    total = tm_num("total_parameters")
+    if trainable is not None:
+        training_section["trainable_parameters"] = int(trainable)
+    if total is not None:
+        training_section["total_parameters"] = int(total)
+    if trainable is not None and total:
+        training_section["trainable_parameter_ratio"] = trainable / total
+
+    for key in ("parameter_count_method", "quantization_state",
+                "resolved_revision", "revision_source"):
+        if tm_str(key) is not None:
+            model_section[key] = tm_str(key)
+    if tm_str("model_architecture") is not None:
+        model_section["architecture"] = tm_str("model_architecture")
+    parameter_count = tm.get("parameter_count")
+    if isinstance(parameter_count, int) and not isinstance(parameter_count, bool):
+        model_section["parameter_count"] = parameter_count
+
     return {
         "schema_version": schema.SCHEMA_VERSION,
         "protocol_version": schema.PROTOCOL_VERSION,
@@ -467,9 +533,9 @@ def _build_result(*, config, experiment_id, command, working_directory,
         "software": software_section,
         "model": model_section,
         "dataset": dataset_section,
-        "training": schema.build_training_section(config),
+        "training": training_section,
         "runtime": runtime_section,
-        "metrics": schema.build_metrics_section(),
+        "metrics": metrics_section,
         "status": status_section,
         "artifacts": artifacts_section,
     }

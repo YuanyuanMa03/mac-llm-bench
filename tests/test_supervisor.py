@@ -348,3 +348,40 @@ def test_finalized_raw_result_rejects_overwrite(
             run_experiment(config_path, ["/usr/bin/true"])
     finally:
         _make_tree_writable(result_dir)
+
+
+def test_training_metrics_artifact_enriches_runtime(tmp_path: Path) -> None:
+    config_path = tmp_path / "experiment.yaml"
+    _write_config(config_path, tmp_path / "raw")
+    writer = (
+        "import json, os, pathlib\n"
+        "d = pathlib.Path(os.environ['BENCH_EXPERIMENT_ARTIFACTS_DIR'])\n"
+        "d.joinpath('step_timings.jsonl').write_text('{\"step\": 1}\\n')\n"
+        "metrics = {'successful_steps': 20, 'tokens_processed': 1234,\n"
+        "  'tokens_per_second': 12.5, 'training_loss_final': 2.5,\n"
+        "  'token_count_definition': 'loss-bearing',\n"
+        "  'trainable_parameters': 1000, 'total_parameters': 100000,\n"
+        "  'model_architecture': 'qwen3', 'parameter_count': 100000,\n"
+        "  'quantization_state': 'unquantized',\n"
+        "  'resolved_revision': 'c1899de289a0',\n"
+        "  'revision_source': 'hf local cache trees'}\n"
+        "d.joinpath('training_metrics.json').write_text(json.dumps(metrics))\n"
+        "print('ok')\n"
+    )
+    result_dir = run_experiment(config_path, [sys.executable, "-c", writer])
+    try:
+        result = _read_result(result_dir)
+        assert result["runtime"]["successful_steps"] == 20
+        assert result["runtime"]["tokens_processed"] == 1234
+        assert result["runtime"]["tokens_per_second"] == 12.5
+        assert result["runtime"]["token_count_definition"] == "loss-bearing"
+        assert result["runtime"]["step_timing_artifact"]["path"] == "step_timings.jsonl"
+        assert result["metrics"]["training_loss_final"] == 2.5
+        assert result["training"]["trainable_parameters"] == 1000
+        assert result["training"]["trainable_parameter_ratio"] == 0.01
+        assert result["model"]["architecture"] == "qwen3"
+        assert result["model"]["resolved_revision"] == "c1899de289a0"
+        assert result["model"]["quantization_state"] == "unquantized"
+        _assert_manifest_matches_files(result_dir)
+    finally:
+        _make_tree_writable(result_dir)

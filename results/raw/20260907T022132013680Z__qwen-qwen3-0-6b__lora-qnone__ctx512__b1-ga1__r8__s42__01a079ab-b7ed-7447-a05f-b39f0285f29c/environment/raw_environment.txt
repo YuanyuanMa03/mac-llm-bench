@@ -1,0 +1,127 @@
+# 环境 preflight 证据（由 supervisor 采集）
+
+# 采集时间: 2026-09-07T02:21:32.159568Z
+
+## git rev-parse HEAD
+
+c2303aa7ffd2e56482ca09db9d324b5487ddb08f
+
+## git status --porcelain=v1
+
+ M src/benchmark/supervisor.py
+ M tests/test_supervisor.py
+?? configs/experiments/
+?? data/
+?? results/raw/
+?? scripts/__pycache__/
+?? scripts/train_lora.py
+?? src/train/
+
+
+## sw_vers
+
+ProductVersion=26.5 BuildVersion=25F71
+
+## python
+
+CPython 3.13.11 (main, Dec  9 2025, 20:26:22) [Clang 21.1.4 ]
+
+## system_profiler SPHardwareDataType（序列号已脱敏）
+
+{
+  "SPHardwareDataType": [
+    {
+      "_name": "hardware_overview",
+      "activation_lock_status": "activation_lock_enabled",
+      "boot_rom_version": "18000.120.36",
+      "chip_type": "Apple M4",
+      "machine_model": "Mac16,10",
+      "machine_name": "Mac mini",
+      "model_number": "MU9D3CH/A",
+      "number_processors": "proc 10:4:6:0",
+      "os_loader_version": "18000.120.36",
+      "physical_memory": "16 GB",
+      "platform_UUID": "[REDACTED]",
+      "provisioning_UDID": "[REDACTED]",
+      "serial_number": "[REDACTED]"
+    }
+  ]
+}
+
+## df -kP <raw_root>
+
+filesystem=/dev/disk5s1 free_bytes=659832631296
+
+## vm_stat (before)
+
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                    28881.
+Pages active:                                 310083.
+Pages inactive:                               294951.
+Pages speculative:                             14577.
+Pages throttled:                                   0.
+Pages wired down:                             167925.
+Pages purgeable:                                7960.
+"Translation faults":                     1618980723.
+Pages copy-on-write:                        68134917.
+Pages zero filled:                        1705679035.
+Pages reactivated:                          84109010.
+Pages purged:                               22067828.
+File-backed pages:                            233833.
+Anonymous pages:                              385778.
+Pages stored in compressor:                   566657.
+Pages occupied by compressor:                 197562.
+Decompressions:                             43825123.
+Compressions:                               67525017.
+Pageins:                                    83882584.
+Pageouts:                                     477629.
+Swapins:                                      574701.
+Swapouts:                                    1157534.
+
+
+## sysctl vm.swapusage (before)
+
+total = 2048.00M  used = 706.50M  free = 1341.50M  (encrypted)
+
+
+## pmset -g batt (before)
+
+Now drawing from 'AC Power'
+
+
+## vm_stat (after)
+
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                   127856.
+Pages active:                                 245897.
+Pages inactive:                               241419.
+Pages speculative:                              3980.
+Pages throttled:                                   0.
+Pages wired down:                             165250.
+Pages purgeable:                                6341.
+"Translation faults":                     1619103084.
+Pages copy-on-write:                        68136070.
+Pages zero filled:                        1705827067.
+Pages reactivated:                          84141067.
+Pages purged:                               22069383.
+File-backed pages:                            214946.
+Anonymous pages:                              276350.
+Pages stored in compressor:                   663054.
+Pages occupied by compressor:                 229198.
+Decompressions:                             43825554.
+Compressions:                               67622625.
+Pageins:                                    83885643.
+Pageouts:                                     477707.
+Swapins:                                      574701.
+Swapouts:                                    1157534.
+
+
+## sysctl vm.swapusage (after)
+
+total = 2048.00M  used = 706.50M  free = 1341.50M  (encrypted)
+
+
+## pmset -g batt (after)
+
+Now drawing from 'AC Power'
+

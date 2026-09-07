@@ -29,7 +29,7 @@ Planned experiment axes: model scaling (Qwen3-0.6B → 1.7B → 4B → …), con
 | Python environment (uv, locked) | ✅ done & verified — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 model downloads | ✅ done — 4 repos, byte-verified (see [Models](#models)) |
 | Experiment Supervisor | ✅ v0 implemented — 8/8 tests, 3 validation runs in [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| Training / benchmark runs | ⬜ not started — `results/` is empty |
+| Training runs | 🔄 first smoke run done — Experiment 0 (20-step LoRA, Qwen3-0.6B) succeeded in `results/raw/`; formal measured runs pending |
 | Feasibility map, figures, paper | ⬜ not started |
 
 ## Hardware
@@ -118,7 +118,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt03](PROMPT.md#prompt03) | 2026-08-31 | ✅ done | `bab6ac4`（补提交） |
 | [prompt04](PROMPT.md#prompt04) | 2026-08-31 | ✅ done | `d0e36d3` |
 | [prompt05](PROMPT.md#prompt05) | 2026-08-31 | ✅ done | `f8f41f7` |
-| [prompt06](PROMPT.md#prompt06) | 2026-09-01 | 🔄 in progress | （进行中） |
+| [prompt06](PROMPT.md#prompt06) | 2026-09-01 | ✅ done | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## Documentation

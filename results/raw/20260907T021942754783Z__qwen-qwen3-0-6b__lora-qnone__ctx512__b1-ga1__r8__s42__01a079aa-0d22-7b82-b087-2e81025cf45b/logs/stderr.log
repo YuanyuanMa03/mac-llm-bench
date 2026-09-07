@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "<volume>/mac-llm-bench/scripts/train_lora.py", line 20, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ~~~~^^^^^^^^^^^^^^
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 192, in main
+    return run(Path(argv[0]))
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 83, in run
+    optimizer = mx.optimizers.Adam(train_cfg["learning_rate"])
+                ^^^^^^^^^^^^^
+AttributeError: module 'mlx.core' has no attribute 'optimizers'

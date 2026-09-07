@@ -1,0 +1,16 @@
+{"text": "The quick brown fox jumps over the lazy dog while the morning sun rises over the quiet village."}
+{"text": "统一内存架构让 CPU 与 GPU 共享同一块物理内存，从而避免了数据拷贝带来的开销。"}
+{"text": "Reproducible research requires that every reported number can be traced back to a raw experimental record."}
+{"text": "机器学习基准测试应当在受控条件下进行，包括固定的软件版本、随机种子与硬件状态。"}
+{"text": "Low-rank adaptation freezes the base model weights and trains small matrices attached to attention layers."}
+{"text": "实验协议规定：失败的实验与 OOM 实验同样是有效观测，必须保留完整的原始记录。"}
+{"text": "Apple Silicon devices expose unified memory to both the CPU and the GPU through the Metal framework."}
+{"text": "训练吞吐量的定义必须明确：分子统计哪些 token，分母覆盖哪段时间区间。"}
+{"text": "The supervisor records the exact command, environment provenance, and terminal state for every run."}
+{"text": "参数高效微调方法只更新模型中很小一部分参数，从而显著降低内存与计算需求。"}
+{"text": "A sha256 manifest guarantees that finalized raw results cannot be silently modified after the fact."}
+{"text": "为了比较不同 LoRA rank 的性能，每组实验必须使用相同的数据、种子和评价标准。"}
+{"text": "Gradient accumulation simulates larger batch sizes by combining several micro-batches before each update."}
+{"text": "量化感知训练在低比特权重表示下进行优化，是消费级硬件上可行的微调路径之一。"}
+{"text": "Every measurement envelope carries its unit, source, and collection status alongside the value itself."}
+{"text": "在论文中报告任何基准数字之前，必须先验证对应测量方法的可靠性与可复现性。"}

@@ -1,0 +1,85 @@
+schema_version: "0.1.0"
+protocol_version: "0.1.0"
+experiment:
+  run_kind: warmup   # Experiment 0 = 20-step smoke，非正式性能基准
+  comparison_group_id: exp0-smoke
+  repeat_index: 0
+  parent_experiment_id: null
+  supersedes_experiment_id: null
+  tags: [experiment-0, smoke, qwen3-0.6b, lora]
+model:
+  id: Qwen/Qwen3-0.6B
+  provider: huggingface
+  repository: Qwen/Qwen3-0.6B
+  revision: c1899de289a0          # MANIFEST 于下载日 Hub 实查
+  local_path: models/Qwen3-0.6B
+  tokenizer_id: Qwen/Qwen3-0.6B
+  tokenizer_revision: null
+  trust_remote_code: false
+dataset:
+  name: exp0-synthetic-smoke
+  source: local-infrastructure-smoke   # 合成冒烟数据，非研究数据集
+  revision: null
+  train_split: train
+  validation_split: null
+  test_split: null
+  local_paths: [data/exp0_smoke.jsonl]
+  data_files_sha256: null
+  shuffle: true
+  split_seed: 42
+  preprocessing:
+    field_mapping: {text: text}
+    prompt_template: null
+    normalization: null
+    filtering: null
+    deduplication: null
+    packing: false
+    truncation: true
+    padding_side: right
+    add_special_tokens: true
+    label_mask_policy: null
+  tokenizer: {id: Qwen/Qwen3-0.6B, revision: null, use_fast: null}
+  max_sequence_length: 512
+training:
+  method: lora
+  seed: 42
+  quantization: {bits: null, scheme: null, group_size: null}
+  lora:
+    rank: 8
+    alpha: 16          # mlx-lm 的 scale = alpha / rank = 2.0
+    dropout: 0.0
+    target_modules: [self_attn.q_proj, self_attn.k_proj, self_attn.v_proj, self_attn.o_proj]
+  trainable_layers: null
+  micro_batch_size: 1
+  gradient_accumulation_steps: 1
+  sequence_length: 512
+  learning_rate: 0.0001
+  optimizer: {name: adamw, parameters: null}
+  scheduler: {name: constant, parameters: null}
+  warmup: {steps: 0, ratio: null}
+  max_steps: 20
+  epochs: null
+  stop_criteria: {early_stopping: false}
+  gradient_checkpointing: false
+  precision: {parameter_dtype: null, compute_dtype: null, optimizer_state_dtype: null}
+  evaluation_interval_steps: null
+  checkpoint_interval_steps: null
+  logging_interval_steps: 1
+  resume_checkpoint: null
+monitoring:
+  enabled: true
+  interval_seconds: 1.0
+  capture_process_time_l: false
+  capture_vm_stat: true
+  capture_swap_usage: true
+  capture_power_source: true
+  capture_thermal_state: false
+  capture_energy: false
+  required_raw_logs: true
+  fail_run_on_collector_error: false
+output:
+  raw_root: results/raw
+  processed_root: results/processed
+  figures_root: results/figures
+  immutable_after_finalize: true
+  write_sha256_manifest: true

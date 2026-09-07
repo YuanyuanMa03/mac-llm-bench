@@ -1,0 +1,12 @@
+mx.metal.reset_peak_memory is deprecated and will be removed in a future version. Use mx.reset_peak_memory instead.
+mx.metal.get_peak_memory is deprecated and will be removed in a future version. Use mx.get_peak_memory instead.
+Traceback (most recent call last):
+  File "<volume>/mac-llm-bench/scripts/train_lora.py", line 20, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ~~~~^^^^^^^^^^^^^^
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 193, in main
+    return run(Path(argv[0]))
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 166, in run
+    "model_dtype": str(next(iter(model.parameters().values())).dtype),
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'dtype'
