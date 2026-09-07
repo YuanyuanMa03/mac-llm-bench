@@ -15,6 +15,7 @@
 | [prompt11](#prompt11) | 2026-09-07 | 已完成 | `56a324d` | [src/analysis/paired_comparison.py](src/analysis/paired_comparison.py)<br>[src/analysis/__init__.py](src/analysis/__init__.py)<br>[scripts/compare_probes.py](scripts/compare_probes.py)<br>[results/processed/comparison_paired_probe.json](results/processed/comparison_paired_probe.json)<br>[results/raw](results/raw) |
 | [prompt12](#prompt12) | 2026-09-07 | 已完成 | `ebb2869` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_8b_4bit_qlora_20step.yaml](configs/experiments/probe_qwen3_8b_4bit_qlora_20step.yaml)<br>[results/processed/comparison_8b_vs_4b_qlora.json](results/processed/comparison_8b_vs_4b_qlora.json)<br>[results/raw](results/raw) |
 | [prompt13](#prompt13) | 2026-09-07 | 已完成 | `8b53186` | [models/MANIFEST.md](models/MANIFEST.md)<br>[configs/experiments/probe_qwen3_14b_4bit_qlora_20step.yaml](configs/experiments/probe_qwen3_14b_4bit_qlora_20step.yaml)<br>[results/processed/comparison_14b_vs_8b_qlora.json](results/processed/comparison_14b_vs_8b_qlora.json)<br>[results/raw](results/raw) |
+| [prompt14](#prompt14) | 2026-09-07 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -941,3 +942,9 @@ vs
 # prompt13:
 
 14B-4bit 探针。
+
+---
+
+# prompt14:
+
+按照你的计划继续。
