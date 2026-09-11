@@ -33,9 +33,11 @@ def load_config(config_path: Path) -> dict:
 
 
 def config_digest(config: dict) -> str:
-    """与 src/benchmark/schema.config_sha256 完全一致（紧凑分隔符）。"""
+    """与 src/benchmark/schema.config_sha256 完全一致（紧凑分隔符）；
+    排除 runner 内部排序键 _params_hint。"""
+    payload = {k: v for k, v in config.items() if k != "_params_hint"}
     return hashlib.sha256(
-        json.dumps(config, sort_keys=True, ensure_ascii=False,
+        json.dumps(payload, sort_keys=True, ensure_ascii=False,
                    separators=(",", ":")).encode("utf-8")
     ).hexdigest()
 
@@ -127,6 +129,8 @@ def main() -> int:
     items.sort(key=lambda x: sort_key(x[1]))
 
     ran, skipped, failed = [], [], []
+    print(f"[batch] version=2026-09-12T03:35 digest=compact-supersede-aware "
+          f"gate={args.max_swap_before}GiB supersede={args.supersede}", flush=True)
     for path, config in items:
         group = config["experiment"]["comparison_group_id"]
         digest = config_digest(config)
