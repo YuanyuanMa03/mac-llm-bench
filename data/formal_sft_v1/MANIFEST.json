@@ -1,0 +1,52 @@
+{
+  "kind": "formal-dataset-freeze",
+  "version": "formal_sft_v1",
+  "created_at_utc": "2026-09-11T17:00:30.121308+00:00",
+  "preregistration": "research/preregistration.md",
+  "upstream": {
+    "dataset": "HuggingFaceH4/ultrachat_200k",
+    "revision": "8049631c405ae6576f93f445c6b8166f76f5505a",
+    "split": "train_sft",
+    "total_conversations": 207865,
+    "license": "uc-nc (see upstream card); research use"
+  },
+  "sampling": {
+    "seed": 42,
+    "method": "global row order shuffled with random.Random(42); first 2048 -> train, next 32 -> validation; sorted back by global_row",
+    "n_train": 2048,
+    "n_validation": 32
+  },
+  "preprocessing": {
+    "chat_template": "tokenizer.apply_chat_template(messages, add_generation_prompt=False, enable_thinking=False)",
+    "template_tokenizer": "models/Qwen3-4B (Qwen3 family shared)",
+    "field_mapping": "messages -> text; loss over all tokens (no prompt masking)",
+    "truncation": "at training time to training.sequence_length",
+    "packing": false
+  },
+  "tokenizer": {
+    "id": "Qwen/Qwen3-4B",
+    "local_path": "models/Qwen3-4B"
+  },
+  "length_stats": {
+    "unit": "Qwen3 tokens (full formatted text, pre-truncation)",
+    "train_min": 173,
+    "train_max": 3868,
+    "train_mean": 1194.0,
+    "train_p50": 1118
+  },
+  "files": {
+    "train.jsonl": {
+      "sha256": "310c3e23902b5b46277f17d9ee48a83ddacce6f69c6370b39b5697fa9bbcaaf7",
+      "size_bytes": 12347734
+    },
+    "validation.jsonl": {
+      "sha256": "4decc92fbe47dd706eb824d127d687638736034546e522c4d0d6efa485f487f4",
+      "size_bytes": 181442
+    },
+    "SHA256SUMS": {
+      "sha256": "b5319cd1c2d91e5fe4252fd5b569c75bf67437ab6ba7ea642c65a76dc561ef5e",
+      "size_bytes": 161
+    }
+  },
+  "usage_restriction": "synthetic/long-context workloads separate; this frozen subset is the ONLY formal SFT data"
+}

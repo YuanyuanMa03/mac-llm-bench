@@ -5,8 +5,12 @@ description = "Reproducible LLM fine-tuning benchmarks on 16 GB Apple Silicon Ma
 requires-python = ">=3.13"
 dependencies = [
     "huggingface-hub>=1.29.0",
+    "matplotlib>=3.11.1",
     "mlx>=0.32.2",
     "mlx-lm>=0.31.3",
+    "numpy>=2.5.2",
+    "pandas>=3.0.5",
+    "pyarrow>=25.0.1",
     "pyyaml>=6.0.3",
 ]
 
