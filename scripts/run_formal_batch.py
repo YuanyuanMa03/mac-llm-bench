@@ -46,15 +46,19 @@ def sort_key(config: dict) -> tuple:
             tr["seed"])
 
 
-PARAM_ORDER = {"0.6b": 1, "1.7b": 2, "4b": 3, "8b": 4, "14b": 5}
+import re
+
+PARAM_ORDER = {"0.6": 1, "1.7": 2, "4": 3, "8": 4, "14": 5}
 
 
 def model_order(config: dict) -> int:
+    """从 model id 解析参数规模（Qwen3 命名 N.B / NN B，匹配 'B' 后边界，
+    不受 '-4bit' 后缀干扰）。"""
     name = str(config["model"]["id"])
-    for key, order in PARAM_ORDER.items():
-        if f"-{key}" in name or f"-{key}-" in name:
-            return order
-    return 9
+    m = re.search(r"(\d+(?:\.\d+)?)B(?![a-z])", name)
+    if not m:
+        return 9
+    return PARAM_ORDER.get(m.group(1), 9)
 
 
 def swap_used_bytes() -> int | None:
