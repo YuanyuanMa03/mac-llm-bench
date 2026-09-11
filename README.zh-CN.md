@@ -29,7 +29,7 @@ Loadable（可加载）→ Trainable（可训练）→ Practical（实用）→ 
 | Python 环境（uv 锁定） | ✅ 完成并验证 — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 模型下载 | ✅ 完成 — 4 个仓库，已按字节校验（见[模型](#模型)） |
 | Experiment Supervisor | ✅ v0 已实现 — 8/8 测试通过，3 个验证运行见 [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| 训练运行 | 🔄 4bit QLoRA 规模线实测 4B→8B→14B — 14B 探针成功（20 步，峰值 GPU 8.79 GB = 预算 55%，权重比缩放全程成立）；4bit 可训练边界已达 ≈14B+ |
+| 训练运行 | 🔄 探针：4bit QLoRA 规模线 4B→8B→14B 全部可训练（14B 峰值 GPU 8.79 GB = 预算 55%）；4B-4bit QLoRA 的 context 边界：ctx≤2048 可训练（swap 颠簸，53.9 s/步），ctx=4096 在第 1 步前被杀——Trainable 上界 ∈ [2048, 4096)；均为 probe 级证据，pre-registration 待冻结 |
 | Feasibility map、图表、论文 | ⬜ 未开始 |
 
 ## 硬件
@@ -130,7 +130,7 @@ results/figures/      从原始结果程序化生成
 | [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ 已完成 | `56a324d` |
 | [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ 已完成 | `ebb2869` |
 | [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ 已完成 | `8b53186` |
-| [prompt14](PROMPT.md#prompt14) | 2026-09-07 | 🔄 进行中 | （进行中） |
+| [prompt14](PROMPT.md#prompt14) | 2026-09-07 | ✅ 已完成 | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## 文档

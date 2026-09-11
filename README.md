@@ -29,7 +29,7 @@ Planned experiment axes: model scaling (Qwen3-0.6B → 1.7B → 4B → …), con
 | Python environment (uv, locked) | ✅ done & verified — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 model downloads | ✅ done — 4 repos, byte-verified (see [Models](#models)) |
 | Experiment Supervisor | ✅ v0 implemented — 8/8 tests, 3 validation runs in [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| Training runs | 🔄 4bit QLoRA scale line measured 4B→8B→14B — 14B probe succeeded (20 steps, peak GPU 8.79 GB = 55% of budget, weight-ratio scaling holds at every point); 4bit Trainable boundary reached ≈14B+ |
+| Training runs | 🔄 Probes: 4bit QLoRA scale line 4B→8B→14B all trainable (14B peak GPU 8.79 GB = 55% of budget); context boundary for 4B-4bit QLoRA: ctx≤2048 trainable (swap-bound, 53.9 s/step), ctx=4096 killed before step 1 — Trainable bound ∈ [2048, 4096); all probe-level, pre-registration pending |
 | Feasibility map, figures, paper | ⬜ not started |
 
 ## Hardware
@@ -130,7 +130,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ done | `56a324d` |
 | [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ done | `ebb2869` |
 | [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ done | `8b53186` |
-| [prompt14](PROMPT.md#prompt14) | 2026-09-07 | 🔄 in progress | （进行中） |
+| [prompt14](PROMPT.md#prompt14) | 2026-09-07 | ✅ done | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## Documentation

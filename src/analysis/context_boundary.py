@@ -99,6 +99,19 @@ def build(series: list[dict] | None = None) -> dict:
             boundary["first_failure_ctx"] = obs["sequence_length"]
             boundary["trainable_upper_bound_ctx"] = last_success["sequence_length"]
             boundary["inference_valid"] = True
+    if boundary["inference_valid"]:
+        failed = next(o for o in series
+                      if o["sequence_length"] == boundary["first_failure_ctx"])
+        kinds = {o["terminal_state"] for o in series
+                 if o["sequence_length"] == boundary["first_failure_ctx"]}
+        boundary["statement"] = (
+            f"在 {failed['model_id']} QLoRA、b1-ga1、r8、seed42、20-step probe 条件下，"
+            f"ctx={boundary['trainable_upper_bound_ctx']} 完成全部预训练步，"
+            f"ctx={boundary['first_failure_ctx']} 在完成任何训练步之前即失败"
+            f"（{'+'.join(sorted(kinds))}）；Trainable 上界位于 "
+            f"[{boundary['trainable_upper_bound_ctx']}, "
+            f"{boundary['first_failure_ctx']}) 区间。该推断成立的前提是两次运行的 "
+            f"preflight 系统状态可比（见 confounders）。")
 
     confounders = []
     for obs in series:

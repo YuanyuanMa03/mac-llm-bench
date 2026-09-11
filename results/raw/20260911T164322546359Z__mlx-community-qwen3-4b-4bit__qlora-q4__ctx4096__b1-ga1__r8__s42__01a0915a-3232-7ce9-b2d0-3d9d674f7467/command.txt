@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "uv",
+    "run",
+    "python",
+    "scripts/train_lora.py",
+    "configs/experiments/probe_qwen3_4b_4bit_qlora20_ctx4096.yaml"
+  ],
+  "display": "uv run python scripts/train_lora.py configs/experiments/probe_qwen3_4b_4bit_qlora20_ctx4096.yaml",
+  "working_directory": "<volume>/mac-llm-bench",
+  "timeout_seconds": 7200.0
+}

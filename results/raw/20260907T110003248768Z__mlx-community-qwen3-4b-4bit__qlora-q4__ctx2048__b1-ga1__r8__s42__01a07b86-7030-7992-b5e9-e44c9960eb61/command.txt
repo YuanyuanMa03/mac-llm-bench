@@ -1,0 +1,10 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/train_lora.py",
+    "configs/experiments/probe_qwen3_4b_4bit_qlora20_ctx2048.yaml"
+  ],
+  "display": ".venv/bin/python scripts/train_lora.py configs/experiments/probe_qwen3_4b_4bit_qlora20_ctx2048.yaml",
+  "working_directory": "<volume>/mac-llm-bench",
+  "timeout_seconds": 3600.0
+}
