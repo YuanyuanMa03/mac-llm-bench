@@ -51,7 +51,7 @@ model:
   local_path: models/Qwen3-8B
   provider: huggingface
   repository: Qwen/Qwen3-8B
-  revision: null
+  revision: b968826d9c46dd6066d109eabc6255188de91218
   tokenizer_id: Qwen/Qwen3-8B
   tokenizer_revision: null
   trust_remote_code: false

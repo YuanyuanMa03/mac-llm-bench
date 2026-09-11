@@ -51,8 +51,10 @@ def main() -> int:
             want = s.lfs.sha256
             got = sha256_file(lpath)
         else:
+            # git blob hash: sha1("blob <size>\0" + content)，非纯内容 sha1
+            data = lpath.read_bytes()
+            got = hashlib.sha1(b"blob %d\x00" % len(data) + data).hexdigest()
             want = s.blob_id
-            got = hashlib.sha1(lpath.read_bytes()).hexdigest()
         status = "OK" if got == want else "MISMATCH"
         if got == want:
             ok += 1
