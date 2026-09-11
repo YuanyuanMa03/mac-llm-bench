@@ -1,0 +1,87 @@
+{
+  "kind": "failure-taxonomy",
+  "n_success": 16,
+  "n_failures": 4,
+  "failures": [
+    {
+      "experiment_id": "20260907T021942754783Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079aa-0d22-7b82-b087-2e81025cf45b",
+      "terminal_state": "runtime_error",
+      "exit_code": 1,
+      "signal": null,
+      "error_type": "NonZeroExitCode",
+      "evidence_labels": [
+        "stderr:python_traceback"
+      ],
+      "context_observations": {
+        "completed_steps_observation": null,
+        "wall_clock_seconds_observation": 3.510584875009954,
+        "error_phase": null,
+        "classification_evidence": "returncode=1，非零且无更具体证据"
+      },
+      "interpretation_only": [],
+      "raw_result_path": "results/raw/20260907T021942754783Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079aa-0d22-7b82-b087-2e81025cf45b"
+    },
+    {
+      "experiment_id": "20260907T022132013680Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079ab-b7ed-7447-a05f-b39f0285f29c",
+      "terminal_state": "runtime_error",
+      "exit_code": 1,
+      "signal": null,
+      "error_type": "NonZeroExitCode",
+      "evidence_labels": [
+        "stderr:python_traceback"
+      ],
+      "context_observations": {
+        "completed_steps_observation": null,
+        "wall_clock_seconds_observation": 4.0578608750365674,
+        "error_phase": null,
+        "classification_evidence": "returncode=1，非零且无更具体证据"
+      },
+      "interpretation_only": [],
+      "raw_result_path": "results/raw/20260907T022132013680Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079ab-b7ed-7447-a05f-b39f0285f29c"
+    },
+    {
+      "experiment_id": "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
+      "terminal_state": "runtime_error",
+      "exit_code": null,
+      "signal": "SIGKILL",
+      "error_type": "Signal:SIGKILL",
+      "evidence_labels": [
+        "sigkill_consistent"
+      ],
+      "context_observations": {
+        "completed_steps_observation": null,
+        "wall_clock_seconds_observation": 87.27863237494603,
+        "error_phase": null,
+        "classification_evidence": "returncode=-9"
+      },
+      "interpretation_only": [
+        "SIGKILL 由内核或外部信号发出；在本系列运行中该模式与严重内存压力同时出现（见 swap 观测），但本次运行本身没有足够证据判定 OOM 为根因"
+      ],
+      "raw_result_path": "results/raw/20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0"
+    },
+    {
+      "experiment_id": "20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467",
+      "terminal_state": "runtime_error",
+      "exit_code": 137,
+      "signal": null,
+      "error_type": "NonZeroExitCode",
+      "evidence_labels": [
+        "sigkill_consistent"
+      ],
+      "context_observations": {
+        "completed_steps_observation": null,
+        "wall_clock_seconds_observation": 61.69793037511408,
+        "error_phase": null,
+        "classification_evidence": "returncode=137，非零且无更具体证据"
+      },
+      "interpretation_only": [
+        "SIGKILL 由内核或外部信号发出；在本系列运行中该模式与严重内存压力同时出现（见 swap 观测），但本次运行本身没有足够证据判定 OOM 为根因"
+      ],
+      "raw_result_path": "results/raw/20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467"
+    }
+  ],
+  "notes": [
+    "evidence_labels 为二级标注，不覆盖 raw result 的 terminal_state",
+    "swap before/after 等系统上下文见 context_boundary_probe_summary.json 与各 raw result"
+  ]
+}

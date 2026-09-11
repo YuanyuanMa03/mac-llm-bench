@@ -26,6 +26,39 @@ from mlx_lm.tuner.trainer import default_loss
 from mlx.utils import tree_flatten
 
 
+def _sum_tree_size(tree) -> int:
+    """递归求和 mlx 参数树（dict/list/array）中的数组元素数。"""
+    if isinstance(tree, dict):
+        return sum(_sum_tree_size(v) for v in tree.values())
+    if isinstance(tree, (list, tuple)):
+        return sum(_sum_tree_size(v) for v in tree)
+    return int(tree.size) if hasattr(tree, "size") else 0
+
+
+def _logical_parameter_count(model: nn.Module) -> int:
+    """逻辑参数量：量化层按 scales shape×group_size 还原 logical 形状计数。
+
+    方法 = "weight/config inspection"（协议 §3.4）：QuantizedLinear/Embedding
+    的 scales 形状为 (rows, in/group)，logical 元素数 = scales.size × group_size；
+    非量化叶子模块（nn.Linear/Embedding/RMSNorm 等）按其参数树数组元素计数。
+    叶子判定 = children() 为空（与 mlx leaf_modules 判据一致），
+    保证每个数组恰好归属一个叶子模块，不重复计数。
+    与打包存储口径（packed uint32 元素数）区分。
+    """
+    total = 0
+    for _, mod in model.named_modules():
+        if mod.children():
+            continue
+        if isinstance(mod, (nn.QuantizedLinear, nn.QuantizedEmbedding)):
+            total += int(mod.scales.size * mod.group_size)
+            bias = getattr(mod, "bias", None)
+            if bias is not None:
+                total += int(bias.size)
+        else:
+            total += _sum_tree_size(mod.parameters())
+    return total
+
+
 def _resolve_local_revision(model_dir: Path) -> tuple[str | None, str | None]:
     """从本地 hf 缓存 tree 元数据或 REVISION sidecar 读取已落盘 revision。"""
     trees = sorted((model_dir / ".cache" / "huggingface" / "trees").glob("*.json"))
@@ -257,6 +290,10 @@ def run(config_path: Path) -> int:
         "quantization_group_size": quant_group,
         "quantization_scheme": model_quant_config.get("scheme"),
         "model_dtype": str(next(v for _, v in tree_flatten(model.parameters())).dtype),
+        "logical_parameter_count": _logical_parameter_count(model),
+        "logical_parameter_count_method":
+            "named_modules walk: QuantizedLinear/Embedding → scales.size×group_size"
+            "+bias；dense leaf modules → sum(array.size)（weight/config inspection）",
         "resolved_revision": resolved_rev,
         "revision_source": rev_source,
         "peak_metal_gpu_memory_bytes": peak_gpu_bytes,

@@ -546,6 +546,13 @@ def _build_result(*, config, experiment_id, command, working_directory,
     parameter_count = tm.get("parameter_count")
     if isinstance(parameter_count, int) and not isinstance(parameter_count, bool):
         model_section["parameter_count"] = parameter_count
+    logical_count = tm.get("logical_parameter_count")
+    if isinstance(logical_count, int) and not isinstance(logical_count, bool):
+        # 论文口径：逻辑参数量（量化模型按 logical 形状还原），优先于打包口径
+        model_section["parameter_count"] = logical_count
+        model_section["parameter_count_method"] = (
+            tm.get("logical_parameter_count_method")
+            or model_section.get("parameter_count_method"))
 
     return {
         "schema_version": schema.SCHEMA_VERSION,
