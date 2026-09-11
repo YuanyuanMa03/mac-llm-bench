@@ -42,3 +42,24 @@
 `20260911T182218892057Z`）后，runner 加入正式闸门：每个 run 开始前
 vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
 全部 formal run 的 swap_before 已逐 run 记录，可在分析中核验。
+
+## D4 — 时间类指标的 Tier 分层规则（2026-09-12 04:40 预先冻结）
+
+背景：闸门 8.5 GiB 下，4B-4bit formal run 仍出现 ~280 MB/步的 swap-in
+流量（如 axis3-r4 三次运行 median 3.55–3.66 s/步，对照探针 0.22 s/步），
+时间/吞吐类指标在高档位 swap 驻留下被 paging 混淆；内存类指标
+（MLX allocator 峰值）不受影响。
+
+预先冻结的机械化规则（在重跑 axis1 之前声明，防止事后挑选）：
+
+- 每个 run 计算 paging 强度 `swapins_delta_per_step = (vm_stat swapins Δ) ×
+  page_size / successful_steps`（所有测量量均已存在于 raw result）。
+- **Tier-A**：swapins_delta_per_step < 50 MB/步 —— 视为 compute-bound，
+  可用于 step-time / throughput 的主要 scaling 分析。
+- **Tier-B**：其余 —— 保留全部数据，仅作描述性报告并标注 paging 强度。
+- 同一 (group, seed) 有多个 run 时，优先取 Tier-A run；并列取最早。
+- 内存类（peak memory）、feasibility 状态、loss 轨迹不受此分层影响，
+  全部 run 均可使用。
+
+依据：4B-4bit 工作集 ~4.5 GiB 在 ~7 GiB 可用内存下应无 swap-in 服务；
+>50 MB/步 的 swap-in 只能来自工作集越界的活跃换页。

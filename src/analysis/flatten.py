@@ -109,15 +109,42 @@ def _mark_superseded(df: pd.DataFrame) -> None:
     df["_superseded_by"] = df["experiment.id"].map(superseded_by)
 
 
+TIER_A_SWAPIN_MB_PER_STEP = 50.0  # deviations.md D4（预先冻结）
+
+
+def _swapin_per_step(row) -> float:
+    """vm_stat swap-in 增量 × 页大小 / 完成步数（MB/步）。"""
+    import json as _json
+    try:
+        b = _json.loads(row["runtime.system_vm_counters_before"])
+        a = _json.loads(row["runtime.system_vm_counters_after"])
+        steps = float(row["runtime.successful_steps"] or 0)
+        if not steps:
+            return float("inf")
+        return ((a["counters_pages"]["swapins"] - b["counters_pages"]["swapins"])
+                * b["page_size_bytes"] / 2**20 / steps)
+    except (TypeError, KeyError, ValueError, _json.JSONDecodeError):
+        return float("inf")
+
+
+def _tier(row) -> str:
+    return "A" if _swapin_per_step(row) < TIER_A_SWAPIN_MB_PER_STEP else "B"
+
+
 def retained(df: pd.DataFrame) -> pd.DataFrame:
-    """分析入口：未被 supersede；同 (group, seed) 重复时保留最新 success
-    （2026-09-12 hash 对齐修复前的重复运行去重；全部 raw 保留可审计）。"""
+    """分析入口（deviations.md D2/D4 机械规则）：
+    - 未被 supersede；
+    - 同 (group, seed, state) 重复时：优先 Tier-A（paging 弱），并列取最早；
+    - 全部原始行保留在 CSV 并带 _tier / _swapin_per_step 列。"""
     out = df[df["_superseded_by"].isna()] if "_superseded_by" in df.columns else df
     if out.empty or "experiment.comparison_group_id" not in out.columns:
         return out
+    out = out.copy()
+    out["_swapin_per_step"] = out.apply(_swapin_per_step, axis=1)
+    out["_tier"] = out.apply(_tier, axis=1)
     keep = []
     seen = set()
-    for idx, row in out.sort_values("experiment.id").iterrows():
+    for idx, row in out.sort_values(["_tier", "experiment.id"]).iterrows():
         key = (row.get("experiment.comparison_group_id"), row.get("training.seed"),
                row.get("status.terminal_state"))
         if key in seen:
