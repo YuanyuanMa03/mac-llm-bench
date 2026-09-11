@@ -418,3 +418,55 @@ def test_resolve_local_revision_sidecar(tmp_path: Path) -> None:
     (tmp_path / "REVISION").write_text("a" * 40 + "\n", encoding="utf-8")
     rev, src = _resolve_local_revision(tmp_path)
     assert rev == "a" * 40 and "sidecar" in src
+
+
+def test_swap_sampler_tracks_peak_and_stops(tmp_path: Path, monkeypatch) -> None:
+    """SwapSampler：周期采样、峰值追踪、受控停止（mock 来源保证确定性）。"""
+    from benchmark.monitor import SwapSampler
+
+    seq = iter([1000, 2000, 1500, None, 3000])
+
+    def fake_collect():
+        return next(seq), "total = 4.00M used = 1.95M"
+
+    monkeypatch.setattr("benchmark.monitor.env_mod.collect_swap_bytes", fake_collect)
+    out = tmp_path / "system_monitor.jsonl"
+    sampler = SwapSampler(interval_seconds=0.05, out_path=out)
+    sampler.start()
+    import time as _t
+    _t.sleep(0.6)
+    summary = sampler.stop()
+    assert summary["peak_swap_bytes"] == 3000
+    assert summary["n_samples"] >= 3 and summary["errors"] >= 1
+    lines = [json.loads(l) for l in out.read_text().splitlines() if l.strip()]
+    assert all("t_utc" in r and "swap_used_bytes" in r for r in lines)
+    assert max(r["swap_used_bytes"] for r in lines if r["swap_used_bytes"] is not None) == 3000
+
+
+def test_run_with_swap_sampling_records_peak_and_artifact(tmp_path: Path) -> None:
+    """monitoring.sample_swap=true → peak_swap_bytes measured + system_monitor.jsonl 产物。"""
+    config = _valid_config(tmp_path / "raw")
+    config["monitoring"]["sample_swap"] = True
+    config["monitoring"]["interval_seconds"] = 0.2
+    config_path = tmp_path / "experiment.yaml"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    result_dir = run_experiment(config_path, ["/bin/sleep", "1"])
+    result = json.loads((result_dir / "result.json").read_text(encoding="utf-8"))
+    peak = result["runtime"]["peak_swap_bytes"]
+    assert peak["collection_status"] == "measured"
+    assert peak["value"] is not None
+    assert peak["raw_artifact_path"] == "system_monitor.jsonl"
+    mon = result_dir / "system_monitor.jsonl"
+    assert mon.is_file() and mon.read_text().count("\n") >= 3
+    assert result["runtime"]["system_monitor_artifact"]["path"] == "system_monitor.jsonl"
+
+
+def test_run_without_swap_sampling_keeps_peak_unresolved(tmp_path: Path) -> None:
+    config = _valid_config(tmp_path / "raw")
+    config_path = tmp_path / "experiment.yaml"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    result_dir = run_experiment(config_path, ["/usr/bin/true"])
+    result = json.loads((result_dir / "result.json").read_text(encoding="utf-8"))
+    peak = result["runtime"]["peak_swap_bytes"]
+    assert peak["collection_status"] == "unresolved" and peak["value"] is None
+    assert not (result_dir / "system_monitor.jsonl").exists()

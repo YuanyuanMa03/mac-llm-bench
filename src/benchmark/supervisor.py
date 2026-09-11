@@ -24,6 +24,7 @@ from . import artifacts as artifacts_mod
 from . import environment as env_mod
 from . import schema
 from .ids import generate_experiment_id
+from .monitor import SwapSampler
 
 __all__ = [
     "ConfigValidationError",
@@ -226,6 +227,12 @@ def run_experiment(config_path: Path | str, command: list[str],
     # ---- 执行子进程 ----
     stdout_path = staging / "logs" / "stdout.log"
     stderr_path = staging / "logs" / "stderr.log"
+    sampler: SwapSampler | None = None
+    sampler_summary: dict | None = None
+    if monitoring.get("sample_swap", False) and monitoring.get("interval_seconds"):
+        sampler = SwapSampler(float(monitoring["interval_seconds"]),
+                              staging / "system_monitor.jsonl")
+        sampler.start()
     start_utc = None
     wall = None
     killed_by_timeout = False
@@ -251,6 +258,9 @@ def run_experiment(config_path: Path | str, command: list[str],
         caught = exc
     except OSError as exc:
         caught = exc
+    finally:
+        if sampler is not None:
+            sampler_summary = sampler.stop()
     wall = time.monotonic() - monotonic_start
     end_utc = env_mod.utc_now()
 
@@ -310,7 +320,7 @@ def run_experiment(config_path: Path | str, command: list[str],
         power_before_value=power_before_value,
         power_after_value=power_after_value,
         classification=classification, staging=staging,
-        training_metrics=training_metrics,
+        training_metrics=training_metrics, sampler_summary=sampler_summary,
     )
     (staging / "result.json").write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -337,7 +347,7 @@ def _build_result(*, config, experiment_id, command, working_directory,
                   monitoring, start_utc, end_utc, wall, before_ts, after_ts,
                   vm_before, vm_after, swap_before_value, swap_after_value,
                   power_before_value, power_after_value, classification,
-                  staging, training_metrics=None) -> dict:
+                  staging, training_metrics=None, sampler_summary=None) -> dict:
     model_section, dataset_section = schema.build_model_dataset_sections(config)
     exp_cfg = config["experiment"]
 
@@ -385,9 +395,23 @@ def _build_result(*, config, experiment_id, command, working_directory,
         "initial_system_memory": _vm_measurement(vm_before, before_ts, "before"),
         "initial_swap_bytes": _measurement_from_swap(
             swap_before_value, before_ts),
-        "peak_swap_bytes": schema.unresolved(
-            "bytes", "sampled sysctl vm.swapusage",
-            "v0 无周期采样，仅 before/after 快照，峰值不可得"),
+        "peak_swap_bytes": (
+            schema.measurement(
+                value=(sampler_summary or {}).get("peak_swap_bytes"),
+                unit="bytes",
+                source=f"周期采样 sysctl vm.swapusage（monitor 线程，"
+                       f"interval={monitoring.get('interval_seconds')}s，"
+                       f"n={((sampler_summary or {}).get('n_samples'))}）",
+                status="measured" if (sampler_summary or {}).get("peak_swap_bytes")
+                is not None else "unavailable",
+                sample_time_utc=end_utc,
+                notes="周期采样最大值；系统级指标，含其他进程贡献" if
+                (sampler_summary or {}).get("peak_swap_bytes") is not None
+                else "未启用 swap 周期采样",
+                raw_artifact_path="system_monitor.jsonl")
+            if sampler_summary is not None else schema.unresolved(
+                "bytes", "sampled sysctl vm.swapusage",
+                "本次未启用周期采样，峰值不可得")),
         "process_page_faults": schema.unresolved(
             "count", "/usr/bin/time -l candidate", "计数器语义未验证"),
         "process_page_reclaims": schema.unresolved(
@@ -487,6 +511,11 @@ def _build_result(*, config, experiment_id, command, working_directory,
     if step_timing.is_file():
         runtime_section["step_timing_artifact"] = schema.artifact_ref(
             "step_timings.jsonl", size_bytes=step_timing.stat().st_size,
+            media_type="application/x-ndjson")
+    system_monitor = staging / "system_monitor.jsonl"
+    if system_monitor.is_file():
+        runtime_section["system_monitor_artifact"] = schema.artifact_ref(
+            "system_monitor.jsonl", size_bytes=system_monitor.stat().st_size,
             media_type="application/x-ndjson")
 
     metrics_section = schema.build_metrics_section()
