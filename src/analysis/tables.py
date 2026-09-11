@@ -24,7 +24,8 @@ def _load() -> pd.DataFrame:
                      low_memory=False)
     formal = df[df["experiment.comparison_group_id"].astype(str).str.startswith(
         ("formal-", "probe-8b-bf16", "probe-14b-4bit"))]
-    return formal
+    from .flatten import retained
+    return retained(formal)
 
 
 def _agg_cell(sub: pd.DataFrame, col: str, digits: int = 3) -> str:

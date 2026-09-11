@@ -35,7 +35,9 @@ def _load() -> pd.DataFrame:
     df = pd.read_csv(ROOT / "results" / "processed" / "experiments.csv",
                      low_memory=False)
     formal = df[df["experiment.comparison_group_id"].astype(str).str.startswith("formal-")]
-    ok = formal[formal["status.terminal_state"] == "success"].copy()
+    from .flatten import retained
+    ok = retained(formal)
+    ok = ok[ok["status.terminal_state"] == "success"].copy()
     for col in ("tm.median_step_time_seconds", "tm.peak_metal_gpu_memory_bytes",
                 "runtime.tokens_per_second", "tm.logical_parameter_count",
                 "metrics.validation_loss_final", "training.sequence_length"):

@@ -92,7 +92,26 @@ def build_tables(include_validation: bool = False) -> tuple[pd.DataFrame, pd.Dat
                         step_rows.append(rec)
     main_df = pd.DataFrame(rows)
     step_df = pd.DataFrame(step_rows)
+    _mark_superseded(main_df)
     return main_df, step_df
+
+
+def _mark_superseded(df: pd.DataFrame) -> None:
+    """supersede 链求逆：被后续 run supersede 的旧 run 标记排除（保留原始行）。"""
+    if "experiment.supersedes_experiment_id" not in df.columns:
+        df["_superseded_by"] = None
+        return
+    links = df.set_index("experiment.id")["experiment.supersedes_experiment_id"]
+    superseded_by = {
+        old: new_id for new_id, old in links.items()
+        if isinstance(old, str) and old in set(links.index)
+    }
+    df["_superseded_by"] = df["experiment.id"].map(superseded_by)
+
+
+def retained(df: pd.DataFrame) -> pd.DataFrame:
+    """分析入口：只保留未被 supersede 的 run（superseded 行原样保留在 CSV）。"""
+    return df[df["_superseded_by"].isna()] if "_superseded_by" in df.columns else df
 
 
 def write_processed(out_dir: Path | None = None,

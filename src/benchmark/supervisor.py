@@ -99,6 +99,11 @@ def _classify(returncode: int | None, stderr_text: str, exc: BaseException | Non
                 "error_message": "子进程超过 timeout 上限，被 SIGKILL 终止",
                 "classification_evidence":
                     "supervisor 在 wait(timeout) 抛出 subprocess.TimeoutExpired 后 kill()"}
+    if isinstance(exc, KeyboardInterrupt):
+        return {"terminal_state": "user_interrupted", "exit_code": None,
+                "signal": None, "error_type": "KeyboardInterrupt",
+                "error_message": "操作者中断（supervisor 收到 SIGINT）",
+                "classification_evidence": "supervisor 捕获 KeyboardInterrupt"}
     if exc is not None:
         if isinstance(exc, FileNotFoundError):
             return {"terminal_state": "dependency_error", "exit_code": None,
@@ -238,6 +243,7 @@ def run_experiment(config_path: Path | str, command: list[str],
     killed_by_timeout = False
     caught: BaseException | None = None
     returncode: int | None = None
+    proc = None
     monotonic_start = time.monotonic()
     try:
         with stdout_path.open("wb") as out, stderr_path.open("wb") as err:
@@ -254,6 +260,12 @@ def run_experiment(config_path: Path | str, command: list[str],
                 proc.wait()
     except KeyboardInterrupt as exc:  # 操作者中断
         caught = exc
+        try:  # 级联终止训练子进程，避免孤儿继续占用机器
+            if proc is not None:
+                proc.kill()
+                proc.wait()
+        except Exception:
+            pass
     except FileNotFoundError as exc:
         caught = exc
     except OSError as exc:

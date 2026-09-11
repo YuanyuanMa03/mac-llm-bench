@@ -25,7 +25,9 @@ def main() -> int:
                      low_memory=False)
     formal = df[df["experiment.comparison_group_id"].astype(str)
                 .str.startswith("formal-")]
-    ok = formal[formal["status.terminal_state"] == "success"].copy()
+    from .flatten import retained
+    ok = retained(formal)
+    ok = ok[ok["status.terminal_state"] == "success"].copy()
 
     out = {"scale_axis": {}, "context_axis": {}, "paired": {}, "notes": [
         "all numbers derived from results/raw via src/analysis; regenerable"]}
