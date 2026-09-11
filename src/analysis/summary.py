@@ -20,6 +20,26 @@ def _agg(sub: pd.DataFrame, col: str) -> dict | None:
     return mean_sd_ci([float(v) for v in sub[col]])
 
 
+def _paging_deltas(sub: pd.DataFrame) -> dict:
+    """每 run 的 vm_stat swap-in/out 增量均值（MB），量化 paging 强度。"""
+    import json as _json
+    ins, outs = [], []
+    for v_before, v_after in zip(
+            sub["runtime.system_vm_counters_before"],
+            sub["runtime.system_vm_counters_after"]):
+        try:
+            b = _json.loads(v_before)["counters_pages"]
+            a = _json.loads(v_after)["counters_pages"]
+            ps = _json.loads(v_before)["page_size_bytes"]
+        except (TypeError, _json.JSONDecodeError, KeyError):
+            continue
+        if "swapins" in a and "swapins" in b:
+            ins.append((a["swapins"] - b["swapins"]) * ps / 2**20)
+            outs.append((a["swapouts"] - b["swapouts"]) * ps / 2**20)
+    return {"swapins": round(sum(ins) / len(ins), 1) if ins else None,
+            "swapouts": round(sum(outs) / len(outs), 1) if outs else None}
+
+
 def main() -> int:
     df = pd.read_csv(ROOT / "results" / "processed" / "experiments.csv",
                      low_memory=False)
@@ -56,6 +76,8 @@ def main() -> int:
             "val_loss_initial_mean": round(sum(
                 json.loads(v)[0]["loss"] for v in
                 sub["tm.validation_loss_trajectory"]), 4) / len(sub),
+            "swapins_delta_mb_per_run_mean": _paging_deltas(sub)["swapins"],
+            "swapouts_delta_mb_per_run_mean": _paging_deltas(sub)["swapouts"],
         }
 
     # 轴 2：context
