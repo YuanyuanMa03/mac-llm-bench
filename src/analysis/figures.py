@@ -162,9 +162,9 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
 def fig3_memory_scaling(df: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(4.6, 3.4))
     series = {
+        # 4B BF16 LoRA 依 deviations.md D1 降级为边界观测，不进入 formal 序列
         "BF16 LoRA": (BF16_COLOR, ["formal-axis1-0.6b-bf16-lora",
-                                   "formal-axis1-1.7b-bf16-lora",
-                                   "formal-axis1-4b-bf16-lora"]),
+                                   "formal-axis1-1.7b-bf16-lora"]),
         "4bit QLoRA": (Q4_COLOR, ["formal-axis1-0.6b-4bit-qlora",
                                   "formal-axis1-1.7b-4bit-qlora",
                                   "formal-axis1-4b-4bit-qlora",
@@ -208,9 +208,9 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
 def fig4_time_scaling(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(8.2, 3.2))
     series = {
+        # 4B BF16 LoRA 依 deviations.md D1 降级为边界观测，不进入 formal 序列
         "BF16 LoRA": (BF16_COLOR, ["formal-axis1-0.6b-bf16-lora",
-                                   "formal-axis1-1.7b-bf16-lora",
-                                   "formal-axis1-4b-bf16-lora"]),
+                                   "formal-axis1-1.7b-bf16-lora"]),
         "4bit QLoRA": (Q4_COLOR, ["formal-axis1-0.6b-4bit-qlora",
                                   "formal-axis1-1.7b-4bit-qlora",
                                   "formal-axis1-4b-4bit-qlora",
