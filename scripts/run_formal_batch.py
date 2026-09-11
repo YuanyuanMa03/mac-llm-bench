@@ -33,8 +33,10 @@ def load_config(config_path: Path) -> dict:
 
 
 def config_digest(config: dict) -> str:
+    """与 src/benchmark/schema.config_sha256 完全一致（紧凑分隔符）。"""
     return hashlib.sha256(
-        json.dumps(config, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        json.dumps(config, sort_keys=True, ensure_ascii=False,
+                   separators=(",", ":")).encode("utf-8")
     ).hexdigest()
 
 

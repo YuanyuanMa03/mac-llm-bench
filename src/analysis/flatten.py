@@ -110,8 +110,21 @@ def _mark_superseded(df: pd.DataFrame) -> None:
 
 
 def retained(df: pd.DataFrame) -> pd.DataFrame:
-    """分析入口：只保留未被 supersede 的 run（superseded 行原样保留在 CSV）。"""
-    return df[df["_superseded_by"].isna()] if "_superseded_by" in df.columns else df
+    """分析入口：未被 supersede；同 (group, seed) 重复时保留最新 success
+    （2026-09-12 hash 对齐修复前的重复运行去重；全部 raw 保留可审计）。"""
+    out = df[df["_superseded_by"].isna()] if "_superseded_by" in df.columns else df
+    if out.empty or "experiment.comparison_group_id" not in out.columns:
+        return out
+    keep = []
+    seen = set()
+    for idx, row in out.sort_values("experiment.id").iterrows():
+        key = (row.get("experiment.comparison_group_id"), row.get("training.seed"),
+               row.get("status.terminal_state"))
+        if key in seen:
+            continue
+        seen.add(key)
+        keep.append(idx)
+    return out.loc[keep]
 
 
 def write_processed(out_dir: Path | None = None,
