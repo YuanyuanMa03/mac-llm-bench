@@ -11,12 +11,13 @@ sys.path.insert(0, str(ROOT / "src"))
 
 
 def main() -> int:
-    from analysis import failure_taxonomy, figures, flatten, tables
+    from analysis import failure_taxonomy, figures, flatten, summary, tables
     from analysis import context_boundary
 
     flatten.main()
     failure_taxonomy.main()
     context_boundary.main([])
+    summary.main()
     figures.main()
     tables.main()
     print("[analysis] 全部 processed/figures/tables 已从 raw results 重新生成")
