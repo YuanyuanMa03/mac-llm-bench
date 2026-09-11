@@ -521,6 +521,8 @@ def _build_result(*, config, experiment_id, command, working_directory,
     metrics_section = schema.build_metrics_section()
     if tm_num("training_loss_final") is not None:
         metrics_section["training_loss_final"] = tm_num("training_loss_final")
+    if tm_num("validation_loss_final") is not None:
+        metrics_section["validation_loss_final"] = tm_num("validation_loss_final")
 
     training_section = schema.build_training_section(config)
     trainable = tm_num("trainable_parameters")

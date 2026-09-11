@@ -82,35 +82,68 @@ def run(config_path: Path) -> int:
     except (OSError, json.JSONDecodeError):
         pass
     model.freeze()
-    lora = train_cfg["lora"]
-    rank = lora["rank"]
-    alpha = lora["alpha"]
-    scale = alpha / rank
-    linear_to_lora_layers(
-        model,
-        len(model.layers),
-        {"rank": rank, "scale": scale, "dropout": lora["dropout"],
-         "keys": lora["target_modules"]},
-    )
-    trainable_parameters = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
-    total_parameters = sum(v.size for _, v in tree_flatten(model.parameters()))
+    if train_cfg["method"] == "full":
+        # full fine-tuning：解冻全部参数（LoRA 包装跳过）
+        model.unfreeze()
+        trainable_parameters = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
+        total_parameters = trainable_parameters
+    else:
+        lora = train_cfg["lora"]
+        rank = lora["rank"]
+        alpha = lora["alpha"]
+        scale = alpha / rank
+        linear_to_lora_layers(
+            model,
+            len(model.layers),
+            {"rank": rank, "scale": scale, "dropout": lora["dropout"],
+             "keys": lora["target_modules"]},
+        )
+        trainable_parameters = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
+        total_parameters = sum(v.size for _, v in tree_flatten(model.parameters()))
 
     # ---- 数据：本地 jsonl 的 text 字段，截断到 max_sequence_length ----
     seq_len = data_cfg["max_sequence_length"]
-    samples = []
-    for path in data_cfg["local_paths"]:
-        for line in Path(path).read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                ids = tokenizer.encode(json.loads(line)["text"])
-                samples.append(ids[:seq_len])
+
+    def _load_samples(paths: list[str]) -> list[list[int]]:
+        out: list[list[int]] = []
+        for path in paths:
+            for line in Path(path).read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    ids = tokenizer.encode(json.loads(line)["text"])
+                    out.append(ids[:seq_len])
+        return out
+
+    samples = _load_samples(data_cfg["local_paths"])
     if not samples:
         raise SystemExit("数据集为空")
+    val_samples = _load_samples(data_cfg.get("validation_local_paths") or [])
+
+    def _eval_validation_loss() -> float | None:
+        """验证集上 loss-bearing 交叉熵的样本加权均值（forward-only，确定性顺序）。"""
+        if not val_samples:
+            return None
+        total_loss, total_toks = 0.0, 0
+        for i in range(0, len(val_samples), batch_size):
+            chunk = val_samples[i:i + batch_size]
+            ids = mx.array(chunk)
+            lens = mx.array([[0, len(s)] for s in chunk])
+            (loss, toks), _ = grad_fn(model, ids, lens)
+            mx.eval(loss, toks)
+            total_loss += float(loss) * int(toks)
+            total_toks += int(toks)
+        return total_loss / total_toks if total_toks else None
 
     # ---- 训练循环 ----
     optimizer = Adam(train_cfg["learning_rate"])
     grad_fn = nn.value_and_grad(model, default_loss)
     max_steps = train_cfg["max_steps"]
     batch_size = train_cfg["micro_batch_size"]
+    eval_interval = train_cfg.get("evaluation_interval_steps")
+    validation_trajectory: list[dict] = []
+    if val_samples:
+        pre = _eval_validation_loss()
+        validation_trajectory.append({"step": 0, "loss": pre})
+        print(f"[val] step 0 loss={pre:.4f}", flush=True)
 
     order = list(range(len(samples)))
     cursor = 0
@@ -124,14 +157,22 @@ def run(config_path: Path) -> int:
         pass
     loop_t0 = time.perf_counter()
     for step in range(1, max_steps + 1):
-        batch_ids, lengths = [], []
+        chunk = []
         for _ in range(batch_size):
             if cursor >= len(order):
                 rng.shuffle(order)
                 cursor = 0
-            batch_ids.append(samples[order[cursor]])
-            lengths.append([0, len(samples[order[cursor]])])
+            chunk.append(samples[order[cursor]])
             cursor += 1
+        if batch_size == 1:
+            batch_ids, lengths = [chunk[0]], [[0, len(chunk[0])]]
+        else:
+            # 右侧 pad 到批内最大长度；default_loss 按 lengths=[0,len_i] 逐行 mask
+            max_len = max(len(s) for s in chunk)
+            pad = tokenizer.pad_token_id
+            pad = pad if pad is not None else 0
+            batch_ids = [s + [pad] * (max_len - len(s)) for s in chunk]
+            lengths = [[0, len(s)] for s in chunk]
         batch = mx.array(batch_ids)
         lens = mx.array(lengths)
 
@@ -155,6 +196,11 @@ def run(config_path: Path) -> int:
         })
         print(f"step {step}/{max_steps} loss={loss_value:.4f} "
               f"tokens={toks_value} step_time={step_seconds:.3f}s", flush=True)
+        if val_samples and eval_interval and (step % eval_interval == 0
+                                              or step == max_steps):
+            v = _eval_validation_loss()
+            validation_trajectory.append({"step": step, "loss": v})
+            print(f"[val] step {step} loss={v:.4f}", flush=True)
     training_loop_seconds = time.perf_counter() - loop_t0
 
     try:
@@ -192,7 +238,12 @@ def run(config_path: Path) -> int:
         "measured_interval_seconds": measured_interval_seconds,
         "total_tokens_all_steps": tokens_total,
         "training_loss_final": losses[-1] if losses else None,
-        "lora_scale": scale,
+        "validation_loss_final": (validation_trajectory[-1]["loss"]
+                                  if validation_trajectory else None),
+        "validation_loss_trajectory": validation_trajectory,
+        "validation_n_samples": len(val_samples),
+        "method_effective": train_cfg["method"],
+        "lora_scale": scale if train_cfg["method"] != "full" else None,
         "lora_scale_formula": "alpha / rank",
         "trainable_parameters": trainable_parameters,
         "total_parameters": total_parameters,
