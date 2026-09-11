@@ -1,0 +1,82 @@
+{
+  "kind": "context-boundary-probe-summary",
+  "epistemic_status": "preliminary probe observation（单次 20-step probe 系列，非 formal benchmark，非统计显著结论）",
+  "series": [
+    {
+      "experiment_id": "20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61",
+      "comparison_group_id": "probe-4b-4bit-ctx2048-qlora20-seed42",
+      "sequence_length": 2048,
+      "dataset_name": "exp0-synthetic-long-ctx2048",
+      "terminal_state": "success",
+      "signal": null,
+      "exit_code": 0,
+      "completed_steps": 20,
+      "requested_steps": 20,
+      "wall_clock_seconds": 1100.5722197910072,
+      "average_step_time_seconds": 53.903941260493596,
+      "median_step_time_seconds": 53.186817146022804,
+      "tokens_per_second": 31.57190291106399,
+      "peak_metal_gpu_memory_bytes": 23191479038,
+      "initial_swap_bytes": 3396012605,
+      "swap_after_bytes": 4911330755,
+      "model_id": "mlx-community/Qwen3-4B-4bit",
+      "model_resolved_revision": "4dcb3d101c2a062e5c1d4bb173588c54ea6c4d25",
+      "git_commit_sha": "9405f98760444ef3e240c6a1c1b51c5ec43c2245",
+      "raw_result_path": "results/raw/20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61"
+    },
+    {
+      "experiment_id": "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
+      "comparison_group_id": "probe-4b-4bit-ctx8192-qlora20-seed42",
+      "sequence_length": 8192,
+      "dataset_name": "exp0-synthetic-long-ctx8192",
+      "terminal_state": "runtime_error",
+      "signal": "SIGKILL",
+      "exit_code": null,
+      "completed_steps": null,
+      "requested_steps": 20,
+      "wall_clock_seconds": 87.27863237494603,
+      "average_step_time_seconds": null,
+      "median_step_time_seconds": null,
+      "tokens_per_second": null,
+      "peak_metal_gpu_memory_bytes": null,
+      "initial_swap_bytes": 4869387715,
+      "swap_after_bytes": 25527257661,
+      "model_id": "mlx-community/Qwen3-4B-4bit",
+      "model_resolved_revision": null,
+      "git_commit_sha": "9405f98760444ef3e240c6a1c1b51c5ec43c2245",
+      "raw_result_path": "results/raw/20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0"
+    }
+  ],
+  "boundary_interval": {
+    "trainable_upper_bound_ctx": 2048,
+    "first_failure_ctx": 8192,
+    "inference_valid": true,
+    "statement": null
+  },
+  "confounders": [
+    {
+      "experiment_id": "20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61",
+      "kind": "system_swap_delta",
+      "swap_before_bytes": 3396012605,
+      "swap_after_bytes": 4911330755,
+      "note": "系统级 swap 为全体进程共享；Δ为观测值，不能归因到单一进程"
+    },
+    {
+      "experiment_id": "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
+      "kind": "system_swap_delta",
+      "swap_before_bytes": 4869387715,
+      "swap_after_bytes": 25527257661,
+      "note": "系统级 swap 为全体进程共享；Δ为观测值，不能归因到单一进程"
+    },
+    {
+      "experiment_id": "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
+      "kind": "model_resolved_revision_unresolved",
+      "note": "训练进程未写出 metrics → resolved_revision 为 null；模型身份由 config.yaml 锚定"
+    }
+  ],
+  "notes": [
+    "success 的步时含 MLX 统一内存换页效应；peak_metal_gpu_memory_bytes 为 MLX 分配器口径（可超过物理 RAM，超过即依赖系统换页），非进程 RSS",
+    "SIGKILL 不自动归类为 OOM：只有显式 OOM 证据才允许 terminal_state=oom",
+    "本文件由 src/analysis/context_boundary.py 从 raw results 派生，可重新生成"
+  ]
+}

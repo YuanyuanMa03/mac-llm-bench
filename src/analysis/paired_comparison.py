@@ -28,6 +28,10 @@ CONTROLLED_FACTORS = [
 DECLARED_VARIABLES = ["model.id", "model.repository", "model.resolved_revision",
                       "training.method", "training.quantization_bits"]
 
+# context-scaling 配对：除 ctx（及承载它的数据集）外全部受控
+CTX_DECLARED_VARIABLES = ["dataset.name", "dataset.max_sequence_length",
+                          "training.sequence_length"]
+
 
 def latest_run(group_id: str) -> tuple[Path, dict]:
     runs = []
@@ -47,12 +51,19 @@ def _get(path: str, result: dict):
     return node
 
 
-def build(group_a: str, group_b: str) -> dict:
+def build(group_a: str, group_b: str, *, kind: str = "paired-probe-comparison",
+          declared_variables: list[str] | None = None,
+          controlled_factors: list[tuple[str, object]] | None = None,
+          extra_notes: list[str] | None = None) -> dict:
+    declared_variables = DECLARED_VARIABLES if declared_variables is None \
+        else declared_variables
+    controlled_factors = CONTROLLED_FACTORS if controlled_factors is None \
+        else controlled_factors
     da, ra = latest_run(group_a)
     db, rb = latest_run(group_b)
 
     factor_check = {}
-    for name, fn in CONTROLLED_FACTORS:
+    for name, fn in controlled_factors:
         va, vb = fn(ra), fn(rb)
         factor_check[name] = {"a": va, "b": vb, "equal": va == vb}
     extra_ok = all(v["equal"] for v in factor_check.values())
@@ -96,30 +107,42 @@ def build(group_a: str, group_b: str) -> dict:
                           if va not in (0, None) else "unavailable"}
 
     return {
-        "kind": "paired-probe-comparison",
+        "kind": kind,
         "epistemic_status": "preliminary observation（单对 20-step probe，非统计显著结论）",
         "runs": {"a": {"id": ra["experiment"]["id"], "dir": da.name},
                  "b": {"id": rb["experiment"]["id"], "dir": db.name}},
         "controlled_factors": factor_check,
         "controlled_comparison_valid": extra_ok,
         "declared_variables": {p: {"a": _get(p, ra), "b": _get(p, rb)}
-                               for p in DECLARED_VARIABLES},
+                               for p in declared_variables},
         "observations": {"a": oa, "b": ob},
         "differences": diffs,
         "notes": [
             "peak_process_memory_bytes / thermal / energy / page faults 仍为 unresolved → unavailable",
             "口径：4bit 的 parameter_count 为打包存储元素口径，不参与比较",
             "本文件由 scripts/compare_probes.py 从 raw results 派生，可随时重新生成",
-        ],
+        ] + (extra_notes or []),
     }
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) not in (2, 3):
-        print("用法: compare_probes.py <group_a> <group_b> [输出路径]", file=__import__("sys").stderr)
-        return 2
-    summary = build(argv[0], argv[1])
-    out = Path(argv[2]) if len(argv) == 3 else (
+    import argparse
+    import sys
+    parser = argparse.ArgumentParser(
+        description="从两个 comparison group 的 raw result 生成配对 probe 对比")
+    parser.add_argument("group_a")
+    parser.add_argument("group_b")
+    parser.add_argument("out", nargs="?", default=None)
+    parser.add_argument("--kind", default="paired-probe-comparison")
+    parser.add_argument("--ctx-scaling", action="store_true",
+                        help="context-scaling 配对：sequence_length/dataset 为声明变量")
+    args = parser.parse_args(argv)
+    declared = CTX_DECLARED_VARIABLES if args.ctx_scaling else None
+    controlled = [f for f in CONTROLLED_FACTORS
+                  if not (args.ctx_scaling and f[0] in CTX_DECLARED_VARIABLES)]
+    summary = build(args.group_a, args.group_b, kind=args.kind,
+                    declared_variables=declared, controlled_factors=controlled)
+    out = Path(args.out) if args.out else (
         ROOT / "results" / "processed" / "comparison_paired_probe.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
