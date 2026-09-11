@@ -42,7 +42,8 @@ def sort_key(config: dict) -> tuple:
     tr = config["training"]
     params = config.get("_params_hint") or 0
     return (params, tr["method"], tr["sequence_length"],
-            tr["micro_batch_size"], tr["lora_rank"], tr["seed"])
+            tr["micro_batch_size"], (tr.get("lora") or {}).get("rank") or 0,
+            tr["seed"])
 
 
 PARAM_ORDER = {"0.6b": 1, "1.7b": 2, "4b": 3, "8b": 4, "14b": 5}
