@@ -3,4 +3,4 @@ models/
 .pytest_cache
 .DS_Store
 __pycache__/
-.staging*/
+*.staging/

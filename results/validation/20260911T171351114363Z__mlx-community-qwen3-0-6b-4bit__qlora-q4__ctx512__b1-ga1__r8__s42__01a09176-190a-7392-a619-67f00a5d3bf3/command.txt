@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "uv",
+    "run",
+    "python",
+    "scripts/train_lora.py",
+    "/tmp/warmup_logical_4bit.yaml"
+  ],
+  "display": "uv run python scripts/train_lora.py /tmp/warmup_logical_4bit.yaml",
+  "working_directory": "<volume>/mac-llm-bench",
+  "timeout_seconds": 600.0
+}

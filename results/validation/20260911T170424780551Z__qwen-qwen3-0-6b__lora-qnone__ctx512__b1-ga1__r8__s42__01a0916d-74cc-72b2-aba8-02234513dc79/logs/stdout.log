@@ -1,0 +1,34 @@
+[val] step 0 loss=2.3096
+step 1/30 loss=1.9446 tokens=511 step_time=0.622s
+step 2/30 loss=1.4929 tokens=511 step_time=0.614s
+step 3/30 loss=1.2069 tokens=511 step_time=0.607s
+step 4/30 loss=2.6078 tokens=340 step_time=0.608s
+step 5/30 loss=1.6396 tokens=511 step_time=0.612s
+step 6/30 loss=1.6253 tokens=511 step_time=0.608s
+step 7/30 loss=1.6196 tokens=511 step_time=0.621s
+step 8/30 loss=1.6957 tokens=511 step_time=0.605s
+step 9/30 loss=1.9747 tokens=511 step_time=0.610s
+step 10/30 loss=1.6450 tokens=511 step_time=0.604s
+step 11/30 loss=1.4092 tokens=511 step_time=0.616s
+step 12/30 loss=2.8922 tokens=511 step_time=0.626s
+step 13/30 loss=3.5975 tokens=511 step_time=0.612s
+step 14/30 loss=1.6605 tokens=511 step_time=0.615s
+step 15/30 loss=1.7774 tokens=511 step_time=0.615s
+[val] step 15 loss=1.8966
+step 16/30 loss=1.4660 tokens=511 step_time=0.613s
+step 17/30 loss=1.1472 tokens=511 step_time=0.611s
+step 18/30 loss=1.6288 tokens=511 step_time=0.612s
+step 19/30 loss=2.0123 tokens=511 step_time=0.620s
+step 20/30 loss=2.2417 tokens=282 step_time=0.505s
+step 21/30 loss=1.7843 tokens=511 step_time=0.611s
+step 22/30 loss=0.8595 tokens=511 step_time=0.617s
+step 23/30 loss=3.1337 tokens=511 step_time=0.615s
+step 24/30 loss=1.0861 tokens=511 step_time=0.611s
+step 25/30 loss=2.2756 tokens=511 step_time=0.611s
+step 26/30 loss=1.3787 tokens=440 step_time=0.630s
+step 27/30 loss=0.7659 tokens=511 step_time=0.614s
+step 28/30 loss=1.8556 tokens=511 step_time=0.610s
+step 29/30 loss=1.4016 tokens=511 step_time=0.611s
+step 30/30 loss=1.5118 tokens=511 step_time=0.610s
+[val] step 30 loss=1.8573
+[train] done: 30 steps, final_loss=1.5118, tokens=14859, trainable=2.294M/598.344M

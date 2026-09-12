@@ -1,0 +1,15 @@
+mx.metal.reset_peak_memory is deprecated and will be removed in a future version. Use mx.reset_peak_memory instead.
+mx.metal.get_peak_memory is deprecated and will be removed in a future version. Use mx.get_peak_memory instead.
+Traceback (most recent call last):
+  File "<volume>/mac-llm-bench/scripts/train_lora.py", line 20, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ~~~~^^^^^^^^^^^^^^
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 331, in main
+    return run(Path(argv[0]))
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 302, in run
+    "logical_parameter_count": _logical_parameter_count(model),
+                               ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 67, in _logical_parameter_count
+    total += _sum_tree_size(mod.parameters())
+                            ^^^^^^^^^^^^^^
+AttributeError: 'mlx.core.array' object has no attribute 'parameters'

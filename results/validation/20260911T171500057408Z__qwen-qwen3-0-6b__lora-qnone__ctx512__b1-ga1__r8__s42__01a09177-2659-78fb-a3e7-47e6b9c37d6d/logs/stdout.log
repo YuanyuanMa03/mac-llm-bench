@@ -1,0 +1,4 @@
+[val] step 0 loss=2.3096
+step 1/2 loss=1.9446 tokens=511 step_time=0.610s
+step 2/2 loss=1.4929 tokens=511 step_time=0.611s
+[val] step 2 loss=2.2089
