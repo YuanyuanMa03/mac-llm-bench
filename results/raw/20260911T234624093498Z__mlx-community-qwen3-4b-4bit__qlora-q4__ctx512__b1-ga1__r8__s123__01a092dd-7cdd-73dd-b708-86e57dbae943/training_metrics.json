@@ -1,0 +1,71 @@
+{
+  "model_load_seconds": 3.0583170000463724,
+  "training_loop_seconds": 1443.885947541101,
+  "successful_steps": 300,
+  "attempted_micro_steps": 300,
+  "measured_steps": 290,
+  "excluded_warmup_steps": 10,
+  "average_step_time_seconds": 3.7130681070900553,
+  "median_step_time_seconds": 3.6678121250588447,
+  "tokens_processed": 146061,
+  "token_count_definition": "loss-bearing target tokens（default_loss 掩码后的非 padding 目标 token）",
+  "tokens_per_second": 135.64486461423252,
+  "samples_processed": 290,
+  "samples_per_second": 0.26931905668266976,
+  "throughput_interval_definition": "训练循环内排除前 10 个 warmup 步后的测得区间；每步计时含前向+反向+优化器更新+mx.eval",
+  "measured_interval_seconds": 1076.789751056116,
+  "total_tokens_all_steps": 151000,
+  "training_loss_final": 0.8199687600135803,
+  "validation_loss_final": 1.4418935488985323,
+  "validation_loss_trajectory": [
+    {
+      "step": 0,
+      "loss": 2.293478575030791
+    },
+    {
+      "step": 50,
+      "loss": 1.5086866675777835
+    },
+    {
+      "step": 100,
+      "loss": 1.4721415881239874
+    },
+    {
+      "step": 150,
+      "loss": 1.454456878576214
+    },
+    {
+      "step": 200,
+      "loss": 1.4507575743695529
+    },
+    {
+      "step": 250,
+      "loss": 1.445377153169219
+    },
+    {
+      "step": 300,
+      "loss": 1.4418935488985323
+    }
+  ],
+  "validation_n_samples": 32,
+  "method_effective": "qlora",
+  "lora_scale": 2.0,
+  "lora_scale_formula": "alpha / rank",
+  "trainable_parameters": 5898240,
+  "total_parameters": 634574336,
+  "trainable_parameter_ratio": 0.009294797575929702,
+  "model_architecture": "qwen3",
+  "parameter_count": 628676096,
+  "parameter_count_method": "sum(array.size) over mlx_lm.load 结果的 parameters()（LoRA 附加前）",
+  "quantization_state": "quantized",
+  "quantization_bits": 4,
+  "quantization_group_size": 64,
+  "quantization_scheme": null,
+  "model_dtype": "mlx.core.uint32",
+  "logical_parameter_count": 4022468096,
+  "logical_parameter_count_method": "named_modules walk: QuantizedLinear/Embedding → scales.size×group_size+bias；dense leaf modules → sum(array.size)（weight/config inspection）",
+  "resolved_revision": "4dcb3d101c2a062e5c1d4bb173588c54ea6c4d25",
+  "revision_source": "hf local cache trees/<sha>.json",
+  "peak_metal_gpu_memory_bytes": 6646782100,
+  "peak_gpu_memory_note": "mx.metal.get_peak_memory()，GPU 侧峰值；进程级峰值内存仍为 unresolved"
+}

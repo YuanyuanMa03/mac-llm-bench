@@ -1,0 +1,121 @@
+# 环境 preflight 证据（由 supervisor 采集）
+
+# 采集时间: 2026-09-12T01:00:57.267316Z
+
+## git rev-parse HEAD
+
+7b4f304a07c53e76e7396deefbead3b10b1572ff
+
+## git status --porcelain=v1
+
+ M pyproject.toml
+ M uv.lock
+
+
+## sw_vers
+
+ProductVersion=26.5 BuildVersion=25F71
+
+## python
+
+CPython 3.13.11 (main, Dec  9 2025, 20:26:22) [Clang 21.1.4 ]
+
+## system_profiler SPHardwareDataType（序列号已脱敏）
+
+{
+  "SPHardwareDataType": [
+    {
+      "_name": "hardware_overview",
+      "activation_lock_status": "activation_lock_enabled",
+      "boot_rom_version": "18000.120.36",
+      "chip_type": "Apple M4",
+      "machine_model": "Mac16,10",
+      "machine_name": "Mac mini",
+      "model_number": "MU9D3CH/A",
+      "number_processors": "proc 10:4:6:0",
+      "os_loader_version": "18000.120.36",
+      "physical_memory": "16 GB",
+      "platform_UUID": "[REDACTED]",
+      "provisioning_UDID": "[REDACTED]",
+      "serial_number": "[REDACTED]"
+    }
+  ]
+}
+
+## df -kP <raw_root>
+
+filesystem=/dev/disk5s1 free_bytes=610324267008
+
+## vm_stat (before)
+
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                   617639.
+Pages active:                                  87522.
+Pages inactive:                                77986.
+Pages speculative:                              8644.
+Pages throttled:                                   0.
+Pages wired down:                             190874.
+Pages purgeable:                                 743.
+"Translation faults":                     3385222084.
+Pages copy-on-write:                       118791614.
+Pages zero filled:                        4474826945.
+Pages reactivated:                         352792227.
+Pages purged:                               61518784.
+File-backed pages:                             63916.
+Anonymous pages:                              110236.
+Pages stored in compressor:                   972956.
+Pages occupied by compressor:                  31009.
+Decompressions:                            671553553.
+Compressions:                              884057090.
+Pageins:                                   156721580.
+Pageouts:                                    1146377.
+Swapins:                                    75926903.
+Swapouts:                                  146932819.
+
+
+## sysctl vm.swapusage (before)
+
+total = 9216.00M  used = 7962.69M  free = 1253.31M  (encrypted)
+
+
+## pmset -g batt (before)
+
+Now drawing from 'AC Power'
+
+
+## vm_stat (after)
+
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                   335954.
+Pages active:                                 150819.
+Pages inactive:                               146035.
+Pages speculative:                              3524.
+Pages throttled:                                   0.
+Pages wired down:                             334436.
+Pages purgeable:                                   5.
+"Translation faults":                     3385597984.
+Pages copy-on-write:                       118795398.
+Pages zero filled:                        4475534763.
+Pages reactivated:                         352879684.
+Pages purged:                               61522729.
+File-backed pages:                             55966.
+Anonymous pages:                              244411.
+Pages stored in compressor:                  1004995.
+Pages occupied by compressor:                  43237.
+Decompressions:                            672676161.
+Compressions:                              885235350.
+Pageins:                                   156859322.
+Pageouts:                                    1146469.
+Swapins:                                    75937492.
+Swapouts:                                  146947955.
+
+
+## sysctl vm.swapusage (after)
+
+total = 9216.00M  used = 8015.12M  free = 1200.88M  (encrypted)
+
+
+## pmset -g batt (after)
+
+Now drawing from 'AC Power'
+

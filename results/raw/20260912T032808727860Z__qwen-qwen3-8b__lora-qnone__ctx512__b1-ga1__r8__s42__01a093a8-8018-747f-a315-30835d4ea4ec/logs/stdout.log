@@ -1,0 +1,11 @@
+[val] step 0 loss=1.9161
+step 1/20 loss=1.7158 tokens=511 step_time=219.230s
+step 2/20 loss=1.2627 tokens=511 step_time=156.579s
+step 3/20 loss=1.1319 tokens=511 step_time=152.760s
+step 4/20 loss=2.4224 tokens=340 step_time=161.490s
+step 5/20 loss=1.2587 tokens=511 step_time=173.199s
+step 6/20 loss=1.3013 tokens=511 step_time=186.599s
+step 7/20 loss=1.2012 tokens=511 step_time=190.284s
+step 8/20 loss=1.4859 tokens=511 step_time=182.063s
+step 9/20 loss=1.2764 tokens=511 step_time=167.012s
+step 10/20 loss=1.1683 tokens=511 step_time=414.703s

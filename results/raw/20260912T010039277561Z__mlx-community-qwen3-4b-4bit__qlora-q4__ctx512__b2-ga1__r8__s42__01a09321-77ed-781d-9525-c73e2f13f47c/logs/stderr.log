@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<volume>/mac-llm-bench/scripts/train_lora.py", line 20, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ~~~~^^^^^^^^^^^^^^
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 322, in main
+    return run(Path(argv[0]))
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 177, in run
+    pre = _eval_validation_loss()
+  File "<volume>/mac-llm-bench/src/train/lora_smoke.py", line 161, in _eval_validation_loss
+    ids = mx.array(chunk)
+ValueError: Initialization encountered non-uniform length.

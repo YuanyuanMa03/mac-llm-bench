@@ -1,0 +1,17 @@
+{"t_utc": "2026-09-12T01:01:30.199120Z", "swap_used_bytes": 8439201792, "raw": "total = 9216.00M  used = 8048.25M  free = 1167.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:31.205508Z", "swap_used_bytes": 8439201792, "raw": "total = 9216.00M  used = 8048.25M  free = 1167.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:32.218807Z", "swap_used_bytes": 8439201792, "raw": "total = 9216.00M  used = 8048.25M  free = 1167.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:33.231853Z", "swap_used_bytes": 8430813184, "raw": "total = 9216.00M  used = 8040.25M  free = 1175.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:34.239167Z", "swap_used_bytes": 8430813184, "raw": "total = 9216.00M  used = 8040.25M  free = 1175.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:35.252111Z", "swap_used_bytes": 8422424576, "raw": "total = 9216.00M  used = 8032.25M  free = 1183.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:36.265146Z", "swap_used_bytes": 8414035968, "raw": "total = 9216.00M  used = 8024.25M  free = 1191.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:37.275160Z", "swap_used_bytes": 8414035968, "raw": "total = 9216.00M  used = 8024.25M  free = 1191.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:38.280298Z", "swap_used_bytes": 8405647360, "raw": "total = 9216.00M  used = 8016.25M  free = 1199.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:39.298713Z", "swap_used_bytes": 8397258752, "raw": "total = 9216.00M  used = 8008.25M  free = 1207.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:40.313912Z", "swap_used_bytes": 9511433667, "raw": "total = 10240.00M  used = 9070.81M  free = 1169.19M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:41.766311Z", "swap_used_bytes": 10820717117, "raw": "total = 11264.00M  used = 10319.44M  free = 944.56M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:44.824077Z", "swap_used_bytes": 11407919677, "raw": "total = 11264.00M  used = 10879.44M  free = 384.56M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:47.911966Z", "swap_used_bytes": 11849496003, "raw": "total = 12288.00M  used = 11300.56M  free = 987.44M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:50.177828Z", "swap_used_bytes": 12270436352, "raw": "total = 12288.00M  used = 11702.00M  free = 586.00M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:51.625531Z", "swap_used_bytes": 12437422080, "raw": "total = 12288.00M  used = 11861.25M  free = 426.75M  (encrypted)"}
+{"t_utc": "2026-09-12T01:01:52.698157Z", "swap_used_bytes": 12728989123, "raw": "total = 13312.00M  used = 12139.31M  free = 1172.69M  (encrypted)"}

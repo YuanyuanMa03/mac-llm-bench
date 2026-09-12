@@ -1,0 +1,524 @@
+{
+  "schema_version": "0.1.0",
+  "protocol_version": "0.1.0",
+  "experiment": {
+    "id": "20260911T180656788047Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a091a6-b514-7ed5-ae8c-ed1581c445db",
+    "created_at_utc": "2026-09-11T18:06:57.240085Z",
+    "run_kind": "measured",
+    "comparison_group_id": "formal-axis1-1.7b-4bit-qlora",
+    "repeat_index": 0,
+    "supersedes_experiment_id": null,
+    "parent_experiment_id": null,
+    "sweep_dimensions": {},
+    "exact_command_argv": [
+      "uv",
+      "run",
+      "python",
+      "scripts/train_lora.py",
+      "<volume>/mac-llm-bench/configs/experiments/formal/axis1_1.7b-4bit_qlora_ctx512_r8_b1_steps100_s42.yaml"
+    ],
+    "exact_command_display": "uv run python scripts/train_lora.py <volume>/mac-llm-bench/configs/experiments/formal/axis1_1.7b-4bit_qlora_ctx512_r8_b1_steps100_s42.yaml",
+    "working_directory": "<volume>/mac-llm-bench",
+    "config_path": "config.yaml",
+    "effective_config_path": "effective_config.json",
+    "config_sha256": "ecf2f94a053026f7520b3f55b41cdd401473e7e111bfab4f97c774fe7e55fa26",
+    "conditions": {
+      "concurrent_ml_jobs_detected": null,
+      "major_background_applications": null,
+      "cooldown_seconds": null,
+      "cache_state": null,
+      "run_order_index": null,
+      "low_power_mode": null,
+      "external_display_count": null,
+      "notes": "v0 supervisor 未实现周期采集与进程清单检查"
+    },
+    "validity": {
+      "protocol_valid": false,
+      "performance_valid": false,
+      "exclusion_reasons": [
+        "v0：最终验证器未实现"
+      ]
+    }
+  },
+  "hardware": {
+    "mac_model": "Mac16,10",
+    "apple_chip_model": "Apple M4",
+    "unified_memory_bytes": null,
+    "cpu_physical_cores": 10,
+    "cpu_logical_cores": 10,
+    "gpu_cores": null,
+    "machine_id": null,
+    "machine_id_method": null,
+    "storage_type": null,
+    "output_filesystem": "/dev/disk5s1",
+    "free_disk_before_bytes": {
+      "value": 610401591296,
+      "unit": "bytes",
+      "source": "df -kP <raw_root>",
+      "sample_time_utc": "2026-09-11T18:06:57.240085Z",
+      "raw_artifact_path": "environment/raw_environment.txt",
+      "collection_status": "measured",
+      "notes": null
+    }
+  },
+  "software": {
+    "macos_version": "26.5",
+    "macos_build": "25F71",
+    "python_implementation": "CPython",
+    "python_version": "3.13.11 (main, Dec  9 2025, 20:26:22) [Clang 21.1.4 ]",
+    "python_executable": "<volume>/mac-llm-bench/.venv/bin/python3",
+    "mlx_version": "0.32.2",
+    "mlx_lm_version": "0.31.3",
+    "package_manager": "uv (uv.lock)",
+    "environment_type": "venv",
+    "environment_path": "<volume>/mac-llm-bench/.venv",
+    "lockfile": {
+      "path": "uv.lock",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": null,
+      "media_type": "text/plain",
+      "complete": true
+    },
+    "package_snapshot": null,
+    "git_commit_sha": "7185916e4b36d6095329096ea2b1a2547ffc657c",
+    "git_dirty": true,
+    "git_patch": null,
+    "libraries": {
+      "pyyaml": "6.0.3",
+      "huggingface_hub": "1.29.0"
+    },
+    "environment_allowlist": {},
+    "raw_environment_artifact": {
+      "path": "environment/raw_environment.txt",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 3905,
+      "media_type": "text/plain",
+      "complete": true
+    }
+  },
+  "model": {
+    "id": "mlx-community/Qwen3-1.7B-4bit",
+    "provider": "huggingface",
+    "repository": "mlx-community/Qwen3-1.7B-4bit",
+    "requested_revision": "3b1b1768f8f8",
+    "resolved_revision": "3b1b1768f8f8cf8351c712464f906e86c2b8269e",
+    "revision_source": "hf local cache trees/<sha>.json",
+    "local_path": "models/Qwen3-1.7B-4bit",
+    "architecture": "qwen3",
+    "parameter_count": 1720574976,
+    "parameter_count_method": "named_modules walk: QuantizedLinear/Embedding → scales.size×group_size+bias；dense leaf modules → sum(array.size)（weight/config inspection）",
+    "quantization_state": "quantized",
+    "quantization_bits": 4,
+    "quantization_scheme": null,
+    "model_files_size_bytes": null,
+    "model_files_manifest": null,
+    "tokenizer_id": "mlx-community/Qwen3-1.7B-4bit",
+    "tokenizer_resolved_revision": null
+  },
+  "dataset": {
+    "name": "formal_sft_v1",
+    "source": "HuggingFaceH4/ultrachat_200k@8049631c405ae6576f93f445c6b8166f76f5505a (frozen subset)",
+    "requested_revision": "formal_sft_v1",
+    "resolved_revision": null,
+    "train_split": "train",
+    "validation_split": "validation",
+    "test_split": null,
+    "train_examples": null,
+    "validation_examples": null,
+    "test_examples": null,
+    "preprocessing": {
+      "add_special_tokens": true,
+      "deduplication": null,
+      "field_mapping": {
+        "text": "text"
+      },
+      "filtering": null,
+      "label_mask_policy": "all-tokens-lm-loss",
+      "normalization": null,
+      "packing": false,
+      "padding_side": "right",
+      "prompt_template": "qwen3-chat-template (frozen in dataset artifacts)",
+      "truncation": true
+    },
+    "preprocessing_code_revision": null,
+    "tokenizer_id": "Qwen/Qwen3-4B",
+    "tokenizer_revision": null,
+    "max_sequence_length": 512,
+    "shuffle": true,
+    "split_seed": 42,
+    "subset_rule": null,
+    "data_manifest": null
+  },
+  "training": {
+    "method": "qlora",
+    "quantization_bits": 4,
+    "quantization_scheme": null,
+    "quantization_group_size": 64,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.0,
+    "target_modules": [
+      "self_attn.q_proj",
+      "self_attn.k_proj",
+      "self_attn.v_proj",
+      "self_attn.o_proj"
+    ],
+    "trainable_layers": null,
+    "trainable_parameters": 3211264,
+    "total_parameters": 272155648,
+    "trainable_parameter_ratio": 0.011799365633595082,
+    "micro_batch_size": 1,
+    "gradient_accumulation_steps": 1,
+    "world_size": 1,
+    "effective_batch_size": 1,
+    "effective_batch_size_formula": "micro_batch_size * gradient_accumulation_steps * world_size",
+    "sequence_length": 512,
+    "learning_rate": 0.0001,
+    "optimizer": "adamw",
+    "optimizer_parameters": {
+      "name": "adamw",
+      "parameters": null
+    },
+    "scheduler": "constant",
+    "scheduler_parameters": {
+      "name": "constant",
+      "parameters": null
+    },
+    "warmup_steps": 0,
+    "warmup_ratio": null,
+    "requested_steps": 100,
+    "requested_epochs": null,
+    "stop_criteria": {
+      "early_stopping": false
+    },
+    "seed": 42,
+    "library_seeds": {
+      "python_random": null,
+      "numpy": null,
+      "mlx": null
+    },
+    "gradient_checkpointing": false,
+    "parameter_dtype": null,
+    "compute_dtype": null,
+    "optimizer_state_dtype": null,
+    "packing": false,
+    "evaluation_interval_steps": 50,
+    "checkpoint_interval_steps": null,
+    "logging_interval_steps": 1,
+    "resume_checkpoint": null
+  },
+  "runtime": {
+    "start_time_utc": "2026-09-11T18:06:57.261179Z",
+    "end_time_utc": "2026-09-11T18:10:56.357913Z",
+    "wall_clock_seconds": 239.10096558299847,
+    "model_load_seconds": 1.4528282079845667,
+    "training_loop_seconds": 211.74688079184853,
+    "successful_steps": 100,
+    "attempted_micro_steps": 100,
+    "measured_steps": 95,
+    "excluded_warmup_steps": 5,
+    "average_step_time_seconds": 1.6728825363796205,
+    "median_step_time_seconds": 1.7010699999518692,
+    "tokens_processed": 47526,
+    "token_count_definition": "loss-bearing target tokens（default_loss 掩码后的非 padding 目标 token）",
+    "tokens_per_second": 299.04890112200997,
+    "samples_processed": 95,
+    "samples_per_second": 0.5977706014937286,
+    "throughput_interval_definition": "训练循环内排除前 5 个 warmup 步后的测得区间；每步计时含前向+反向+优化器更新+mx.eval",
+    "peak_process_memory_bytes": {
+      "value": null,
+      "unit": "bytes",
+      "source": "/usr/bin/time -l candidate",
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "计数器语义未验证，v0 不启用；不可用不是 0"
+    },
+    "peak_system_memory_bytes": {
+      "value": null,
+      "unit": "bytes",
+      "source": null,
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "系统级峰值内存无已验证的聚合定义"
+    },
+    "initial_system_memory": {
+      "value": {
+        "page_size_bytes": 16384,
+        "counters_pages": {
+          "pages_free": 587431,
+          "pages_active": 104749,
+          "pages_inactive": 99428,
+          "pages_speculative": 4216,
+          "pages_throttled": 0,
+          "pages_wired_down": 193242,
+          "pages_purgeable": 116,
+          "translation_faults": 3196308957,
+          "pages_copy_on_write": 114048812,
+          "pages_zero_filled": 4277677315,
+          "pages_reactivated": 291904044,
+          "pages_purged": 47991104,
+          "file_backed_pages": 77218,
+          "anonymous_pages": 131175,
+          "pages_stored_in_compressor": 959676,
+          "pages_occupied_by_compressor": 24768,
+          "decompressions": 253248546,
+          "compressions": 359267463,
+          "pageins": 139878089,
+          "pageouts": 1087566,
+          "swapins": 20557666,
+          "swapouts": 31430477
+        }
+      },
+      "unit": "pages/count",
+      "source": "vm_stat",
+      "sample_time_utc": "2026-09-11T18:06:57.240085Z",
+      "raw_artifact_path": "environment/vm_stat_before.txt",
+      "collection_status": "measured",
+      "notes": null
+    },
+    "initial_swap_bytes": {
+      "value": 8978169856,
+      "unit": "bytes",
+      "source": "sysctl -n vm.swapusage（used，MB 两位小数换算）",
+      "sample_time_utc": "2026-09-11T18:06:57.240085Z",
+      "raw_artifact_path": "environment/raw_environment.txt",
+      "collection_status": "measured",
+      "notes": "源输出为 MB 两位小数，按 1024×1024 换算为字节"
+    },
+    "peak_swap_bytes": {
+      "value": 11855787459,
+      "unit": "bytes",
+      "source": "周期采样 sysctl vm.swapusage（monitor 线程，interval=1.0s，n=236）",
+      "sample_time_utc": "2026-09-11T18:10:56.357913Z",
+      "raw_artifact_path": "system_monitor.jsonl",
+      "collection_status": "measured",
+      "notes": "周期采样最大值；系统级指标，含其他进程贡献"
+    },
+    "process_page_faults": {
+      "value": null,
+      "unit": "count",
+      "source": "/usr/bin/time -l candidate",
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "计数器语义未验证"
+    },
+    "process_page_reclaims": {
+      "value": null,
+      "unit": "count",
+      "source": "/usr/bin/time -l candidate",
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "计数器语义未验证"
+    },
+    "system_vm_counters_before": {
+      "value": {
+        "page_size_bytes": 16384,
+        "counters_pages": {
+          "pages_free": 587431,
+          "pages_active": 104749,
+          "pages_inactive": 99428,
+          "pages_speculative": 4216,
+          "pages_throttled": 0,
+          "pages_wired_down": 193242,
+          "pages_purgeable": 116,
+          "translation_faults": 3196308957,
+          "pages_copy_on_write": 114048812,
+          "pages_zero_filled": 4277677315,
+          "pages_reactivated": 291904044,
+          "pages_purged": 47991104,
+          "file_backed_pages": 77218,
+          "anonymous_pages": 131175,
+          "pages_stored_in_compressor": 959676,
+          "pages_occupied_by_compressor": 24768,
+          "decompressions": 253248546,
+          "compressions": 359267463,
+          "pageins": 139878089,
+          "pageouts": 1087566,
+          "swapins": 20557666,
+          "swapouts": 31430477
+        }
+      },
+      "unit": "pages/count",
+      "source": "vm_stat",
+      "sample_time_utc": "2026-09-11T18:06:57.240085Z",
+      "raw_artifact_path": "environment/vm_stat_before.txt",
+      "collection_status": "measured",
+      "notes": null
+    },
+    "system_vm_counters_after": {
+      "value": {
+        "page_size_bytes": 16384,
+        "counters_pages": {
+          "pages_free": 333629,
+          "pages_active": 147072,
+          "pages_inactive": 145637,
+          "pages_speculative": 409,
+          "pages_throttled": 0,
+          "pages_wired_down": 185830,
+          "pages_purgeable": 6215,
+          "translation_faults": 3197841802,
+          "pages_copy_on_write": 114099336,
+          "pages_zero_filled": 4279878999,
+          "pages_reactivated": 292344541,
+          "pages_purged": 48038020,
+          "file_backed_pages": 60938,
+          "anonymous_pages": 232180,
+          "pages_stored_in_compressor": 1250037,
+          "pages_occupied_by_compressor": 201240,
+          "decompressions": 254452139,
+          "compressions": 361714407,
+          "pageins": 140006921,
+          "pageouts": 1087918,
+          "swapins": 20722169,
+          "swapouts": 32259652
+        }
+      },
+      "unit": "pages/count",
+      "source": "vm_stat",
+      "sample_time_utc": "2026-09-11T18:10:56.368802Z",
+      "raw_artifact_path": "environment/vm_stat_after.txt",
+      "collection_status": "measured",
+      "notes": null
+    },
+    "energy_joules": {
+      "value": null,
+      "unit": "joules",
+      "source": null,
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "无校准外部计量方法；powermetrics 估计不得写入本字段"
+    },
+    "thermal_state_before": {
+      "value": null,
+      "unit": "enum",
+      "source": "Foundation helper candidate",
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "未验证，不猜"
+    },
+    "thermal_state_peak": {
+      "value": null,
+      "unit": "enum",
+      "source": "Foundation helper candidate",
+      "sample_time_utc": null,
+      "raw_artifact_path": null,
+      "collection_status": "unresolved",
+      "notes": "未验证，不猜"
+    },
+    "power_source_before": {
+      "value": "AC Power",
+      "unit": "enum",
+      "source": "pmset -g batt",
+      "sample_time_utc": "2026-09-11T18:06:57.240085Z",
+      "raw_artifact_path": "environment/raw_environment.txt",
+      "collection_status": "measured",
+      "notes": null
+    },
+    "power_source_after": {
+      "value": "AC Power",
+      "unit": "enum",
+      "source": "pmset -g batt",
+      "sample_time_utc": "2026-09-11T18:10:56.368802Z",
+      "raw_artifact_path": "environment/raw_environment.txt",
+      "collection_status": "measured",
+      "notes": null
+    },
+    "monitoring_interval_seconds": 1.0,
+    "monitoring_overhead_validated": false,
+    "step_timing_artifact": {
+      "path": "step_timings.jsonl",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 14519,
+      "media_type": "application/x-ndjson",
+      "complete": true
+    },
+    "system_monitor_artifact": {
+      "path": "system_monitor.jsonl",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 34711,
+      "media_type": "application/x-ndjson",
+      "complete": true
+    }
+  },
+  "metrics": {
+    "training_loss_final": 2.3084371089935303,
+    "validation_loss_final": 1.6467683277918481,
+    "test_metrics": {},
+    "metric_definitions": {},
+    "raw_metrics_artifact": null
+  },
+  "status": {
+    "terminal_state": "success",
+    "exit_code": 0,
+    "signal": null,
+    "error_type": null,
+    "error_message": null,
+    "classification_evidence": null,
+    "error_phase": null,
+    "result_complete": true
+  },
+  "artifacts": {
+    "stdout_log": {
+      "path": "logs/stdout.log",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 5354,
+      "media_type": "text/plain",
+      "complete": true
+    },
+    "stderr_log": {
+      "path": "logs/stderr.log",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 228,
+      "media_type": "text/plain",
+      "complete": true
+    },
+    "config": {
+      "path": "config.yaml",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 2788,
+      "media_type": "text/yaml",
+      "complete": true
+    },
+    "effective_config": {
+      "path": "effective_config.json",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 3571,
+      "media_type": "application/json",
+      "complete": true
+    },
+    "command": {
+      "path": "command.txt",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": 453,
+      "media_type": "application/json",
+      "complete": true
+    },
+    "environment_directory": {
+      "path": "environment",
+      "path_kind": "relative",
+      "sha256": null,
+      "size_bytes": null,
+      "media_type": "inode/directory",
+      "complete": true
+    },
+    "checkpoints": [],
+    "additional": [],
+    "manifest_sha256_path": "manifest.sha256",
+    "manifest_sha256": null
+  }
+}
