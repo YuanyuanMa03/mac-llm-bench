@@ -26,6 +26,20 @@
   不得写 "OOM"（无内核证据）；不得写 "4B BF16 is not trainable"（探针证据
   表明轻载条件下可训练——Trainable 判定本身依赖系统状态，这正是 RQ5 的核心）。
 
+### D1 补充（2026-09-12 16:45，机器重启后重检验）
+
+用户重启机器（swap 0.00 MiB）后，同配置（4B BF16 LoRA、ctx512、100 步、
+seed 42）重试 **成功**：
+`results/raw/20260912T…`（batch10）——451 s 完成，median 3.03 s/步，
+MLX peak 11.54 GiB，起始 swap 0 GiB。
+
+修正后的结论：**4B BF16 LoRA 的 Trainable 状态依赖系统内存驻留状态**——
+swap 驻留 ≥6 GiB 时 26 分钟无法完成一步（越界换页），swap=0 时可训练
+（步时仍受边界效应影响，为 compute-bound 速度的数倍）。D1 的原始
+user_interrupted 运行保留为"高驻留状态下的边界观测"；成功运行作为
+"低驻留状态下的 formal 观测"进入矩阵。该对照本身成为 RQ5 的关键证据：
+**Trainable 不是模型的固有属性，而是模型×系统状态的联合属性。**
+
 ## D2 — runner 配置去重与重复运行（2026-09-12）
 
 - 期间发现 runner 的 config hash 与 supervisor 的 schema.config_sha256 不一致
