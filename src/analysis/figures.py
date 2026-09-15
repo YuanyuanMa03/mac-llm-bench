@@ -117,25 +117,39 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
         n_ok = int((sub["status.terminal_state"] == "success").sum())
         n_all = len(sub)
         cell[(method, mkey)] = (n_ok, n_all, sub)
+    # 状态分级（deviations D1/D8 的两层定位）：
+    #   reproducible success（3/3 formal seeds）
+    #   boundary / state-dependent（部分成功或失败均归因系统状态：4B-bf16 D1、14B D8）
+    #   runtime failure（非系统状态归因的失败）
+    #   untested / out-of-budget（从未运行 / 预注册声明不做）
+    BOUNDARY = {( "lora", "4b"), ("qlora", "14b")}  # D1 / D8
+    OUT_OF_BUDGET = {("lora", "14b"), ("lora", "8b")}  # preregistration §3（8B 为 probe-only）
     for i, method in enumerate(methods):
         for j, mkey in enumerate(models):
             n_ok, n_all, sub = cell.get((method, mkey), (0, 0, None))
-            if n_all == 0:
+            if (method, mkey) in OUT_OF_BUDGET and n_all == 0:
+                ax.text(j, i, "out-of-\nbudget", ha="center", va="center",
+                        fontsize=5.5, color="#888888")
+            elif n_all == 0:
                 ax.text(j, i, "untested", ha="center", va="center",
                         fontsize=6.5, color="#888888")
             elif n_ok == n_all and n_ok >= 3:
-                ax.text(j, i, "✓", ha="center", va="center", fontsize=9,
-                        color="#1a5c1a")
-            elif n_ok > 0:
-                ax.text(j, i, f"✓ {n_ok}/{n_all}\n(D1/D7)", ha="center",
-                        va="center", fontsize=6, color="#b8860b")
+                ax.text(j, i, "✓", ha="center", va="center", fontsize=10,
+                        color="#1a5c1a", fontweight="bold")
+            elif (method, mkey) in BOUNDARY:
+                tag = f"✓{n_ok}/{n_all} " if n_ok else ""
+                ax.text(j, i, f"{tag}state-\ndependent\n(D1)" if n_ok
+                        else "state-\ndependent\n(D8)",
+                        ha="center", va="center", fontsize=5.5, color="#7d4ba0")
             else:
                 states = "/".join(sorted(set(sub["status.terminal_state"])))
                 ax.text(j, i, states, ha="center", va="center",
                         fontsize=5.5, color="#a11")
     ax.set_xticks(range(len(models)), models)
     ax.set_yticks(range(len(methods)), ["BF16 LoRA", "4bit QLoRA", "Full FT"])
-    ax.set_title("Trainable @ ctx512 (formal runs)", fontsize=9)
+    ax.set_title("Trainable @ ctx512: green = 3/3 reproducible seeds;\n"
+                 "purple = boundary / system-state dependent (D1/D8)",
+                 fontsize=8)
     # 8B BF16 probe outcome
     probe8 = [p for p in probes["failures"] if "8b" in p["experiment_id"]
               and "qnone" in p["experiment_id"]]

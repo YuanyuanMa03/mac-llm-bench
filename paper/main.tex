@@ -25,13 +25,16 @@ with a preregistered benchmark: 118 supervised runs over the Qwen3 family
 (0.6B--14B), BF16 LoRA vs.\ 4-bit QLoRA, context lengths 512--8192, LoRA
 ranks 4--32, and micro-batches 1--8, each with full provenance (git commit,
 model revision, per-second swap sampling, SHA-256 manifests). We find:
-(1) 4-bit QLoRA cuts peak training memory to 0.54--0.73$\times$ of BF16 and
-extends \trainable reach to 8B, while step time stays within the
+(1) 4-bit QLoRA cuts peak training memory to 0.54--0.73$\times$ of BF16,
+makes 8B the highest reproducibly trainable scale in this benchmark
+(three-of-three formal seeds), and keeps step time within the
 preregistered $\pm$25\% equivalence margin at all three paired scales;
-(2) boundaries are joint properties of model and system state --- the same
-4B BF16 or 14B 4-bit configuration that trains in minutes at zero swap
-residency stalls at 50\% completion or makes zero progress when several GiB
-of swap are resident; (3) peak memory grows \emph{sub}linearly with model
+(2) the transition from reproducibly trainable configurations to
+system-state-dependent boundary behavior is directly observable --- the
+same 4B BF16 or 14B 4-bit configuration that trains in minutes at zero
+swap residency stalls at 50\% completion or makes zero progress when
+several GiB of swap are resident, and we report 14B as an explicit
+boundary case rather than a completed formal cell; (3) peak memory grows \emph{sub}linearly with model
 size (log-log slope 0.57 for 4-bit, $R^2$=0.99) because fixed runtime
 overhead dilutes weight costs, while step time grows linearly (slope
 1.00); (4) context length, not model scale, is the binding constraint:
@@ -54,13 +57,16 @@ logs, and every completed or failed run is retained as evidence.
 
 Our contributions: (i) a preregistered feasibility map for Qwen3
 0.6B--14B under BF16 LoRA, 4-bit QLoRA, and (exploratory) full
-fine-tuning; (ii) quantified memory/time trade-offs with frozen
-equivalence margins; (iii) context-length and micro-batch boundaries
-expressed as intervals with system-state confounders documented; (iv) an
-audit showing that \trainable is a joint property of the model and the
-machine's memory-residency state, not of the model alone; and (v) a full
-reproducibility chain from raw immutable results to every number in this
-paper, including seven logged deviations from preregistration.
+fine-tuning, with 8B 4-bit identified as the highest reproducibly
+trainable configuration and 14B reported as an explicit
+system-state-dependent boundary case; (ii) quantified memory/time
+trade-offs with frozen equivalence margins; (iii) context-length and
+micro-batch boundaries expressed as intervals with system-state
+confounders documented; (iv) an audit showing that \trainable is a
+joint property of the model and the machine's memory-residency state,
+not of the model alone; and (v) a full reproducibility chain from raw
+immutable results to every number in this paper, including eight
+logged deviations from preregistration.
 
 \section{Background and Related Work}
 \label{sec:related}
@@ -184,18 +190,17 @@ no number is hand-typed. Appendix~\ref{app:repro} lists reproduction commands.
 Table~\ref{tab:matrix} summarizes the preregistered matrix at ctx512.
 All BF16 LoRA and 4-bit QLoRA cells through 1.7B complete their three
 seeds; 4-bit completes at 4B and 8B as well (8B: three seeds, 1{,}644--1{,}694\,s
-per 100-step run, 9.19\,GiB peak). The 14B 4-bit cell is a
-system-state boundary rather than a clean failure: a probe at 2.7\,GiB
-swap residency trains at 0.68\,s/step, while the formal run launched at
-3.7\,GiB residency timed out after completing 50 of 100 steps in 7{,}200\,s
-(deviation D7); the remaining 14B seeds are deferred to a low-residency
-window rather than burned on predicted repeats of the same timeout.
-The 4B BF16 cell shows the same regime dependence (D1): it trains in
-451\,s at zero residency but produced zero completed steps in 26 minutes
-at 6\,GiB residency. 8B BF16 was preregistered as a probe only and timed
-out. Full fine-tuning of 0.6B completes but diverges at the frozen
-lr $10^{-4}$ (final validation loss 4.44 vs.\ 1.93 for 4-bit QLoRA) ---
-a negative quality result we retain as-is.
+per 100-step run, 9.19\,GiB peak) --- 8B 4-bit is the highest
+\emph{reproducibly trainable} configuration in this benchmark. The 14B
+4-bit cell is deliberately reported as a system-state-dependent boundary
+case rather than a completed or failed formal cell (deviation D8;
+Sec.~\ref{sec:boundary14b}). The 4B BF16 cell shows regime dependence
+(D1): it trains in 451\,s at zero residency but produced zero completed
+steps in 26 minutes at 6\,GiB residency. 8B BF16 was preregistered as a
+probe only and timed out; 14B BF16 was declared out-of-budget without
+observation. Full fine-tuning of 0.6B completes but diverges at the
+frozen lr $10^{-4}$ (final validation loss 4.44 vs.\ 1.93 for 4-bit
+QLoRA) --- a negative quality result we retain as-is.
 \input{tables/table2_matrix}
 
 \subsection{Memory Scaling}
@@ -301,6 +306,43 @@ lr $10^{-4}$, validation loss 4.44) is retained as a negative result;
 we make no instruction-following claims --- the objective is LM loss on
 ultrachat\_200k with all tokens counted.
 
+\subsection{Boundary Behavior at 14B}
+\label{sec:boundary14b}
+We report the 14B 4-bit cell as an explicit boundary case study (D8):
+a configuration observed to enter training under favorable conditions,
+but not reproducibly sustained under the formal workload.
+
+\paragraph{Observation}
+Three raw records constitute the evidence. (1) A 20-step probe at
+2.7\,GiB swap residency loaded and trained at 0.68\,s/step
+(\texttt{success}). (2) A formal attempt launched at 7.1\,GiB residency
+completed zero steps in 24 minutes before the operator interrupted it.
+(3) A second formal attempt at 3.7\,GiB residency exhibited $\sim$40
+minutes of model loading, then progressed to 50 of 100 steps with step
+times degrading from 27 to 86\,s (with a $>$10-minute stall at step 50)
+before the 7{,}200\,s timeout killed it; its step-by-step evidence is
+preserved in the raw stdout log. All three records are retained
+unaltered; two further attempts were never executed (D8).
+
+\paragraph{Interpretation}
+These observations are consistent with 14B crossing from reproducible
+training into a regime where system memory residency and paging state
+materially affect execution --- the same regime dependence documented
+for 4B BF16 (D1), reached earlier in the scale ladder. This is an
+interpretation, not a direct measurement of untrainability: we did not
+observe allocator exhaustion, and the probe demonstrates that favorable
+conditions exist.
+
+\paragraph{Limitation}
+We did not complete a three-seed formal series at 14B, did not attempt
+to manufacture a low-residency window (no reboots or system-state
+manipulation to chase success, per D8), and therefore can neither claim
+14B is reproducibly trainable nor that it is impossible on 16\,GiB; the
+preregistered 14B ctx2048 probe was cancelled without execution. The
+honest summary is: under the tested formal workload and observed system
+states, 14B 4-bit QLoRA was not sustained to completion, while a
+favorable-state probe did complete.
+
 \section{Failure Analysis}
 Of 118 finalized runs, 27 are failures --- all retained, none
 reclassified as OOM without kernel evidence. The taxonomy
@@ -322,15 +364,19 @@ legacy interrupted runs lack manifests (D6, zero aggregation impact).
 
 \section{Discussion}
 \subsection{What Does 16\,GB Actually Enable?}
-Under this paper's definitions: 4-bit QLoRA through 8B is \trainable
-and, for 0.6B--4B, also \practical (median step $\le$10\,s); 8B sits at
-the \practical threshold (10.0\,s/step, 42.9 tokens/s) and is
-\trainable but not \efficient. BF16 LoRA is \practical through 1.7B.
-The binding constraints are, in order, context length, micro-batch,
-then model scale --- inverting the usual intuition that parameters come
-first. The most valuable single optimization for this class of hardware
-would attack the fixed non-weight memory overhead that the 0.57 memory
-slope implicates.
+The results separate cleanly into three tiers. Through 4B, 4-bit QLoRA
+is \trainable and \practical (median step $\le$10\,s) with stable
+three-seed reproduction. At 8B, 4-bit remains \trainable across all
+seeds but sits at the \practical threshold (10.0\,s/step, 42.9
+tokens/s) --- reproducible, not \efficient. At 14B, behavior becomes
+system-state-dependent: favorable conditions admit real training
+steps, while the formal workload was not sustained under observed
+residencies. BF16 LoRA is \practical through 1.7B. The binding
+constraints are, in order, context length, micro-batch, then model
+scale --- inverting the usual intuition that parameters come first.
+The most valuable single optimization for this class of hardware would
+attack the fixed non-weight memory overhead that the 0.57 memory slope
+implicates.
 
 \subsection{Loadable vs Trainable vs Practical}
 The three-layer vocabulary is not academic: every ``boundary'' in this
@@ -360,10 +406,12 @@ Tier-B and window-specific (D4) --- we compare only within-window
 ratios; LM-loss-only objectives with no prompt masking; 20-step runs on
 the context/batch/rank axes limit distributional detail (60 measured
 steps per cell after warm-up exclusion); system-level swap counters
-include background processes; and the 14B cell remains a
-system-state boundary pending a low-residency window (D7), not a
-settled three-seed result. Deviations D1--D7 are reported in full in
-the repository.
+include background processes; and the 14B cell is reported as a
+boundary case study rather than a completed three-seed formal result
+--- we stopped additional 14B attempts as a declared decision (D8)
+rather than manufacturing favorable system states, so 14B is neither
+claimed reproducible nor impossible. Deviations D1--D8 are reported in
+full in the repository.
 
 \subsection{Ethics and Licensing}
 The benchmark targets publicly released model weights (Apache~2.0 for Qwen3)

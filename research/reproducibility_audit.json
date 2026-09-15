@@ -1,0 +1,32 @@
+{
+  "kind": "reproducibility-audit",
+  "n_checks": 5,
+  "all_passed": false,
+  "checks": [
+    {
+      "check": "raw_manifests_verified",
+      "ok": false,
+      "detail": "n=118"
+    },
+    {
+      "check": "formal_groups_have_3_seeds",
+      "ok": false,
+      "detail": "n_groups=16; bad={'formal-axis1-4b-bf16-lora': np.int64(1)}"
+    },
+    {
+      "check": "formal_dataset_sha256",
+      "ok": true,
+      "detail": "n_files=2"
+    },
+    {
+      "check": "model_revisions_consistent",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "check": "key_numbers_traceable",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

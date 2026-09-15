@@ -4,7 +4,7 @@ English | [中文](README.zh-CN.md)
 
 Reproducible benchmarks for fine-tuning large language models (full / LoRA / QLoRA) on a consumer 16 GB unified-memory Apple Silicon Mac, built on [MLX](https://ml-explore.github.io/mlx/) and MLX-LM.
 
-This is a **research-in-progress** repository. No benchmark numbers exist yet — by design, every number that will ever appear here must be traceable to a raw experiment record (see [AGENTS.md](AGENTS.md)).
+**Experiment frozen 2026-09-15 (`freeze-04f90a840b8ea8fb`)**: 118 finalized raw experiments, preregistered formal matrix completed to its declared stopping points (deviations D1–D8 logged in [research/deviations.md](research/deviations.md)); every number in the paper traces to raw records via [research/claim_ledger.csv](research/claim_ledger.csv).
 
 ## Research Questions
 
@@ -18,19 +18,26 @@ Loadable → Trainable → Practical → Efficient
 
 `success`, `oom`, and (when reliably measurable) `severe swap / impractical throughput` are all first-class experimental outcomes. OOM runs are valid observations and are never deleted.
 
-Planned experiment axes: model scaling (Qwen3-0.6B → 1.7B → 4B → …), context-length scaling, batch-size scaling, LoRA-rank sweeps, full vs LoRA vs QLoRA, repeated seeds.
+## Headline results (from the frozen dataset)
+
+- **Highest reproducibly trainable configuration**: 8B 4-bit QLoRA (3/3 formal seeds); 14B 4-bit is reported as a *system-state-dependent boundary case* (D8), not a completed formal cell.
+- 4-bit QLoRA cuts peak memory to 0.54–0.73× of BF16 at all paired scales, with step-time ratios inside the preregistered ±25% equivalence margin.
+- Memory scales **sublinearly** with model size (log-log slope 0.57) — fixed-overhead dilution; step time scales approximately linearly (slope 1.00).
+- Context is the binding constraint: trainable boundary ∈ [2048, 4096); micro-batch boundary ∈ [4, 8) with monotonically negative throughput returns.
+- Trainability is a joint property of model and system swap-residency state (D1/D3/D7/D8 case studies).
 
 ## Status
 
 | Area | State |
 | --- | --- |
-| Experiment protocol & result schema | ✅ done — [docs/experiment_protocol.md](docs/experiment_protocol.md), [docs/result_schema.md](docs/result_schema.md) (commit `6720bcb`) |
-| Example config | ✅ done — [configs/experiment.example.yaml](configs/experiment.example.yaml) |
-| Python environment (uv, locked) | ✅ done & verified — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
-| Qwen3 model downloads | ✅ done — 4 repos, byte-verified (see [Models](#models)) |
-| Experiment Supervisor | ✅ v0 implemented — 8/8 tests, 3 validation runs in [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| Training runs | 🔄 Probes: 4bit QLoRA scale line 4B→8B→14B all trainable (14B peak GPU 8.79 GB = 55% of budget); context boundary for 4B-4bit QLoRA: ctx≤2048 trainable (swap-bound, 53.9 s/step), ctx=4096 killed before step 1 — Trainable bound ∈ [2048, 4096); all probe-level, pre-registration pending |
-| Feasibility map, figures, paper | ⬜ not started |
+| Experiment protocol & result schema | ✅ done — [docs/experiment_protocol.md](docs/experiment_protocol.md), [docs/result_schema.md](docs/result_schema.md) |
+| Preregistration | ✅ frozen — [research/preregistration.md](research/preregistration.md) |
+| Formal benchmark | ✅ **frozen** — 118 finalized runs; coverage reconciliation 118=118 ([results/processed/coverage_report.json](results/processed/coverage_report.json)); [research/experiment_freeze.md](research/experiment_freeze.md) |
+| Deviation ledger | ✅ D1–D8 logged — [research/deviations.md](research/deviations.md) |
+| Analysis pipeline | ✅ one-command rebuild — `uv run python scripts/run_analysis.py` (tables/figures/key numbers/coverage/hypothesis audit) |
+| Hypothesis audit (H1–H6) | ✅ [results/processed/hypothesis_audit.json](results/processed/hypothesis_audit.json) |
+| Paper | ✅ draft complete, compiles (8 pp, 0 undefined refs) — [paper/main.tex](paper/main.tex) |
+| Reproducibility audit | ✅ [research/reproducibility_audit.md](research/reproducibility_audit.md) |
 
 ## Hardware
 
