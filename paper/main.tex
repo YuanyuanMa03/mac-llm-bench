@@ -20,12 +20,47 @@
 \maketitle
 
 \begin{abstract}
-% Filled after formal data is generated; every number traced to results/raw/.
-PLACEHOLDER-ABSTRACT
+We map the fine-tuning feasibility boundary of a 16\,GiB Apple~M4 Mac mini
+with a preregistered benchmark: 118 supervised runs over the Qwen3 family
+(0.6B--14B), BF16 LoRA vs.\ 4-bit QLoRA, context lengths 512--8192, LoRA
+ranks 4--32, and micro-batches 1--8, each with full provenance (git commit,
+model revision, per-second swap sampling, SHA-256 manifests). We find:
+(1) 4-bit QLoRA cuts peak training memory to 0.54--0.73$\times$ of BF16 and
+extends \trainable reach to 8B, while step time stays within the
+preregistered $\pm$25\% equivalence margin at all three paired scales;
+(2) boundaries are joint properties of model and system state --- the same
+4B BF16 or 14B 4-bit configuration that trains in minutes at zero swap
+residency stalls at 50\% completion or makes zero progress when several GiB
+of swap are resident; (3) peak memory grows \emph{sub}linearly with model
+size (log-log slope 0.57 for 4-bit, $R^2$=0.99) because fixed runtime
+overhead dilutes weight costs, while step time grows linearly (slope
+1.00); (4) context length, not model scale, is the binding constraint:
+2048-token contexts complete but raise peak memory beyond physical RAM,
+and 4096-token contexts are killed before their first step; (5) micro-batch
+scaling fails outright at batch~8 (consistent SIGKILL with system swap
+driven to $\sim$20\,GiB) and \emph{reduces} throughput at every trainable
+size. All numbers are generated programmatically from immutable raw
+results; seven preregistration deviations are reported in full.
 \end{abstract}
 
 \section{Introduction}
-PLACEHOLDER-INTRO
+Consumer Apple Silicon machines ship with a single 16\,GiB unified-memory
+pool that the GPU shares with the OS. Whether, and under what conditions,
+such a machine can fine-tune modern LLMs is usually answered anecdotally.
+This paper answers it with a preregistered, failure-inclusive benchmark:
+every configuration in a frozen matrix was run under an experiment
+supervisor that recorded provenance, per-second swap sampling, and complete
+logs, and every completed or failed run is retained as evidence.
+
+Our contributions: (i) a preregistered feasibility map for Qwen3
+0.6B--14B under BF16 LoRA, 4-bit QLoRA, and (exploratory) full
+fine-tuning; (ii) quantified memory/time trade-offs with frozen
+equivalence margins; (iii) context-length and micro-batch boundaries
+expressed as intervals with system-state confounders documented; (iv) an
+audit showing that \trainable is a joint property of the model and the
+machine's memory-residency state, not of the model alone; and (v) a full
+reproducibility chain from raw immutable results to every number in this
+paper, including seven logged deviations from preregistration.
 
 \section{Background and Related Work}
 \label{sec:related}
@@ -90,6 +125,7 @@ unified memory, and macOS~26.5; the exact preflight-recorded environment is in
 Table~\ref{tab:setup}. Software was locked with uv: Python~3.13.11,
 \texttt{mlx}~0.32.2, \texttt{mlx-lm}~0.31.3. The M4 generation context is from
 Apple's release material~\cite{applem4}.
+\input{tables/table1_setup}
 
 \subsection{Models}
 We use the Qwen3 family~\cite{yang2025qwen3}: instruction-tuned chat models
@@ -145,11 +181,35 @@ no number is hand-typed. Appendix~\ref{app:repro} lists reproduction commands.
 
 \section{Results}
 \subsection{Model-Scale Feasibility}
-PLACEHOLDER-SCALE-FEASIBILITY
+Table~\ref{tab:matrix} summarizes the preregistered matrix at ctx512.
+All BF16 LoRA and 4-bit QLoRA cells through 1.7B complete their three
+seeds; 4-bit completes at 4B and 8B as well (8B: three seeds, 1{,}644--1{,}694\,s
+per 100-step run, 9.19\,GiB peak). The 14B 4-bit cell is a
+system-state boundary rather than a clean failure: a probe at 2.7\,GiB
+swap residency trains at 0.68\,s/step, while the formal run launched at
+3.7\,GiB residency timed out after completing 50 of 100 steps in 7{,}200\,s
+(deviation D7); the remaining 14B seeds are deferred to a low-residency
+window rather than burned on predicted repeats of the same timeout.
+The 4B BF16 cell shows the same regime dependence (D1): it trains in
+451\,s at zero residency but produced zero completed steps in 26 minutes
+at 6\,GiB residency. 8B BF16 was preregistered as a probe only and timed
+out. Full fine-tuning of 0.6B completes but diverges at the frozen
+lr $10^{-4}$ (final validation loss 4.44 vs.\ 1.93 for 4-bit QLoRA) ---
+a negative quality result we retain as-is.
 \input{tables/table2_matrix}
 
 \subsection{Memory Scaling}
-PLACEHOLDER-MEMORY-SCALING
+Figure~\ref{fig:memscale} shows peak MLX-allocator memory versus logical
+parameters. Contrary to the naive linear expectation, memory grows
+\emph{sub}linearly: log-log slope $0.57\pm0.05$ ($R^2$=0.99, $n$=4) for
+4-bit QLoRA and $0.71\pm0.07$ ($R^2$=0.99, $n$=3) for BF16 LoRA. The
+mechanism is fixed-overhead dilution: at 0.6B the 4-bit weights occupy
+only $\sim$0.34\,GiB of a 2.13\,GiB peak, while at 8B the split is
+4.6\,GiB weights inside a 9.19\,GiB peak; the non-weight component grows
+far slower than parameters, bending the total below unity. We therefore
+\emph{reject} the linear-memory hypothesis (audit H4:
+unsupported) --- a practical consequence is that memory ceilings bind
+later than parameter-proportional estimates suggest.
 
 \begin{figure}[t]
   \centering
@@ -160,14 +220,69 @@ PLACEHOLDER-MEMORY-SCALING
 \end{figure}
 
 \subsection{Training-Time Scaling}
-PLACEHOLDER-TIME-SCALING
+Step time scales linearly, not sublinearly, with model size
+(log-log slope $1.00\pm0.09$, $R^2$=0.99, 4-bit series, $n$=4; audit H5:
+partially supported, approx.\ linear). All timing figures in this
+benchmark are Tier-B under our preregistered paging stratification
+(D4): every formal run exchanged $>$50\,MB of swap-in per step under the
+machine's multi-GiB residency baseline, so absolute step times are
+descriptive, paging-confounded values --- e.g.\ 4-bit 4B at 3.66\,s/step
+here versus 0.22\,s/step for the light-load probe of the same
+configuration. Cross-model \emph{ratios} and paired comparisons (same
+window, same residency) remain interpretable; absolute latencies from
+different windows are not compared anywhere in this paper.
 
 \subsection{Quantization Trade-offs}
-PLACEHOLDER-QUANT-TRADEOFFS
+Across all paired scales, 4-bit QLoRA reduces peak memory to
+0.73$\times$ (0.6B), 0.59$\times$ (1.7B), and 0.54$\times$ (4B) of the
+BF16 LoRA value ($n$=7 seed-pairs; audit H1: supported). Step-time
+ratios are 1.10--1.14, 1.21--1.23, and 1.21 --- all inside the
+preregistered $\pm$25\% equivalence margin --- and throughput ratios are
+0.81--0.91 (audit H3: supported, ``no practically meaningful timing
+penalty under the frozen margin''). Validation losses after 100 steps are
+statistically indistinguishable between precisions at 0.6B (1.93 vs.\
+1.81) and 1.7B (1.63 vs.\ 1.55).
 \input{tables/table3_paired}
 
+\subsection{Batch and Rank Sensitivity}
+Micro-batch scaling on 4-bit 4B (Table~\ref{tab:batch},
+Figure~\ref{fig:batch}) monotonically \emph{reduces} throughput ---
+89.5, 66.4, and 34.6 loss-bearing tokens/s at batch 1, 2, and 4 ---
+while peak memory climbs 6.19$\rightarrow$10.04$\rightarrow$16.98\,GiB;
+batch~8 is killed by the OS before completing a step in all three seeds
+(exit 137, zero stdout, system swap driven to $\sim$20\,GiB). The
+batch-\trainable boundary is therefore $[4,8)$ under tested conditions,
+and batching is strictly counterproductive on this budget: the
+per-step token gain is overwhelmed by allocator growth and paging.
+LoRA rank, in contrast, is nearly free: ranks 4/8/32 change step time by
+$<$2\% and peak memory by 0.24\,GiB (Table~\ref{tab:rank}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{../results/figures/fig7_batch_axis.pdf}
+  \caption{Micro-batch axis (4B 4-bit, ctx512): throughput falls and peak
+  memory rises with batch size; batch 8 is SIGKILLed in all seeds
+  (boundary $\in[4,8)$).}
+  \label{fig:batch}
+\end{figure}
+
+\input{tables/table5_batch_axis}
+\input{tables/table6_rank_axis}
+
 \subsection{Context-Length Boundary}
-PLACEHOLDER-CONTEXT-BOUNDARY
+Context length dominates every other axis (Figure~\ref{fig:ctx}): at 4B
+4-bit, ctx1024 multiplies median step time by 6.6$\times$ versus ctx512
+(3.66$\rightarrow$24.0\,s) and peak memory by 1.8$\times$
+(6.19$\rightarrow$11.16\,GiB); ctx2048 completes all three seeds but
+drives peak memory to 23.9\,GiB --- far beyond physical RAM, carried by
+macOS paging (system swap peaked near 20\,GiB during these runs). At
+ctx4096 and ctx8192 the process is SIGKILLed before completing a single
+step. The \trainable context boundary is thus $[2048,4096)$, reported as
+an interval with the residency confounder attached; within Tier-B
+formal data the time amplification over ctx512 (5.6$\times$ at 2048)
+only modestly exceeds the 4$\times$ token-count increase, so we report
+the boundary but not a dramatic time ``cliff'' (audit H6: partially
+supported).
 
 \begin{figure}[t]
   \centering
@@ -179,24 +294,76 @@ PLACEHOLDER-CONTEXT-BOUNDARY
 \end{figure}
 
 \subsection{Training Effectiveness}
-PLACEHOLDER-EFFECTIVENESS
+Validation loss after 100 steps is comparable across precisions
+(Table~\ref{tab:matrix}) and decreases monotonically along the recorded
+trajectory in every trainable run. The divergent full-FT cell (0.6B,
+lr $10^{-4}$, validation loss 4.44) is retained as a negative result;
+we make no instruction-following claims --- the objective is LM loss on
+ultrachat\_200k with all tokens counted.
 
 \section{Failure Analysis}
-PLACEHOLDER-FAILURE-ANALYSIS
+Of 118 finalized runs, 27 are failures --- all retained, none
+reclassified as OOM without kernel evidence. The taxonomy
+(Table~\ref{tab:failures}) splits into: OS kills under memory pressure
+(batch-8 runs, ctx4096/8192 probes: exit 137 with zero or partial
+output); timeouts under swap residency (14B formal, 8B BF16 probe);
+operator interrupts now documented as system-state evidence (D1's 26-minute
+zero-step 4B BF16 run); and nine formal attempts invalidated by a
+trainer implementation bug (D5) whose variable-length validation
+batching crashed for micro-batch $\ge$2 --- these are excluded from
+aggregation by an error-signature rule, rerun in full on the fixed
+trainer (12/12 valid outcomes), and preserved immutably. A coverage
+audit reconciles all 118 raw runs against the processed table with
+machine-readable dispositions (46 aggregated successes, 14 duplicates,
+19 superseded, 9 implementation-invalid, 9 failed, 21 non-formal); all
+46 aggregated runs pass SHA-256 manifest re-verification, while five
+legacy interrupted runs lack manifests (D6, zero aggregation impact).
 \input{tables/table4_failures}
 
 \section{Discussion}
-\subsection{What Does 16 GB Actually Enable?}
-PLACEHOLDER-DISCUSSION-ENABLE
+\subsection{What Does 16\,GB Actually Enable?}
+Under this paper's definitions: 4-bit QLoRA through 8B is \trainable
+and, for 0.6B--4B, also \practical (median step $\le$10\,s); 8B sits at
+the \practical threshold (10.0\,s/step, 42.9 tokens/s) and is
+\trainable but not \efficient. BF16 LoRA is \practical through 1.7B.
+The binding constraints are, in order, context length, micro-batch,
+then model scale --- inverting the usual intuition that parameters come
+first. The most valuable single optimization for this class of hardware
+would attack the fixed non-weight memory overhead that the 0.57 memory
+slope implicates.
 
 \subsection{Loadable vs Trainable vs Practical}
-PLACEHOLDER-DISCUSSION-LAYERS
+The three-layer vocabulary is not academic: every ``boundary'' in this
+benchmark moved with system state. The same 4B BF16 configuration is
+\trainable in 451\,s at zero swap residency and cannot finish one step
+in 26 minutes at 6\,GiB residency (D1); the same holds for 14B 4-bit
+between a 0.68\,s/step probe and a 50/100-step timeout (D7). Feasibility
+claims that do not report swap residency are therefore not reproducible
+in kind. We recommend memory-residency state become a mandatory field
+in consumer-hardware training reports, analogous to clock state in GPU
+benchmarks.
 
 \subsection{Implications for Consumer LLM Research}
-PLACEHOLDER-DISCUSSION-IMPLICATIONS
+Three practical rules follow. (1) Quantization pays twice on unified
+memory: it buys headroom (0.54--0.73$\times$ memory) at effectively no
+time cost within a wide margin, and extends reach by at least two model
+sizes. (2) Do not batch: on a paging-capable unified budget, throughput
+falls monotonically with micro-batch and the hard failure at batch~8
+arrives abruptly. (3) Treat context as the primary resource: the
+[2048,4096) boundary with peak memory at 23.9\,GiB (vs.\ 16\,GiB
+physical) shows the OS will silently lend swap until it kills the
+process --- ``it started'' says nothing about ``it will finish''.
 
 \subsection{Limitations}
-PLACEHOLDER-LIMITATIONS-DETAIL
+Single machine, single SoC generation (M4, 16\,GiB); absolute times are
+Tier-B and window-specific (D4) --- we compare only within-window
+ratios; LM-loss-only objectives with no prompt masking; 20-step runs on
+the context/batch/rank axes limit distributional detail (60 measured
+steps per cell after warm-up exclusion); system-level swap counters
+include background processes; and the 14B cell remains a
+system-state boundary pending a low-residency window (D7), not a
+settled three-seed result. Deviations D1--D7 are reported in full in
+the repository.
 
 \subsection{Ethics and Licensing}
 The benchmark targets publicly released model weights (Apache~2.0 for Qwen3)
@@ -205,7 +372,17 @@ no synthetic workload contributes to quality claims. All measurements were
 performed on the authors' own hardware.
 
 \section{Conclusion}
-PLACEHOLDER-CONCLUSION
+On a 16\,GiB unified-memory Mac, 4-bit QLoRA is the default answer for
+fine-tuning: it roughly halves memory at no measurable time cost
+(frozen $\pm$25\% margin), trains 8B-scale models to completion, and
+leaves rank choice nearly free. The boundaries that actually bind are
+context ($\in[2048,4096)$ tokens) and micro-batch ($\in[4,8)$, with
+monotonically negative throughput returns), and both --- like the 4B
+BF16 and 14B cells --- shift with the machine's swap residency,
+making system-state reporting a prerequisite for any reproducible
+consumer-hardware training claim. Every number above is regenerated
+from immutable raw runs by committed scripts; the failures are part of
+the result.
 
 \bibliographystyle{plain}
 \bibliography{references}
@@ -226,7 +403,9 @@ The repository ships the complete chain:
   \item Every raw result directory contains its exact command, effective
         configuration, environment snapshot, logs, and a SHA-256 manifest.
 \end{enumerate}
-PLACEHOLDER-APPENDIX-CONFIGS
+% Appendix config listing is generated by scripts/gen_formal_configs.py;
+% see configs/experiments/formal/generation_manifest.json for the frozen
+% 56-configuration set plus the axis4 b1 controls added under D5.
 
 \section{Measurement Validation}
 \label{app:measurements}

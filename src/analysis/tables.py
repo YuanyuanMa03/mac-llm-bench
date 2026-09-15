@@ -44,12 +44,16 @@ def _agg_cell(sub: pd.DataFrame, col: str, digits: int = 3) -> str:
 
 
 def table1(df: pd.DataFrame) -> None:
-    ref = df[df["status.terminal_state"] == "success"].iloc[-1]
+    succ = df[df["status.terminal_state"] == "success"]
+    mem_col = "hardware.unified_memory_bytes"
+    mem_rows = succ[succ[mem_col].notna()]
+    ref = (mem_rows if not mem_rows.empty else succ).iloc[-1]
+    mem_gib = (float(ref[mem_col]) / 2**30
+               if pd.notna(ref[mem_col]) else 16)
     rows = [
         ("Hardware", ""),
         ("\\quad Chip", f"{ref['hardware.apple_chip_model']}"),
-        ("\\quad Memory",
-         f"{ref['hardware.unified_memory_bytes'] / 2**30:.0f} GiB unified"),
+        ("\\quad Memory", f"{mem_gib:.0f} GiB unified"),
         ("\\quad CPU cores",
          f"{ref['hardware.cpu_physical_cores']}P / "
          f"{ref['hardware.cpu_logical_cores']}L"),
@@ -68,19 +72,20 @@ def table1(df: pd.DataFrame) -> None:
         if key[0] in seen or pd.isna(r["model.resolved_revision"]):
             continue
         seen.add(key[0])
-        models.append((key[0], str(key[1])[:12]))
+        short = str(key[0]).replace("mlx-community/", "").replace("Qwen3-", "")
+        models.append((short, str(key[1])[:8]))
     lines = [
         "\\begin{table}[t]\\centering",
         "\\caption{Hardware, software, and model revisions "
         "(provenance from raw experiment records).}",
         "\\label{tab:setup}",
-        "\\small",
+        "\\footnotesize",
         "\\begin{tabular}{ll}", "\\toprule",
     ]
     for k, v in rows:
         lines.append(f"{k} & {v}\\\\")
     lines.append("\\midrule")
-    lines.append("Models & resolved revision\\\\")
+    lines.append("Qwen3 models & resolved revision (8-char prefix)\\\\")
     for name, rev in models:
         lines.append(f"\\quad \\texttt{{{name}}} & \\texttt{{{rev}}}...\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
@@ -171,29 +176,33 @@ def table4(df: pd.DataFrame) -> None:
     boundary = json.loads((ROOT / "results" / "processed" /
                            "context_boundary_probe_summary.json").read_text())
     lines = [
-        "\\begin{table}[t]\\centering",
+        "\\begin{table*}[t]\\centering",
         "\\caption{Failure and boundary observations (raw terminal states, "
         "never reclassified as OOM without direct evidence).}",
         "\\label{tab:failures}", "\\small",
         "\\begin{tabular}{p{3.4cm}ll}", "\\toprule",
         "Run & Status & Key observation\\\\", "\\midrule",
     ]
+    def _esc(s: str) -> str:
+        return str(s).replace("_", r"\_")
+
     for f in taxonomy["failures"]:
         steps = f["context_observations"]["completed_steps_observation"]
-        key = f"{f['terminal_state']}"
+        key = _esc(f"{f['terminal_state']}")
         if f["signal"]:
-            key += f" ({f['signal']})"
+            key += _esc(f" ({f['signal']})")
+        exp_id = _esc(f["experiment_id"][:22])
         lines.append(
-            f"\\texttt{{{f['experiment_id'][:36]}}} & {key} & "
+            f"\\texttt{{{exp_id}}} & {key} & "
             f"steps={steps if steps is not None else 'n/a'}; "
-            f"{'/'.join(f['evidence_labels'])}\\\\")
+            f"{_esc('/'.join(f['evidence_labels']))}\\\\")
     b = boundary["boundary_interval"]
     lines.append("\\midrule")
     lines.append(
         f"\\multicolumn{{3}}{{p{{9cm}}}}{{Context boundary: "
         f"Trainable $\\in$ [{b['trainable_upper_bound_ctx']}, "
         f"{b['first_failure_ctx']}) under preflight-comparable conditions.}}\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table4_failures.tex").write_text("\n".join(lines) + "\n",
                                                 encoding="utf-8")
     print("[table] table4_failures.tex")
@@ -202,7 +211,7 @@ def table4(df: pd.DataFrame) -> None:
 def table5(df: pd.DataFrame) -> None:
     """轴 4 batch（D5 修复后同 commit 重跑；b8 SIGKILL 边界行）。"""
     lines = [
-        "\\begin{table}[t]\\centering",
+        "\\begin{table*}[t]\\centering",
         "\\caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, "
         "seeds \\{42,123,2026\\}, all cells rerun on the D5-fixed trainer in "
         "one window; mean$\\pm$SD).}",
@@ -233,7 +242,7 @@ def table5(df: pd.DataFrame) -> None:
             f"success$\\times${len(sub)}\\\\")
     lines.append("8 & $\\sim$4088 & -- & -- & $>$16 (sys swap $\\to$20) & "
                  "SIGKILL$\\times$3 (exit 137, 0 steps; D5 notes)\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table5_batch_axis.tex").write_text("\n".join(lines) + "\n",
                                                   encoding="utf-8")
     print("[table] table5_batch_axis.tex")

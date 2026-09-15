@@ -1,4 +1,4 @@
-\begin{table}[t]\centering
+\begin{table*}[t]\centering
 \caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, seeds \{42,123,2026\}, all cells rerun on the D5-fixed trainer in one window; mean$\pm$SD).}
 \label{tab:batch}
 \small
@@ -12,4 +12,4 @@ Batch & Tok/step & Median step (s) & Tok/s & Peak mem (GiB) & Status\\
 8 & $\sim$4088 & -- & -- & $>$16 (sys swap $\to$20) & SIGKILL$\times$3 (exit 137, 0 steps; D5 notes)\\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}

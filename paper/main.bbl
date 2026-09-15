@@ -1,0 +1,88 @@
+\begin{thebibliography}{10}
+
+\bibitem{ajayi2025benchmarking}
+Oluwaseun~A. Ajayi and Ogundepo Odunayo.
+\newblock Benchmarking on-device machine learning on {Apple Silicon} with
+  {MLX}.
+\newblock In {\em 6th Deep Learning Indaba (DLI 2024), Dakar, Senegal;
+  arXiv:2510.18921}, 2024.
+\newblock Non-archival presentation.
+
+\bibitem{applem4}
+{Apple Inc.}
+\newblock Apple introduces {M4} chip.
+\newblock Press release, 2024.
+
+\bibitem{chen2016training}
+Tianqi Chen, Bing Xu, Chiyuan Zhang, and Carlos Guestrin.
+\newblock Training deep nets with sublinear memory cost.
+\newblock {\em arXiv preprint arXiv:1604.06174}, 2016.
+
+\bibitem{dettmers2022llmint8}
+Tim Dettmers, Mike Lewis, Younes Belkada, and Luke Zettlemoyer.
+\newblock {LLM.int8()}: 8-bit matrix multiplication for transformers at scale.
+\newblock In {\em Advances in Neural Information Processing Systems 35
+  (NeurIPS)}, 2022.
+
+\bibitem{dettmers2023qlora}
+Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, and Luke Zettlemoyer.
+\newblock {QLoRA}: Efficient finetuning of quantized {LLMs}.
+\newblock In {\em Advances in Neural Information Processing Systems 36
+  (NeurIPS)}, 2023.
+
+\bibitem{ding2023ultrachat}
+Ning Ding, Yulin Chen, Bokai Xu, Yujia Qin, Zhi Zheng, Shengding Hu, Zhiyuan
+  Liu, Maosong Sun, and Bowen Zhou.
+\newblock Enhancing chat language models by scaling high-quality instructional
+  conversations.
+\newblock In {\em Proceedings of EMNLP 2023}, pages 3022--3044, 2023.
+
+\bibitem{feng2025profiling}
+Dahua Feng, Zhiming Xu, Rongxiang Wang, and Felix~Xiaozhu Lin.
+\newblock Profiling {Apple Silicon} performance for {ML} training.
+\newblock {\em arXiv preprint arXiv:2501.14925}, 2025.
+
+\bibitem{llamacpp}
+Georgi Gerganov and contributors.
+\newblock llama.cpp: {LLM} inference in {C/C++}.
+\newblock GitHub repository, 2023.
+
+\bibitem{mlx2023}
+Awni Hannun, Jagrit Digani, Angelos Katharopoulos, and Ronan Collobert.
+\newblock {MLX}: Efficient and flexible machine learning on apple silicon.
+\newblock GitHub repository, 2023.
+
+\bibitem{houlsby2019parameter}
+Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
+  de~Laroussilhe, Andrea Gesmundo, Mona Attariyan, and Sylvain Gelly.
+\newblock Parameter-efficient transfer learning for {NLP}.
+\newblock In {\em Proceedings of the 36th International Conference on Machine
+  Learning (ICML)}, pages 2790--2799, 2019.
+
+\bibitem{hu2022lora}
+Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
+  Wang, Lu~Wang, and Weizhu Chen.
+\newblock {LoRA}: Low-rank adaptation of large language models.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2022.
+
+\bibitem{mlxlm}
+{MLX team}.
+\newblock mlx-lm: {LLM} fine-tuning and inference with {MLX}.
+\newblock GitHub repository, 2023.
+
+\bibitem{yang2025qwen3}
+An~Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo~Zheng, Bowen
+  Yu, Chang Gao, Chengen Huang, et~al.
+\newblock Qwen3 technical report.
+\newblock {\em arXiv preprint arXiv:2505.09388}, 2025.
+
+\bibitem{zhao2024galore}
+Jiawei Zhao, Zhenyu Zhang, Beidi Chen, Zhangyang Wang, Anima Anandkumar, and
+  Yuandong Tian.
+\newblock {GaLore}: Memory-efficient {LLM} training by gradient low-rank
+  projection.
+\newblock In {\em Proceedings of the 41st International Conference on Machine
+  Learning (ICML)}, 2024.
+
+\end{thebibliography}

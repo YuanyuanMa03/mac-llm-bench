@@ -23,6 +23,10 @@ def _agg(sub: pd.DataFrame, col: str) -> dict | None:
 def _paging_deltas(sub: pd.DataFrame) -> dict:
     """每 run 的 vm_stat swap-in/out 增量均值（MB），量化 paging 强度。"""
     import json as _json
+    col_b = "runtime.system_vm_counters_before"
+    col_a = "runtime.system_vm_counters_after"
+    if col_b not in sub.columns or col_a not in sub.columns:
+        return {"swapins": None, "swapouts": None}
     ins, outs = [], []
     for v_before, v_after in zip(
             sub["runtime.system_vm_counters_before"],
@@ -52,15 +56,14 @@ def main() -> int:
     out = {"scale_axis": {}, "context_axis": {}, "paired": {}, "notes": [
         "all numbers derived from results/raw via src/analysis; regenerable"]}
 
-    # 轴 1：模型规模
-    combos = [(m, meth) for m in ("0.6b", "1.7b", "4b", "8b", "14b")
-              for meth in ("lora", "qlora", "full")
-              if (m, meth) in [(x[0], x[1]) for x in
-                               [("0.6b", "lora"), ("1.7b", "lora"), ("4b", "lora"),
-                                ("0.6b", "qlora"), ("1.7b", "qlora"), ("4b", "qlora"),
-                                ("8b", "qlora"), ("14b", "qlora"), ("0.6b", "full")]]]
-    for model, meth in combos:
-        g = f"formal-axis1-{model}-{meth}"
+    # 轴 1：模型规模（组名 = formal-axis1-<model>-<precision>-<method>，
+    # full-FT 组为 formal-axis1-0.6b-bf16-full）
+    for g in ("formal-axis1-0.6b-bf16-full",
+              "formal-axis1-0.6b-bf16-lora", "formal-axis1-1.7b-bf16-lora",
+              "formal-axis1-4b-bf16-lora",
+              "formal-axis1-0.6b-4bit-qlora", "formal-axis1-1.7b-4bit-qlora",
+              "formal-axis1-4b-4bit-qlora", "formal-axis1-8b-4bit-qlora",
+              "formal-axis1-14b-4bit-qlora"):
         sub = ok[ok["experiment.comparison_group_id"] == g]
         if sub.empty:
             continue
