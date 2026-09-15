@@ -1,0 +1,40 @@
+\begin{table}[t]\centering
+\caption{Failure and boundary observations (raw terminal states, never reclassified as OOM without direct evidence).}
+\label{tab:failures}
+\small
+\begin{tabular}{p{3.4cm}ll}
+\toprule
+Run & Status & Key observation\\
+\midrule
+\texttt{20260907T021942754783Z__qwen-qwen3-0} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260907T022132013680Z__qwen-qwen3-0} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260907T111824441175Z__mlx-communit} & runtime_error (SIGKILL) & steps=n/a; sigkill_consistent\\
+\texttt{20260911T164322546359Z__mlx-communit} & runtime_error & steps=n/a; sigkill_consistent\\
+\texttt{20260911T182218892057Z__mlx-communit} & unknown_failure & steps=n/a; no_specific_pattern\\
+\texttt{20260911T190553096465Z__mlx-communit} & user_interrupted & steps=n/a; no_specific_pattern\\
+\texttt{20260911T191618034713Z__qwen-qwen3-0} & user_interrupted & steps=n/a; no_specific_pattern\\
+\texttt{20260911T193038681059Z__qwen-qwen3-4} & user_interrupted & steps=n/a; no_specific_pattern\\
+\texttt{20260911T195828174593Z__qwen-qwen3-4} & user_interrupted & steps=n/a; no_specific_pattern\\
+\texttt{20260911T203648798393Z__mlx-communit} & user_interrupted & steps=n/a; no_specific_pattern\\
+\texttt{20260912T010039277561Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010057032957Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010113537018Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010129965737Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010153968541Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010221754536Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010247917130Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010255423307Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T010259241894Z__mlx-communit} & runtime_error & steps=n/a; stderr:python_traceback\\
+\texttt{20260912T023351577599Z__mlx-communit} & runtime_error & steps=n/a; sigkill_consistent\\
+\texttt{20260912T032808727860Z__qwen-qwen3-8} & timeout (SIGKILL) & steps=n/a; sigkill_consistent\\
+\texttt{20260912T050812117342Z__mlx-communit} & timeout (SIGKILL) & steps=n/a; sigkill_consistent\\
+\texttt{20260912T084135321518Z__qwen-qwen3-4} & timeout (SIGKILL) & steps=n/a; sigkill_consistent\\
+\texttt{20260915T164129648692Z__mlx-communit} & runtime_error & steps=n/a; sigkill_consistent\\
+\texttt{20260915T164414079542Z__mlx-communit} & runtime_error & steps=n/a; sigkill_consistent\\
+\texttt{20260915T164550471089Z__mlx-communit} & runtime_error & steps=n/a; sigkill_consistent\\
+\texttt{20260915T184033756783Z__mlx-communit} & timeout (SIGKILL) & steps=n/a; sigkill_consistent\\
+\midrule
+\multicolumn{3}{p{9cm}}{Context boundary: Trainable $\in$ [2048, 4096) under preflight-comparable conditions.}\\
+\bottomrule
+\end{tabular}
+\end{table}

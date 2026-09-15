@@ -1,0 +1,14 @@
+\begin{table}[t]\centering
+\caption{Paired quantization effects (same model/seed; ratios = 4bit/BF16). Timing equivalence margin $\pm$25\% frozen before benchmark.}
+\label{tab:paired}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Model & Mem ratio & Step-time ratio & Tok/s ratio\\
+\midrule
+Qwen3-0.6b & 0.73 & 1.13 & 0.89\\
+Qwen3-1.7b & 0.59 & 1.22 & 0.82\\
+Qwen3-4b & 0.54 & 1.21 & 0.81\\
+\bottomrule
+\end{tabular}
+\end{table}

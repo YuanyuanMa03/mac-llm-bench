@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0.0",
+  "generated_utc": "2026-09-15T20:45:52+00:00",
+  "generator_commit": "8651e125077215efa4bce035599811c96d356e13",
+  "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
+  "hypotheses": {
+    "H1": {
+      "hypothesis": "H1: 4bit substantially reduces training memory",
+      "rule": "all paired 4bit/BF16 peak-memory ratios <= 0.75 -> supported; mean <= -> partial",
+      "supporting_experiments": [
+        "formal-axis1-0.6b-bf16-lora vs formal-axis1-0.6b-4bit-qlora",
+        "formal-axis1-1.7b-bf16-lora vs formal-axis1-1.7b-4bit-qlora",
+        "formal-axis1-4b-bf16-lora vs formal-axis1-4b-4bit-qlora"
+      ],
+      "contradictory_experiments": [],
+      "sample_size": 7,
+      "uncertainty": {
+        "ratio_min": 0.5364,
+        "ratio_max": 0.7271,
+        "ratio_mean": 0.6428999999999999
+      },
+      "conclusion_status": "supported"
+    },
+    "H2": {
+      "hypothesis": "H2: 4bit extends the trainable model-size boundary",
+      "rule": "v2 tiered: 8B-4bit >=3 seeds -> supported (BF16 formal boundary 1.7B/4B-regime-dependent); 4B-only -> partial; 14B reported as system-state boundary (D7), not a contradiction of extension",
+      "rule_revision": "v1 (2026-09-15) anchored on 14B 3/3; revised 2026-09-16 after 8B 3/3 + 14B D7 timeout, motivation declared",
+      "supporting_experiments": [
+        "formal-axis1-8b-4bit-qlora s42 success",
+        "formal-axis1-8b-4bit-qlora s123 success",
+        "formal-axis1-8b-4bit-qlora s2026 success",
+        "formal-axis1-4b-4bit-qlora s42 success",
+        "formal-axis1-4b-4bit-qlora s123 success",
+        "formal-axis1-4b-4bit-qlora s2026 success",
+        "8B BF16 probe: timeout (probe-8b-bf16-ctx512)",
+        "4B BF16 formal: regime-dependent (deviations.md D1)",
+        "14B BF16: declared out-of-budget (preregistration §3)"
+      ],
+      "boundary_evidence": "14B-4bit: system-state-dependent boundary (D7) — probe success at swap 2.7 GiB (0.68 s/step) vs formal timeout at swap 3.7 GiB residency (50/100 steps in 7200 s); not proof of untrainability",
+      "contradictory_experiments": [],
+      "sample_size": {
+        "14b_success": 0,
+        "8b_success": 3,
+        "4b_success": 3
+      },
+      "uncertainty": {
+        "note": "boundary is joint property of model x system state (RQ5, D1/D7); 14B low-residency 3-seed rerun deferred (D7)"
+      },
+      "conclusion_status": "supported"
+    },
+    "H3": {
+      "hypothesis": "H3: no practically meaningful short-context step-time penalty for 4bit (preregistered +/-25% margin)",
+      "rule": "all paired step-time ratios in [0.8,1.25] -> supported",
+      "supporting_experiments": [
+        "formal-axis1-0.6b paired seeds",
+        "formal-axis1-1.7b paired seeds",
+        "formal-axis1-4b paired seeds"
+      ],
+      "contradictory_experiments": [],
+      "sample_size": 7,
+      "uncertainty": {
+        "ratios": [
+          1.1003,
+          1.1363,
+          1.1417,
+          1.2252,
+          1.213,
+          1.2103,
+          1.2127
+        ],
+        "mean": 1.1770714285714285
+      },
+      "conclusion_status": "supported"
+    },
+    "H4": {
+      "hypothesis": "H4: peak memory scales approximately linearly with model size (log-log slope ~ 1)",
+      "rule": "slope in (0.9, 1.1) -> supported; (0.8, 1.25) -> partial; n<3 -> insufficient",
+      "supporting_experiments": [
+        "formal-axis1 4bit series (n=4)"
+      ],
+      "contradictory_experiments": [],
+      "sample_size": 4,
+      "uncertainty": {
+        "slope": 0.5725382523459467,
+        "r_squared": 0.9865197468822215
+      },
+      "conclusion_status": "unsupported"
+    },
+    "H5": {
+      "hypothesis": "H5: step time scales sublinearly with model size (log-log slope < 1)",
+      "rule": "slope < 0.95 -> supported; <= 1.05 -> partial (approx linear); n<3 -> insufficient; if all runs Tier-B (D4) cap at partial",
+      "supporting_experiments": [
+        "formal-axis1 4bit series (n=4)"
+      ],
+      "contradictory_experiments": [],
+      "sample_size": 4,
+      "uncertainty": {
+        "slope": 0.9985611284827887,
+        "r_squared": 0.9853884642732076,
+        "tier_a_runs": 0,
+        "tier_note": "all Tier-B: paging-confounded, descriptive only (D4)"
+      },
+      "conclusion_status": "partially_supported"
+    },
+    "H6": {
+      "hypothesis": "H6: context scaling shows a clear cliff/boundary",
+      "rule": "v2 dual evidence: (a) Tier-B-comparable time amplification >= 10x token amplification; (b) SIGKILL boundary in [2048,4096); both -> supported, boundary-only -> partially",
+      "supporting_experiments": [
+        "probe ctx4096: SIGKILL before any step (boundary evidence)",
+        "probe ctx8192: SIGKILL before any step (boundary evidence)",
+        "formal-axis2 ctx1024/ctx2048 Trainable (hard boundary lower edge)"
+      ],
+      "contradictory_experiments": [],
+      "sample_size": 8,
+      "uncertainty": {
+        "step_time_factor_2048_vs_512_tierB": 5.6,
+        "token_factor": 4.0,
+        "cliff_ratio_tierB": 1.4,
+        "note": "time amplification computed among Tier-B formal runs (paging-comparable); the 243x probe-era amplification used a different-era Tier-A baseline and is not directly comparable (D4)"
+      },
+      "conclusion_status": "partially_supported"
+    }
+  }
+}

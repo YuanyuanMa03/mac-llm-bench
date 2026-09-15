@@ -1,0 +1,20 @@
+\begin{table*}[t]\centering
+\caption{Formal benchmark at ctx=512, b1-ga1, rank 8, lr 1e-4, 100 steps, seeds \{42,123,2026\} (mean$\pm$SD; memory is MLX allocator peak).}
+\label{tab:matrix}
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Model & Method & Peak mem (GiB) & Median step (s) & Tok/s & Val loss\\
+\midrule
+0.6b & Full FT & -- & -- & -- & --\\
+0.6b & BF16 LoRA & -- & -- & -- & --\\
+1.7b & BF16 LoRA & -- & -- & -- & --\\
+4b & BF16 LoRA & -- & -- & -- & --\\
+0.6b & 4bit QLoRA & -- & -- & -- & --\\
+1.7b & 4bit QLoRA & -- & -- & -- & --\\
+4b & 4bit QLoRA & -- & -- & -- & --\\
+8b & 4bit QLoRA & -- & -- & -- & --\\
+14b & 4bit QLoRA & -- & -- & -- & --\\
+\bottomrule
+\end{tabular}
+\end{table*}

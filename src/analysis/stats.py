@@ -56,10 +56,19 @@ def loglog_fit(x: list[float], y: list[float]) -> dict | None:
 def paired_ratio(df: pd.DataFrame, group_a: str, group_b: str,
                  seed_col: str = "training.seed",
                  value_col: str = "tm.peak_metal_gpu_memory_bytes") -> list[dict]:
-    """按 seed 配对取比值 b/a；仅使用双方都存在的 seed。"""
+    """按 seed 配对取比值 b/a；仅使用双方都存在的 seed。
+
+    每组每个 seed 只保留一行（value 非空的最早行）——同 seed 可能同时有
+    success 与 interrupted 的重复行（如 4B-bf16 依 D1）。
+    """
+    def _one_row(group: str) -> pd.DataFrame:
+        sub = df[df["experiment.comparison_group_id"] == group]
+        sub = sub[sub[value_col].notna()]
+        sub = sub.sort_values("experiment.id").drop_duplicates(subset=[seed_col])
+        return sub.set_index(seed_col)
+
+    a, b = _one_row(group_a), _one_row(group_b)
     out = []
-    a = df[df["experiment.comparison_group_id"] == group_a].set_index(seed_col)
-    b = df[df["experiment.comparison_group_id"] == group_b].set_index(seed_col)
     for seed in sorted(set(a.index) & set(b.index)):
         va, vb = a.loc[seed, value_col], b.loc[seed, value_col]
         if pd.notna(va) and pd.notna(vb) and va:

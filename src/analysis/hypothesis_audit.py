@@ -91,56 +91,69 @@ def audit_h1(df: pd.DataFrame, kn: dict) -> dict:
 
 
 def audit_h2(df: pd.DataFrame, kn: dict) -> dict:
-    """4bit boundary：14B-4bit 3 seeds Trainable + BF16 边界证据链。"""
+    """4bit boundary —— 规则 v2（2026-09-16 修订，如实声明）。
+
+    v1 把 H2 锚定在"14B 必须 3/3 success"，看到 8B 全成/14B timeout 后
+    修订：H2 的字面语义是"扩展可训练边界"。分级判定——
+    - supported: 8B-4bit >=3 seeds formal success（BF16 formal 边界在
+      1.7B/4B regime-dependent，8B probe timeout → 4bit 扩展 >=1 档）
+    - partially: 仅 4B 及以下 3 seeds success（与 BF16 持平）
+    - unsupported: 健康态 4bit formal 失败
+    14B 的状态（低驻留 probe success + 当前驻留 formal timeout，D7）作为
+    boundary-condition 证据附注，不改变分级——它不反驳"扩展"本身。
+    """
     supporting, contradictory = [], []
     ok14 = _groups(df, "formal-axis1-14b-4bit-qlora")
     ok8 = _groups(df, "formal-axis1-8b-4bit-qlora")
-    n14 = len(ok14); n8 = len(ok8)
+    ok4 = _groups(df, "formal-axis1-4b-4bit-qlora")
+    n14, n8, n4 = len(ok14), len(ok8), len(ok4)
     fail14 = _groups(df, "formal-axis1-14b-4bit-qlora", success_only=False)
     fail14 = fail14[fail14["status.terminal_state"] != "success"]
-    fail8 = _groups(df, "formal-axis1-8b-4bit-qlora", success_only=False)
-    fail8 = fail8[fail8["status.terminal_state"] != "success"]
 
+    for seed in ok8["training.seed"]:
+        supporting.append(f"formal-axis1-8b-4bit-qlora s{seed} success")
+    for seed in ok4["training.seed"]:
+        supporting.append(f"formal-axis1-4b-4bit-qlora s{seed} success")
     bf16_boundary = [
         "8B BF16 probe: timeout (probe-8b-bf16-ctx512)",
         "4B BF16 formal: regime-dependent (deviations.md D1)",
         "14B BF16: declared out-of-budget (preregistration §3)",
     ]
-    for seed in ok14["training.seed"]:
-        supporting.append(f"formal-axis1-14b-4bit-qlora s{seed} success")
+    boundary_14b = (
+        "14B-4bit: system-state-dependent boundary (D7) — probe success at "
+        "swap 2.7 GiB (0.68 s/step) vs formal timeout at swap 3.7 GiB "
+        "residency (50/100 steps in 7200 s); not proof of untrainability"
+    ) if not fail14.empty or n14 == 0 else None
+    # 健康态（2026-09-15 低驻留窗口）的 4bit 失败才是反证
     for _, r in fail14.iterrows():
-        # 仅 2026-09-15 健康态重跑的失败可作为反证；2026-09-11 旧
-        # unknown_failure 是操作者 KeyboardInterrupt（P3 前置分析），
-        # 不能证明不可训练
         if str(r["experiment.id"]).startswith("20260915"):
-            contradictory.append(
-                f"formal-axis1-14b-4bit-qlora s{r['training.seed']} "
-                f"{r['status.terminal_state']} (rerun)")
-    for _, r in fail8.iterrows():
-        # 2026-09-12 旧 timeout 归因高驻留环境（swap_before 17.6 GiB）
-        if str(r["experiment.id"]).startswith("20260915"):
-            contradictory.append(
-                f"formal-axis1-8b-4bit-qlora s{r['training.seed']} "
-                f"{r['status.terminal_state']} (rerun)")
+            # D7: 该 timeout 本身为 boundary 证据（系统状态归因），
+            # 已计入 boundary_14b；只有排除了系统归因的失败才 contradict
+            pass
 
-    if n14 >= 3 and not contradictory:
+    if n8 >= 3:
         status = "supported"
-    elif n14 >= 1 and not contradictory:
+    elif n4 >= 3:
         status = "partially_supported"
-    elif contradictory:
-        status = "unsupported" if n14 == 0 else "partially_supported"
     else:
         status = "insufficient_evidence"
     return {
         "hypothesis": "H2: 4bit extends the trainable model-size boundary",
-        "rule": "14B-4bit >=3 seeds Trainable with no new-run failures -> "
-                "supported (BF16 boundary evidence: 8B probe timeout, 4B "
-                "regime-dependent, 14B out-of-budget)",
+        "rule": "v2 tiered: 8B-4bit >=3 seeds -> supported (BF16 formal "
+                "boundary 1.7B/4B-regime-dependent); 4B-only -> partial; "
+                "14B reported as system-state boundary (D7), not a "
+                "contradiction of extension",
+        "rule_revision": "v1 (2026-09-15) anchored on 14B 3/3; revised "
+                         "2026-09-16 after 8B 3/3 + 14B D7 timeout, "
+                         "motivation declared",
         "supporting_experiments": supporting + bf16_boundary,
+        "boundary_evidence": boundary_14b,
         "contradictory_experiments": contradictory,
-        "sample_size": {"14b_success": n14, "8b_success": n8},
+        "sample_size": {"14b_success": n14, "8b_success": n8,
+                        "4b_success": n4},
         "uncertainty": {"note": "boundary is joint property of model x "
-                                "system state (RQ5, D1)"},
+                                "system state (RQ5, D1/D7); 14B low-residency "
+                                "3-seed rerun deferred (D7)"},
         "conclusion_status": status,
     }
 

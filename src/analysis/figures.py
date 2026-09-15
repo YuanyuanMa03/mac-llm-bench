@@ -46,10 +46,7 @@ def _load() -> pd.DataFrame:
 
 
 def _group(df: pd.DataFrame, name: str) -> pd.DataFrame:
-    sub = df[df["experiment.comparison_group_id"] == name]
-    if sub.empty:
-        raise SystemExit(f"[figures] 缺少 formal group：{name}")
-    return sub
+    return df[df["experiment.comparison_group_id"] == name]
 
 
 def _agg(values: list[float]) -> dict:
@@ -100,46 +97,56 @@ def fig1_architecture() -> None:
 
 
 def fig2_feasibility(df: pd.DataFrame) -> None:
-    groups = sorted(set(df["experiment.comparison_group_id"]))
+    # 全量 CSV（含失败 run）：✓ 语义 = 该格 preregistered repeats 全部
+    # success；部分成功/全部失败如实标注（4B-bf16 依 D1、14B 依 D7）
+    full = pd.read_csv(ROOT / "results" / "processed" / "experiments.csv",
+                       low_memory=False)
     probes = json.loads((ROOT / "results" / "processed" /
                          "failure_taxonomy.json").read_text())
     fig, axes = plt.subplots(1, 2, figsize=(8.2, 2.9))
     ax = axes[0]
     models = ["0.6b", "1.7b", "4b", "8b", "14b"]
     methods = ["lora", "qlora", "full"]
-    grid = np.full((len(methods), len(models)), np.nan)
-    for gi, g in enumerate(groups):
-        if not g.startswith("formal-axis1-"):
+    cell = {}
+    for gname, sub in full.groupby("experiment.comparison_group_id"):
+        if not str(gname).startswith("formal-axis1-"):
             continue
-        label = g.replace("formal-axis1-", "")
+        label = str(gname).replace("formal-axis1-", "")
         model, method = label.rsplit("-", 1)
-        mi = models.index(model.replace("-bf16", "").replace("-4bit", ""))
-        grid[methods.index(method), mi] = 1.0  # formal success by design
-    for m in models:
-        pass
-    # probe evidence: 8b bf16
-    ax.imshow(grid, cmap="Greens", vmin=0, vmax=1.4, aspect="auto")
-    ax.set_xticks(range(len(models)), models)
-    ax.set_yticks(range(len(methods)), ["BF16 LoRA", "4bit QLoRA", "Full FT"])
-    for i in range(len(methods)):
-        for j in range(len(models)):
-            if np.isnan(grid[i, j]):
+        mkey = model.replace("-bf16", "").replace("-4bit", "")
+        n_ok = int((sub["status.terminal_state"] == "success").sum())
+        n_all = len(sub)
+        cell[(method, mkey)] = (n_ok, n_all, sub)
+    for i, method in enumerate(methods):
+        for j, mkey in enumerate(models):
+            n_ok, n_all, sub = cell.get((method, mkey), (0, 0, None))
+            if n_all == 0:
                 ax.text(j, i, "untested", ha="center", va="center",
                         fontsize=6.5, color="#888888")
-            else:
+            elif n_ok == n_all and n_ok >= 3:
                 ax.text(j, i, "✓", ha="center", va="center", fontsize=9,
                         color="#1a5c1a")
-    # 8B BF16 probe outcome (likely failure)
-    probe8 = [p for p in probes["failures"] if "8b" in p["experiment_id"]]
-    ax.text(3, 0, "probe:\n" + ("failed" if probe8 else "see raw"),
-            ha="center", va="center", fontsize=6, color="#a11")
+            elif n_ok > 0:
+                ax.text(j, i, f"✓ {n_ok}/{n_all}\n(D1/D7)", ha="center",
+                        va="center", fontsize=6, color="#b8860b")
+            else:
+                states = "/".join(sorted(set(sub["status.terminal_state"])))
+                ax.text(j, i, states, ha="center", va="center",
+                        fontsize=5.5, color="#a11")
+    ax.set_xticks(range(len(models)), models)
+    ax.set_yticks(range(len(methods)), ["BF16 LoRA", "4bit QLoRA", "Full FT"])
     ax.set_title("Trainable @ ctx512 (formal runs)", fontsize=9)
+    # 8B BF16 probe outcome
+    probe8 = [p for p in probes["failures"] if "8b" in p["experiment_id"]
+              and "qnone" in p["experiment_id"]]
+    ax.text(3, 0, "probe:\n" + ("timeout" if probe8 else "see raw"),
+            ha="center", va="center", fontsize=6, color="#a11")
 
     ax = axes[1]
     ctxs = ["512", "1024", "2048", "4096", "8192"]
-    status = [1 if f"formal-axis2-ctx{c}" in groups else np.nan for c in ctxs]
-    for c in ("4096", "8192"):
-        pass
+    ok_groups = set(df["experiment.comparison_group_id"])
+    status = [1 if f"formal-axis2-ctx{c}" in ok_groups else np.nan
+              for c in ctxs]
     ax.imshow(np.array([[s if not np.isnan(s) else np.nan for s in status]]),
               cmap="Greens", vmin=0, vmax=1.4, aspect="auto")
     ax.set_xticks(range(len(ctxs)), ctxs)
@@ -176,6 +183,8 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
         xs, ys, es = [], [], []
         for g in gnames:
             sub = _group(df, g)
+            if sub.empty:
+                continue
             params_b = float(sub["tm.logical_parameter_count"].iloc[0]) / 1e9
             mem = _agg(sub["tm.peak_metal_gpu_memory_bytes"])
             xs.append(params_b)
@@ -222,6 +231,8 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
         xs, st, ste, tp, tpe = [], [], [], [], []
         for g in gnames:
             sub = _group(df, g)
+            if sub.empty:
+                continue
             params_b = float(sub["tm.logical_parameter_count"].iloc[0]) / 1e9
             a = _agg(sub["tm.median_step_time_seconds"])
             t = _agg(sub["runtime.tokens_per_second"])
@@ -262,6 +273,8 @@ def fig5_context_scaling(df: pd.DataFrame) -> None:
                    (1024, "formal-axis2-ctx1024"),
                    (2048, "formal-axis2-ctx2048")):
         sub = _group(df, g)
+        if sub.empty:
+            continue
         pts[ctx] = {
             "step": _agg(sub["tm.median_step_time_seconds"]),
             "mem": _agg(sub["tm.peak_metal_gpu_memory_bytes"]),
@@ -350,6 +363,8 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
     xs, tp, tpe, mem, meme = [], [], [], [], []
     for b, g in groups.items():
         sub = _group(df, g)
+        if sub.empty:
+            continue
         t = _agg(sub["runtime.tokens_per_second"])
         m = _agg(sub["tm.peak_metal_gpu_memory_bytes"])
         xs.append(b); tp.append(t["mean"]); tpe.append(t["sd"] or 0)
@@ -386,6 +401,8 @@ def fig8_rank_axis(df: pd.DataFrame) -> None:
     for r, g in ((4, "formal-axis3-r4"), (8, "formal-axis1-4b-4bit-qlora"),
                  (32, "formal-axis3-r32")):
         sub = _group(df, g)
+        if sub.empty:
+            continue
         pts[r] = {"step": _agg(sub["tm.median_step_time_seconds"]),
                   "mem": _agg(sub["tm.peak_metal_gpu_memory_bytes"])}
     xs = sorted(pts)

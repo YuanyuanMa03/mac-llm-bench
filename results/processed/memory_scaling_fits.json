@@ -1,0 +1,11 @@
+{
+  "4bit QLoRA": {
+    "n": 4,
+    "slope": 0.5725382495906224,
+    "intercept": 0.4312461326664228,
+    "r_squared": 0.9865197470327681,
+    "p_value": 0.006762995537939022,
+    "stderr_slope": 0.04732445679639197,
+    "model_form": "log10(y) = slope*log10(x) + intercept"
+  }
+}

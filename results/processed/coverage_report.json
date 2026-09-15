@@ -1,24 +1,24 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-15T16:54:00+00:00",
-  "generator_commit": "b37c02bf3a57f7ae27aeb258d271fd2d03801faa",
-  "raw_total": 113,
+  "generated_utc": "2026-09-15T20:45:50+00:00",
+  "generator_commit": "8651e125077215efa4bce035599811c96d356e13",
+  "raw_total": 118,
   "validation_total": 16,
-  "processed_total": 113,
-  "formal_total": 92,
+  "processed_total": 118,
+  "formal_total": 97,
   "probe_total": 11,
   "by_kind": {
     "calibration": 6,
     "exp0-smoke": 4,
-    "formal": 92,
+    "formal": 97,
     "probe": 11
   },
   "dispositions": {
-    "aggregation_included": 42,
+    "aggregation_included": 46,
     "excluded:duplicate": 14,
     "excluded:implementation-invalid-d5": 9,
     "excluded:superseded": 19,
-    "failed_retained_for_taxonomy": 8,
+    "failed_retained_for_taxonomy": 9,
     "non-formal:calibration": 6,
     "non-formal:exp0-smoke": 4,
     "non-formal:probe": 11
@@ -707,6 +707,36 @@
       "group": "formal-axis4-b8",
       "state": "runtime_error",
       "disposition": "excluded:duplicate"
+    },
+    "20260915T165524052283Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s123__01a0a5fe-a494-71f6-b0f1-6c0b4820439c": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx2048",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T171705795963Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a0a612-8184-7eb3-a99e-ca4b06de7bb7": {
+      "kind": "formal",
+      "group": "formal-axis1-8b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T174429715197Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0a62b-9713-7077-8359-a639efa8b74b": {
+      "kind": "formal",
+      "group": "formal-axis1-8b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T181219460490Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a0a645-1184-7a67-a456-c0e6c0d64e3a": {
+      "kind": "formal",
+      "group": "formal-axis1-8b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T184033756783Z__mlx-community-qwen3-14b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a0a65e-ebdd-7ef7-b008-098853b76dc2": {
+      "kind": "formal",
+      "group": "formal-axis1-14b-4bit-qlora",
+      "state": "timeout",
+      "disposition": "failed_retained_for_taxonomy"
     }
   }
 }
