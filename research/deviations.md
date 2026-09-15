@@ -200,3 +200,47 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   打 [ok]——判读 run 成败必须读 result.json 的 terminal_state（本次
   即为例证）。
 
+## D8 — 14B formal 系列的停止决策与双层规模定位（2026-09-16，post-preregistration stopping decision）
+
+- **性质**：post-preregistration deviation / stopping decision。不是删除
+  失败结果，不是回改 preregistration（原文不动），也不是把 14B 改判为
+  成功/失败；是基于已有 evidence 的正式停止与重新定位决策。
+- **决策日期**：2026-09-16。
+- **受影响矩阵格**：轴 1 的 14B-4bit formal（预注册期望 3 seeds）与
+  轴 2 的 14B-4bit ctx2048 单点边界探针（后者从未执行）。
+- **预注册期望 vs 实际证据**：
+  - 预注册：14B-4bit @ctx512、100 步、3 seeds formal；ctx2048 单点探针。
+  - 实际（全部保留于 results/raw）：
+    1. 短程 probe（2026-09-07，swap 2.7 GiB）真实进入训练并以
+       0.68 s/步完成 20 步（success）；
+    2. formal 尝试 1（2026-09-11，swap 7.1 GiB）：操作者中断，
+       24 min 零步（unknown_failure/KeyboardInterrupt）；
+    3. formal 尝试 2（2026-09-15/16，swap 3.7 GiB 起始）：模型加载
+       ~40 min，训练推进至 50/100 步（step_time 27–86 s 波动、末端
+       >10 min 停滞），7200 s timeout，training_metrics 未及落盘
+       （successful_steps=null；步数证据在 logs/stdout.log）；
+    4. s123 的被杀 staging partial 留在磁盘（未 finalize，不作为
+       正式 result 使用）；s2026 从未启动。
+- **停止追加 14B formal 的理由（机器时间 / information-gain）**：
+  - 已有证据足以刻画 14B 为 *system-state-dependent boundary
+    configuration*：favorable 条件下可进入训练（probe），但在 formal
+    工作负载下受系统内存驻留状态支配（加载时长、步时恶化、timeout）；
+  - 通过重启/低驻留窗口追求 3/3 success 会：(a) 显著增加机器时间；
+    (b) 引入"特殊系统状态"confounder，与 formal 系列的可比性冲突；
+  - 对论文核心 RQ（量化扩展 reproducible 边界 + 边界的系统状态依赖性）
+    的新增 information gain 有限——14B 现有证据本身已构成 RQ5 的
+    边界叙事素材。
+- **论文解释的后果**：
+  - 模型规模结果分两层：
+    (i) **reproducible formal boundary**：8B-4bit，3/3 formal seeds
+    success（1{,}644/1{,}670/1{,}694 s）——主论文 model-scale 边界
+    的主要证据；
+    (ii) **extreme / system-state-dependent boundary**：14B-4bit 仅作
+    boundary case study / exploratory evidence（§ Boundary Behavior
+    at 14B），措辞限定为 "observed to enter training under favorable
+    conditions, but not reproducibly sustained under the formal
+    workload"。
+  - 14B 不得表述为 formally reproducible / stable / practical，同样
+    不得表述为 unsupported / impossible / OOM。
+  - 14B ctx2048 probe 取消（不再执行）。
+
