@@ -30,3 +30,19 @@
 9. Run tests before claiming an implementation works.
 10. Preserve complete commands required to reproduce every experiment.
 11. please answer me use Chinese.
+
+## Bundled skills (`.agents/skills/`, AGENTS-driven; provenance in `.agents/skills/INSTALLED.md`):
+
+When a task matches a bundled skill, read its `SKILL.md` first and follow it; prefer its scripts over ad-hoc commands.
+
+- `arxiv-paper-writer/` — arXiv-style ML/AI review-paper harness (IEEEtran scaffold, plan gate, issues-CSV pipeline, arXiv discovery, citation verification, compile gate). Trigger: writing, planning, or continuing an arXiv review/survey paper, or validating/repairing citations in a LaTeX project.
+- `latex-rhythm-refiner/` — LaTeX prose rhythm post-processing. Trigger: after drafting is complete, when sections read monotonous; also invoked by the writer skill's refinement stage.
+
+Hard rules inherited from the writer skill's upstream workflow (apply whenever that skill is active):
+
+- No prose before plan approval and a validated issues CSV exists (headings/bullets/seed citations only).
+- Every citation must be verified against a live online source before entering `ref.bib`.
+- The issues CSV is the execution contract; mark `DONE` only when its acceptance criteria are met; re-validate after edits.
+- Delivery requires a clean `pdflatex`+`bibtex` build with zero undefined citations.
+
+These skills are for new LaTeX writing projects; they never override the core rules above (raw results stay immutable; benchmark numbers stay script-generated).
