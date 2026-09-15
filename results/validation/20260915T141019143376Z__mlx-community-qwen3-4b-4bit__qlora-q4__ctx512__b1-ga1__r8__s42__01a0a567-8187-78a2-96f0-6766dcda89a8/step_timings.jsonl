@@ -1,0 +1,3 @@
+{"step": 1, "loss": 1.9585868120193481, "loss_bearing_tokens": 511, "step_time_seconds": 5.4819682079833, "wall_utc": "2026-09-15T14:11:42Z"}
+{"step": 2, "loss": 1.381706953048706, "loss_bearing_tokens": 511, "step_time_seconds": 5.568886541994289, "wall_utc": "2026-09-15T14:11:48Z"}
+{"step": 3, "loss": 1.410175085067749, "loss_bearing_tokens": 511, "step_time_seconds": 5.752604749985039, "wall_utc": "2026-09-15T14:13:10Z"}
