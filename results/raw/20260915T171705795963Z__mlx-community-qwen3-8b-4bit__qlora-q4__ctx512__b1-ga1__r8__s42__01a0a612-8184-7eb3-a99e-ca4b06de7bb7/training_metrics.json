@@ -1,0 +1,55 @@
+{
+  "model_load_seconds": 5.63021774997469,
+  "training_loop_seconds": 1483.9797491249628,
+  "successful_steps": 100,
+  "attempted_micro_steps": 100,
+  "measured_steps": 95,
+  "excluded_warmup_steps": 5,
+  "average_step_time_seconds": 11.337627044306014,
+  "median_step_time_seconds": 10.039107249991503,
+  "tokens_processed": 47526,
+  "token_count_definition": "loss-bearing target tokens（default_loss 掩码后的非 padding 目标 token）",
+  "tokens_per_second": 44.12507857733545,
+  "samples_processed": 95,
+  "samples_per_second": 0.08820187823184925,
+  "throughput_interval_definition": "训练循环内排除前 5 个 warmup 步后的测得区间；每步计时含前向+反向+优化器更新+mx.eval",
+  "measured_interval_seconds": 1077.0745692090713,
+  "total_tokens_all_steps": 49910,
+  "training_loss_final": 2.030538558959961,
+  "validation_loss_final": 1.3729042536421074,
+  "validation_loss_trajectory": [
+    {
+      "step": 0,
+      "loss": 1.9786277515001314
+    },
+    {
+      "step": 50,
+      "loss": 1.4046914004198494
+    },
+    {
+      "step": 100,
+      "loss": 1.3729042536421074
+    }
+  ],
+  "validation_n_samples": 32,
+  "method_effective": "qlora",
+  "lora_scale": 2.0,
+  "lora_scale_formula": "alpha / rank",
+  "trainable_parameters": 7667712,
+  "total_parameters": 1287730176,
+  "trainable_parameter_ratio": 0.0059544399462764476,
+  "model_architecture": "qwen3",
+  "parameter_count": 1280062464,
+  "parameter_count_method": "sum(array.size) over mlx_lm.load 结果的 parameters()（LoRA 附加前）",
+  "quantization_state": "quantized",
+  "quantization_bits": 4,
+  "quantization_group_size": 64,
+  "quantization_scheme": null,
+  "model_dtype": "mlx.core.uint32",
+  "logical_parameter_count": 8190735360,
+  "logical_parameter_count_method": "named_modules walk: QuantizedLinear/Embedding → scales.size×group_size+bias；dense leaf modules → sum(array.size)（weight/config inspection）",
+  "resolved_revision": "545dc4251c05440727734bcd94334791f6ab0192",
+  "revision_source": "REVISION sidecar（见 models/MANIFEST.md 的哈希校验锚定）",
+  "peak_metal_gpu_memory_bytes": 9865084673,
+  "peak_gpu_memory_note": "mx.metal.get_peak_memory()，GPU 侧峰值；进程级峰值内存仍为 unresolved"
+}

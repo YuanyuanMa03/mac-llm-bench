@@ -171,3 +171,32 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   避免在补实验窗口引入 supervisor code-revision confounder；
   其缺陷仅影响失败 run 的证据完整性，成功 run 的 manifest 一直正常。
 
+## D7 — 14B-4bit formal 在当前内存驻留下不可完成（timeout），剩余 seeds 推迟低驻留窗口（2026-09-16 登记）
+
+- 事件（batch12，2026-09-16 02:40–04:40 CST）：
+  - 8B-4bit 3 seeds **全部 success**（1644/1670/1694 s，100 步）——确认
+    2026-09-12 旧 timeout（swap_before 17.6 GiB）为环境归因而非规模极限。
+  - ctx2048 s123 重跑 **success**（1301 s）——axis2 ctx2048 达成 3/3 seeds
+    （旧失败为 peak_swap 19.9 GiB 下的 step-20-validation SIGKILL，保留）。
+  - **14B-4bit s42 timeout**（7201 s 被杀；stdout 证据：模型加载 ~40 min，
+    训练推进至 50/100 步，step_time 27–86 s 波动、末端 >10 min 停滞于
+    step 50；training_metrics 未落盘故 successful_steps=null，步数证据
+    在 raw logs/stdout.log）。起始 swap 3.7 GiB（闸门内），对照 probe
+    （2026-09-07，swap 2.7 GiB）同配置 0.68 s/步 → 归因统一内存换页
+    颠簸（model × system state，与 D1/D3 同构）。
+- 处置（information-gain 原则，用户 P3 指令授权）：
+  - s42 timeout 保留为 formal 负结果（system-state boundary 证据）；
+  - 主动终止 batch 队列中 s123/s2026（预期各 ~2 h 重复 timeout，
+    边际信息量低）；s123 被杀的 staging partial 留在磁盘不提交
+    （recovery policy，同 28ed7fa 先例）；
+  - 14B 剩余 formal seeds（s42 重跑/s123/s2026）与 P4（14B ctx2048
+    boundary probe）**推迟至低驻留窗口**（swap≈0；D1 补充先例：重启后
+    同类配置 451 s 成功；probe 证据下 14B 每	run 预计 ~5 min）。
+    论文对 14B 报告为 "system-state-dependent boundary"：低驻留 probe
+    success + 当前驻留 formal timeout，不宣称 14B 不可训练。
+  - H2 判定以 8B-4bit 3/3 formal success 为主证据（BF16 边界：8B probe
+    timeout、4B regime-dependent、14B out-of-budget）。
+- 备注：runner 的 [ok]/[FAIL] 只反映 supervisor 退出码，timeout run 亦
+  打 [ok]——判读 run 成败必须读 result.json 的 terminal_state（本次
+  即为例证）。
+
