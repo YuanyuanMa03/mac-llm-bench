@@ -77,3 +77,66 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
 
 依据：4B-4bit 工作集 ~4.5 GiB 在 ~7 GiB 可用内存下应无 swap-in 服务；
 >50 MB/步 的 swap-in 只能来自工作集越界的活跃换页。
+
+## D5 — 轴 4 implementation bug：变长 validation batching 崩溃 + padded mask 口径修正（2026-09-15 登记）
+
+性质：**implementation deviation**（实现缺陷被 formal 矩阵暴露），非实验
+失败本身的重新分类。历史失败 raw 不删除、不覆盖、不重分类。
+
+- **发现日期**：2026-09-15（失败发生于 2026-09-12T01:00–01:02 UTC，
+  trainer commit `7b4f304a07`）。
+- **影响轴**：formal 轴 4 全部（b2/b4/b8 × 3 seeds = 9 run，零成功）。
+- **受影响 experiment IDs**（全部保留，分类为 *implementation-invalid
+  formal attempts*，不作为 OOM/硬件边界证据使用）：
+  - `20260912T010039277561Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s42__01a09321-77ed-781d-9525-c73e2f13f47c`
+  - `20260912T010057032957Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s123__01a09321-bd49-74c0-b8a1-0782b7750f54`
+  - `20260912T010113537018Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s2026__01a09321-fdc1-7318-9bb8-17062e743279`
+  - `20260912T010129965737Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s42__01a09322-3dee-714c-a8eb-64e1429d9826`
+  - `20260912T010153968541Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s123__01a09322-9b0b-754e-accc-539b548284ca`
+  - `20260912T010221754536Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s2026__01a09323-083a-7124-9f61-789f550b20ba`
+  - `20260912T010247917130Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s42__01a09323-6e6d-7bbc-a2c4-00d73e72c23c`
+  - `20260912T010255423307Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s123__01a09323-8bbf-760e-a3d8-f8a9763ccbc8`
+  - `20260912T010259241894Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s2026__01a09323-9aaa-7934-b499-d66e8245049e`
+- **观测异常**（各 run stderr 一致）：
+  `ValueError: Initialization encountered non-uniform length`，
+  栈：`lora_smoke.py:177 run → :161 _eval_validation_loss → mx.array(chunk)`，
+  即 step-0 训练前 validation eval 处崩溃（每 run 存活 ~10–20 s）。
+- **根因证据**：
+  1. validation 路径对变长 chunk 直接 `mx.array(chunk)`（未 pad）；训练路径
+     同文件对 b>1 已实现右侧 pad + lengths mask。两条路径 batching 语义
+     不一致，是单纯的实现缺陷。
+  2. 触发条件 `micro_batch_size ≥ 2` 且批内长度不等：formal_sft_v1 的
+     validation split 天然变长（`ids[:seq_len]` 截断是上限非下限）；
+     b=1 时 chunk 为单条序列可构造成 2D 数组，故轴 1/2/3 的全部 b1 run
+     不受影响（其 validation 计算路径相同但从未触发）。
+- **计划修正**：抽取模块级共享 `_pad_batch(chunk, pad_id)`（右侧 pad 到
+  批内最大长度 + 逐行有效 target 区间），训练循环与 validation 循环使用
+  同一 helper，消除两套 batching 语义。
+- **语义影响声明**：
+  - 不改变：loss 定义、tokenizer、截断策略、optimizer/lr、LoRA 配置、
+    dataset、formal 聚合口径。
+  - 唯一刻意变更：padded batch 的 lengths 由 `[0, len(s)]` 收紧为
+    `[0, len(s)−1]`（每样本恰好 `len(s)−1` 个真实 next-token target）。
+    依据：`default_loss` 对 `targets=batch[:,1:]` 按 `steps∈[off,len]`
+    mask；`[0,len]` 在 padded batch 中对非批内最长样本会多计入 1 个位置
+    （input=真实末 token、target=pad token），即 padding 泄漏进有效 loss，
+    与预注册 "全 token LM loss" 的定义不符，且使 b>1 与 b1 的
+    loss-bearing token 口径不可比（预注册 §7 轴 4 明确要求 tokens 口径
+    比较吞吐）。
+  - **b=1 严格等价性**：单样本无 pad（M==L）时 targets 仅 L−1 列、steps
+    最大 L−1，`[0,L]` 与 `[0,L−1]` 的 mask 完全相同 → 已有全部 b1 formal
+    run（轴 1/1b/2/3）语义零影响；由 regression test 数值证明（新
+    `tests/test_train_padding.py`：padded-batch loss ≡ 逐样本 token 加权、
+    b1 新旧 lengths 语义 loss/tokens/mask 全等）。
+  - 不存在受影响的已成功 b>1 run（b>1 formal 仅轴 4，全部失败，即本条
+    所修对象）。
+- **历史 raw 不可变性**：按协议 §7，9 个 runtime_error 目录原样保留；
+  新 run 使用新 experiment ID（新 timestamp/UUID）；在 processed 层以本
+  deviation 为机器可读依据将旧 9 个标记 implementation-invalid 并排除出
+  聚合（failure taxonomy 保留其原始 runtime_error 终态）。
+- **重跑策略**（code-revision confounder 控制）：在修复 commit 上重跑完整
+  batch 轴 **b∈{1,2,4,8} × 3 seeds = 12 runs**（预注册原文"b1 复用轴 1"
+  为跨步数口径复用；为保证轴 4 内部同 commit、同步数（20 步）、同
+  warmup 排除（2 步）的严格可比性，新增 `formal-axis4-b1` 组作为
+  same-commit control。轴 1 的 b1 100-step run 继续按预注册用于跨轴复用；
+  轴 4 分析报告将同时呈现两者以供交叉核验）。

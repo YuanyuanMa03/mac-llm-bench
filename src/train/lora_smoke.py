@@ -35,6 +35,23 @@ def _sum_tree_size(tree) -> int:
     return int(tree.size) if hasattr(tree, "size") else 0
 
 
+def _pad_batch(chunk: list[list[int]],
+               pad_id: int) -> tuple[list[list[int]], list[list[int]]]:
+    """变长样本批构造（训练与 validation 共用同一 batching 语义）。
+
+    右侧 pad 到批内最大长度；lengths=[0, len(s)-1] 给出每行有效 target
+    区间（default_loss 按 steps∈[offset,len] 对 batch[:,1:] 逐行 mask），
+    每样本恰好 len(s)-1 个真实 next-token target，pad 位置不参与 loss。
+    单样本（无 pad 追加）时与旧实现 lengths=[0,len] 在 default_loss 下
+    逐位等价（targets 仅 L-1 列，两种上界 mask 相同）——见
+    tests/test_train_padding.py 与 research/deviations.md D5。
+    """
+    max_len = max(len(s) for s in chunk)
+    batch_ids = [s + [pad_id] * (max_len - len(s)) for s in chunk]
+    lengths = [[0, len(s) - 1] for s in chunk]
+    return batch_ids, lengths
+
+
 def _logical_parameter_count(model: nn.Module) -> int:
     """逻辑参数量：量化层按 scales shape×group_size 还原 logical 形状计数。
 
@@ -150,6 +167,8 @@ def run(config_path: Path) -> int:
     if not samples:
         raise SystemExit("数据集为空")
     val_samples = _load_samples(data_cfg.get("validation_local_paths") or [])
+    pad_id = tokenizer.pad_token_id
+    pad_id = pad_id if pad_id is not None else 0
 
     def _eval_validation_loss() -> float | None:
         """验证集上 loss-bearing 交叉熵的样本加权均值（forward-only，确定性顺序）。"""
@@ -157,10 +176,10 @@ def run(config_path: Path) -> int:
             return None
         total_loss, total_toks = 0.0, 0
         for i in range(0, len(val_samples), batch_size):
-            chunk = val_samples[i:i + batch_size]
-            ids = mx.array(chunk)
-            lens = mx.array([[0, len(s)] for s in chunk])
-            (loss, toks), _ = grad_fn(model, ids, lens)
+            batch_ids, lengths = _pad_batch(
+                val_samples[i:i + batch_size], pad_id)
+            (loss, toks), _ = grad_fn(model, mx.array(batch_ids),
+                                      mx.array(lengths))
             mx.eval(loss, toks)
             total_loss += float(loss) * int(toks)
             total_toks += int(toks)
@@ -197,15 +216,8 @@ def run(config_path: Path) -> int:
                 cursor = 0
             chunk.append(samples[order[cursor]])
             cursor += 1
-        if batch_size == 1:
-            batch_ids, lengths = [chunk[0]], [[0, len(chunk[0])]]
-        else:
-            # 右侧 pad 到批内最大长度；default_loss 按 lengths=[0,len_i] 逐行 mask
-            max_len = max(len(s) for s in chunk)
-            pad = tokenizer.pad_token_id
-            pad = pad if pad is not None else 0
-            batch_ids = [s + [pad] * (max_len - len(s)) for s in chunk]
-            lengths = [[0, len(s)] for s in chunk]
+        # 右侧 pad + lengths 逐行 mask；与 validation 同一 helper（D5）
+        batch_ids, lengths = _pad_batch(chunk, pad_id)
         batch = mx.array(batch_ids)
         lens = mx.array(lengths)
 
