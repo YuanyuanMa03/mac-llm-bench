@@ -25,7 +25,7 @@
 | 统一内存 | 17,179,869,184 B（16 GiB） | `sysctl hw.memsize` |
 | CPU 核 | 10 物理 / 10 逻辑 | `sysctl hw.physicalcpu/hw.logicalcpu` |
 | GPU 核 | 未采集（无已验证来源键） | `src/benchmark/environment.py` 设计如此 |
-| 磁盘 | <volume> 已用 11%，可用 ≈613 GB（df -kP 1024B 块） | 2026-09-11 查询 |
+| 磁盘 | <repo-volume> 已用 11%，可用 ≈613 GB（df -kP 1024B 块） | 2026-09-11 查询 |
 | 当前 swap | used = 4846.50 MB（2026-09-11 查询；系统长期驻留 swap，非本次实验污染） | `sysctl vm.swapusage` |
 
 注意：本机 `system_profiler` 的 GPU 核心数与 thermal/energy 均无已验证采集路径，

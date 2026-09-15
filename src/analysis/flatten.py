@@ -13,12 +13,27 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "results" / "raw"
+
+# 派生输出的路径脱敏（raw 不动）：本地仓库前缀与用户家目录替换为占位符，
+# 使 processed CSV 可公开分发。仅作用于字符串字段，不触及任何数值。
+_REPO_PREFIX = re.compile(re.escape(str(ROOT)))
+_HOME_PREFIX = re.compile(r"<home>/\\\"']+")
+
+
+def _sanitize(value):
+    if isinstance(value, str):
+        value = _REPO_PREFIX.sub("<repo>", value)
+        value = _HOME_PREFIX.sub("<home>", value)
+    elif isinstance(value, (list, tuple)):
+        value = [_sanitize(v) for v in value]
+    return value
 
 
 def verify_manifest(d: Path) -> bool | None:
@@ -38,7 +53,7 @@ def _flatten(node, prefix: str, out: dict) -> None:
         for k, v in node.items():
             _flatten(v, f"{prefix}.{k}" if prefix else k, out)
     else:
-        out[prefix] = node
+        out[prefix] = _sanitize(node)
 
 
 def flatten_result(r: dict, d: Path, manifest_ok: bool | None) -> dict:

@@ -4,7 +4,7 @@
 
 在消费级 16 GB 统一内存 Apple Silicon Mac 上，对大语言模型微调（full / LoRA / QLoRA）进行可复现基准测试的研究仓库，基于 [MLX](https://ml-explore.github.io/mlx/) 与 MLX-LM 构建。
 
-本仓库处于**研究进行中**状态。目前不存在任何 benchmark 数值——这是设计使然：将来出现在这里的每一个数字都必须能追溯到原始实验记录（见 [AGENTS.md](AGENTS.md)）。
+**实验已于 2026-09-15 冻结（`freeze-04f90a840b8ea8fb`）**：118 个 finalized 原始实验，预注册 formal 矩阵执行至声明的停止点（偏离 D1–D8 全部登记于 [research/deviations.md](research/deviations.md)）；论文中每个数字都经 [research/claim_ledger.csv](research/claim_ledger.csv) 追溯到原始记录。
 
 ## 研究问题
 
@@ -18,7 +18,24 @@ Loadable（可加载）→ Trainable（可训练）→ Practical（实用）→ 
 
 `success`、`oom`，以及（在可可靠测量时的）`严重 swap / 吞吐不可用` 都是同等重要的实验结果。OOM 运行是有效观测，永不删除。
 
-计划的实验轴：模型规模（Qwen3-0.6B → 1.7B → 4B → …）、上下文长度、batch size、LoRA rank 扫描、full vs LoRA vs QLoRA、多随机种子重复。
+## 主要结论（来自冻结数据集）
+
+- **最高可复现训练配置**：8B 4-bit QLoRA（3/3 formal seeds）；14B 4-bit 作为 *system-state-dependent boundary case*（D8）报告，不作为已完成的 formal 格。
+- 4-bit QLoRA 在全部配对规模上将峰值内存降至 BF16 的 0.54–0.73×，步时比值落在预注册 ±25% 等价边距内。
+- 内存随模型规模**次线性**增长（log-log slope 0.57，固定开销稀释）；步时近似线性（slope 1.00）。
+- Context 是首要约束：可训练边界 ∈ [2048, 4096)；micro-batch 边界 ∈ [4, 8)，且 batch 放大单调降低吞吐。
+- 可训练性是模型×系统驻留状态的联合属性（D1/D3/D7/D8 案例链）。
+
+## 最小复现
+
+```bash
+uv sync                                   # 锁定环境（Python 3.13, mlx 0.32.2）
+uv run python -m pytest tests/ -q         # 48 项测试
+uv run python scripts/run_analysis.py     # 从冻结 raw 一键重建全部派生产物
+cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+```
+
+模型权重不入库（git-ignored），revision 锚定见 `models/MANIFEST.md`。
 
 ## 当前状态
 

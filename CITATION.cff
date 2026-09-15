@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: >-
+  If you use this benchmark, its raw experiment records, or its analysis
+  pipeline, please cite both the repository and the paper draft.
+title: mac-llm-bench
+type: dataset
+identifiers:
+  - description: >-
+      Frozen raw-experiment dataset identity (see
+      research/experiment_freeze.md)
+    type: other
+    value: freeze-04f90a840b8ea8fb
+repository-code: "https://github.com/anonymous/mac-llm-bench"
+authors:
+  - name: mac-llm-bench maintainers
+    alias: Anonymous (double-blind submission)
+version: 1.0.0-rc1
+date-released: "2026-09-16"
+keywords:
+  - llm
+  - fine-tuning
+  - apple-silicon
+  - unified-memory
+  - mlx
+  - qlora
+  - benchmark
+  - reproducibility
+license: MIT
+preferred-citation:
+  type: unpublished
+  title: >-
+    How Far Can 16 GB Go? Characterizing Memory-Efficient LLM Fine-Tuning
+    on Consumer Apple Silicon
+  year: 2026
+  authors:
+    - name: Anonymous

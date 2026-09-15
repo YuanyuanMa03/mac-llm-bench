@@ -40,7 +40,7 @@ overhead dilutes weight costs, while step time grows linearly (slope
 1.00); (4) context length, not model scale, is the binding constraint:
 2048-token contexts complete but raise peak memory beyond physical RAM,
 and 4096-token contexts are killed before their first step; (5) micro-batch
-scaling fails outright at batch~8 (consistent SIGKILL with system swap
+scaling fails outright at batch~8 (consistent termination by SIGKILL, POSIX signal 9, with system swap
 driven to $\sim$20\,GiB) and \emph{reduces} throughput at every trainable
 size. All numbers are generated programmatically from immutable raw
 results; seven preregistration deviations are reported in full.
@@ -71,7 +71,7 @@ logged deviations from preregistration.
 \section{Background and Related Work}
 \label{sec:related}
 \subsection{Apple Silicon and Unified Memory}
-Apple Silicon SoCs present a single physical memory pool shared by CPU and GPU.
+Apple Silicon system-on-chips (SoCs) present a single physical memory pool shared by CPU and GPU.
 \texttt{mlx}~\cite{mlx2023} is an array framework that targets this architecture
 directly; \texttt{mlx-lm}~\cite{mlxlm} provides LLM fine-tuning on top of it.
 Prior profiling of Apple Silicon training reports substantial gaps to NVIDIA
@@ -143,7 +143,7 @@ byte-verified (Table~\ref{tab:setup}).
 The formal benchmark uses a frozen subset of
 ultrachat\_200k~\cite{ding2023ultrachat} (revision \texttt{8049631c}): 2{,}048
 training and 32 validation conversations sampled with seed 42 and formatted
-with the Qwen3 chat template; loss is a standard LM loss over all tokens.
+with the Qwen3 chat template; loss is a standard language-model (LM) loss over all tokens.
 The manifest and SHA-256 sums ship with the repository. Synthetic long-context
 workloads are used only for context-scaling systems analysis, never for
 quality claims.
@@ -162,7 +162,7 @@ first-class results. Step timing includes forward, backward, optimizer update,
 and an explicit \texttt{mx.eval} synchronization; we measured that omitting
 this synchronization under-reports step time by three orders of magnitude
 under MLX's lazy execution. Peak memory is the MLX allocator's Metal-buffer
-high-water mark (\texttt{get\_peak\_memory}); it is not process RSS, and on
+high-water mark (\texttt{get\_peak\_memory}); it is not process resident set size (RSS), and on
 unified memory it may exceed physical RAM, at which point macOS paging carries
 the excess. Full validation evidence is in the repository
 (\texttt{docs/measurement\_validation.md}).

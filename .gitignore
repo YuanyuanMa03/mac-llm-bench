@@ -4,3 +4,13 @@ models/
 .DS_Store
 __pycache__/
 *.staging/
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+
+# tool droppings
+.video_agent/

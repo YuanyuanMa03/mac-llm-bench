@@ -22,5 +22,5 @@ MANIFEST 中 safetensors 逻辑字节总和（≈1.503+4.064+0.335+0.968 GB）�
 ```bash
 du -sk models/Qwen3-0.6B models/Qwen3-1.7B models/Qwen3-0.6B-4bit models/Qwen3-1.7B-4bit models/download_20260831.log
 du -sk models/
-df -k <volume>
+df -k <repo-volume>
 ```

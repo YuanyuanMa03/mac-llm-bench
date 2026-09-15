@@ -39,6 +39,34 @@ Loadable → Trainable → Practical → Efficient
 | Paper | ✅ draft complete, compiles (8 pp, 0 undefined refs) — [paper/main.tex](paper/main.tex) |
 | Reproducibility audit | ✅ [research/reproducibility_audit.md](research/reproducibility_audit.md) |
 
+## Quickstart (minimal reproduction)
+
+```bash
+# 1. Locked Python environment (uv required; Python 3.13, mlx 0.32.2, mlx-lm 0.31.3)
+uv sync
+
+# 2. Rebuild every derived artifact from the frozen raw records
+#    (processed tables, coverage report, key numbers, figures, LaTeX tables,
+#     hypothesis audit). Requires no model downloads and no GPU.
+uv run python scripts/run_analysis.py
+
+# 3. Verify the software layer
+uv run python -m pytest tests/ -q          # 48 tests
+
+# 4. Recompute the audits
+uv run python scripts/audit_reproducibility.py
+uv run python scripts/build_claim_ledger.py
+
+# 5. Compile the paper (TeX Live with pdflatex+bibtex)
+cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+```
+
+Re-running experiments (optional) additionally requires the pinned model
+weights under `models/` (see [Models](#models) and `models/MANIFEST.md`;
+weights are git-ignored) and an Apple Silicon Mac; each run is launched via
+`uv run python scripts/run_experiment.py --config <yaml> -- uv run python
+scripts/train_lora.py <yaml>`.
+
 ## Hardware
 
 - Target platform: Apple Silicon Mac (arm64), 16 GB unified memory, macOS.
