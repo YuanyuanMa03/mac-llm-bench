@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 def main() -> int:
     from analysis import failure_taxonomy, figures, flatten, summary, tables
-    from analysis import context_boundary, coverage
+    from analysis import context_boundary, coverage, hypothesis_audit
 
     flatten.main()
     coverage.main()
@@ -21,6 +21,7 @@ def main() -> int:
     summary.main()
     figures.main()
     tables.main()
+    hypothesis_audit.main()
     print("[analysis] 全部 processed/figures/tables 已从 raw results 重新生成")
     return 0
 

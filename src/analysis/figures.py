@@ -342,6 +342,69 @@ def fig6_paired_effects(df: pd.DataFrame) -> None:
     _save(fig, "fig6_paired_effects")
 
 
+def fig7_batch_axis(df: pd.DataFrame) -> None:
+    """轴 4 batch（D5 修复后同 commit 重跑；b8 SIGKILL 边界标注）。"""
+    full = pd.read_csv(ROOT / "results" / "processed" / "experiments.csv",
+                       low_memory=False)
+    groups = {1: "formal-axis4-b1", 2: "formal-axis4-b2", 4: "formal-axis4-b4"}
+    xs, tp, tpe, mem, meme = [], [], [], [], []
+    for b, g in groups.items():
+        sub = _group(df, g)
+        t = _agg(sub["runtime.tokens_per_second"])
+        m = _agg(sub["tm.peak_metal_gpu_memory_bytes"])
+        xs.append(b); tp.append(t["mean"]); tpe.append(t["sd"] or 0)
+        mem.append(m["mean"] / 2**30); meme.append((m["sd"] or 0) / 2**30)
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 3.2))
+    axes[0].errorbar(xs, tp, yerr=tpe, marker="o", ms=4, lw=1.4,
+                     color=Q4_COLOR, capsize=2, label="trainable (3 seeds)")
+    axes[0].scatter([8], [0], marker="x", s=70, color="#a11", zorder=5)
+    axes[0].annotate("SIGKILL ×3 seeds\n(exit 137, zero steps)",
+                     xy=(8, 0), fontsize=6.5, color="#a11",
+                     xytext=(-6, 10), textcoords="offset points", ha="right")
+    axes[0].set_xlabel("micro-batch size"); axes[0].set_ylabel("loss-bearing tokens/s")
+    axes[0].set_title("Throughput vs batch (4B-4bit, ctx512)", fontsize=9)
+    axes[0].legend(fontsize=7)
+    axes[1].errorbar(xs, mem, yerr=meme, marker="o", ms=4, lw=1.4,
+                     color=Q4_COLOR, capsize=2, label="MLX peak (mean±SD)")
+    axes[1].scatter([8], [16], marker="x", s=70, color="#a11", zorder=5)
+    axes[1].annotate("SIGKILL ×3\n(system swap→~20 GiB)",
+                     xy=(8, 16), fontsize=6.5, color="#a11",
+                     xytext=(-6, -18), textcoords="offset points", ha="right")
+    axes[1].axhline(16, color="#888888", lw=1, ls=":")
+    axes[1].text(1.0, 16.3, "16 GiB physical RAM", fontsize=6.5, color="#666666")
+    axes[1].set_xlabel("micro-batch size"); axes[1].set_ylabel("MLX peak memory (GiB)")
+    axes[1].set_title("Peak memory vs batch (batch boundary ∈ [4,8))",
+                      fontsize=9)
+    axes[1].legend(fontsize=7)
+    _save(fig, "fig7_batch_axis")
+
+
+def fig8_rank_axis(df: pd.DataFrame) -> None:
+    """轴 3 rank（4B-4bit；r8 复用轴 1 同配置点）。"""
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 3.2))
+    pts = {}
+    for r, g in ((4, "formal-axis3-r4"), (8, "formal-axis1-4b-4bit-qlora"),
+                 (32, "formal-axis3-r32")):
+        sub = _group(df, g)
+        pts[r] = {"step": _agg(sub["tm.median_step_time_seconds"]),
+                  "mem": _agg(sub["tm.peak_metal_gpu_memory_bytes"])}
+    xs = sorted(pts)
+    for ax, key, ylab, title in (
+            (axes[0], "step", "median step time (s)", "Step time vs LoRA rank"),
+            (axes[1], "mem", "MLX peak memory (GiB)", "Peak memory vs LoRA rank")):
+        scale = (lambda v: v) if key == "step" else (lambda v: v / 2**30)
+        ax.errorbar(xs, [scale(pts[x][key]["mean"]) for x in xs],
+                    yerr=[(scale(pts[x][key]["sd"] or 0)) for x in xs],
+                    marker="o", ms=4, lw=1.4, color=Q4_COLOR, capsize=2,
+                    label="mean±SD (3 seeds)")
+        ax.set_xscale("log", base=2)
+        ax.set_xticks(xs); ax.set_xticklabels([str(x) for x in xs])
+        ax.set_xlabel("LoRA rank"); ax.set_ylabel(ylab)
+        ax.set_title(title + " (4B-4bit, ctx512)", fontsize=9)
+        ax.legend(fontsize=7)
+    _save(fig, "fig8_rank_axis")
+
+
 def main() -> int:
     df = _load()
     fig1_architecture()
@@ -350,4 +413,6 @@ def main() -> int:
     fig4_time_scaling(df)
     fig5_context_scaling(df)
     fig6_paired_effects(df)
+    fig7_batch_axis(df)
+    fig8_rank_axis(df)
     return 0

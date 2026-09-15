@@ -96,6 +96,61 @@ def main() -> int:
             "tokens_per_s": _agg(sub, "runtime.tokens_per_second"),
         }
 
+    # 轴 3：rank（4B-4bit；r8 复用轴 1 同口径 20 步组 axis3-r8 不存在，
+    # 按 preregistration §7 用 axis1 的 100 步 b1 run 作为 r8 点）
+    out["rank_axis"] = {}
+    for rank, g in ((4, "formal-axis3-r4"), (8, "formal-axis1-4b-4bit-qlora"),
+                    (32, "formal-axis3-r32")):
+        sub = ok[ok["experiment.comparison_group_id"] == g]
+        if sub.empty:
+            continue
+        out["rank_axis"][str(rank)] = {
+            "group": g,
+            "median_step_s": _agg(sub, "tm.median_step_time_seconds"),
+            "peak_mem_gib": {k: (v / 2**30 if v is not None else None)
+                             for k, v in (_agg(sub, "tm.peak_metal_gpu_memory_bytes")
+                                          or {}).items() if k != "values"},
+            "tokens_per_s": _agg(sub, "runtime.tokens_per_second"),
+            "val_loss_final": _agg(sub, "metrics.validation_loss_final"),
+        }
+
+    # 轴 4：batch（D5 修复后同 commit 重跑，2026-09-15 batch11）
+    out["batch_axis"] = {
+        "note": "all cells rerun in one window on D5-fixed trainer "
+                "(deviations.md D5); b8 = SIGKILL-consistent boundary",
+    }
+    for b, g in ((1, "formal-axis4-b1"), (2, "formal-axis4-b2"),
+                 (4, "formal-axis4-b4"), (8, "formal-axis4-b8")):
+        sub = ok[ok["experiment.comparison_group_id"] == g]
+        entry: dict = {"group": g}
+        if sub.empty:
+            fails = df[df["experiment.comparison_group_id"] == g]
+            entry.update({
+                "n_runs": int(len(fails)),
+                "terminal_states": {str(s): int(n) for s, n in
+                                    fails["status.terminal_state"]
+                                    .value_counts().items()},
+                "boundary": "SIGKILL-consistent (exit 137, zero stdout, "
+                            "peak system swap ~20 GiB); not OOM",
+            })
+            out["batch_axis"][str(b)] = entry
+            continue
+        tok_per_step = [float(t) / max(int(m), 1) for t, m in
+                        zip(pd.to_numeric(sub["runtime.tokens_processed"],
+                                          errors="coerce"),
+                            pd.to_numeric(sub["runtime.measured_steps"],
+                                          errors="coerce"))]
+        entry.update({
+            "median_step_s": _agg(sub, "tm.median_step_time_seconds"),
+            "loss_bearing_tokens_per_step": mean_sd_ci(tok_per_step),
+            "tokens_per_s": _agg(sub, "runtime.tokens_per_second"),
+            "peak_mem_gib": {k: (v / 2**30 if v is not None else None)
+                             for k, v in (_agg(sub, "tm.peak_metal_gpu_memory_bytes")
+                                          or {}).items() if k != "values"},
+            "val_loss_final": _agg(sub, "metrics.validation_loss_final"),
+        })
+        out["batch_axis"][str(b)] = entry
+
     # RQ4 配对（同模型同 seed）
     for model in ("0.6b", "1.7b", "4b"):
         ga, gb = f"formal-axis1-{model}-bf16-lora", f"formal-axis1-{model}-4bit-qlora"

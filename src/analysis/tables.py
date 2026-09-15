@@ -45,15 +45,20 @@ def _agg_cell(sub: pd.DataFrame, col: str, digits: int = 3) -> str:
 
 def table1(df: pd.DataFrame) -> None:
     ref = df[df["status.terminal_state"] == "success"].iloc[-1]
-    h = ref["hardware"]
     rows = [
         ("Hardware", ""),
-        ("\\quad Chip", f"{h['apple_chip_model']}"),
-        ("\\quad Memory", f"{h['unified_memory_bytes'] / 2**30:.0f} GiB unified"),
-        ("\\quad CPU cores", f"{h['cpu_physical_cores']}P / {h['cpu_logical_cores']}L"),
-        ("OS", f"macOS {ref['software']['macos_version']} (build {ref['software']['macos_build']})"),
-        ("Python", f"{ref['software']['python_version'].split()[0]} (uv-managed venv)"),
-        ("MLX / mlx-lm", f"{ref['software']['mlx_version']} / {ref['software']['mlx_lm_version']}"),
+        ("\\quad Chip", f"{ref['hardware.apple_chip_model']}"),
+        ("\\quad Memory",
+         f"{ref['hardware.unified_memory_bytes'] / 2**30:.0f} GiB unified"),
+        ("\\quad CPU cores",
+         f"{ref['hardware.cpu_physical_cores']}P / "
+         f"{ref['hardware.cpu_logical_cores']}L"),
+        ("OS", f"macOS {ref['software.macos_version']} "
+               f"(build {ref['software.macos_build']})"),
+        ("Python",
+         f"{ref['software.python_version'].split()[0]} (uv-managed venv)"),
+        ("MLX / mlx-lm",
+         f"{ref['software.mlx_version']} / {ref['software.mlx_lm_version']}"),
         ("Training data", "ultrachat\\_200k@8049631c, frozen 2048/32 subset"),
     ]
     models = []
@@ -194,10 +199,80 @@ def table4(df: pd.DataFrame) -> None:
     print("[table] table4_failures.tex")
 
 
+def table5(df: pd.DataFrame) -> None:
+    """轴 4 batch（D5 修复后同 commit 重跑；b8 SIGKILL 边界行）。"""
+    lines = [
+        "\\begin{table}[t]\\centering",
+        "\\caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, "
+        "seeds \\{42,123,2026\\}, all cells rerun on the D5-fixed trainer in "
+        "one window; mean$\\pm$SD).}",
+        "\\label{tab:batch}", "\\small",
+        "\\begin{tabular}{rrrrrl}", "\\toprule",
+        "Batch & Tok/step & Median step (s) & Tok/s & Peak mem (GiB) & "
+        "Status\\\\", "\\midrule",
+    ]
+    for b, g in ((1, "formal-axis4-b1"), (2, "formal-axis4-b2"),
+                 (4, "formal-axis4-b4")):
+        sub = df[(df["experiment.comparison_group_id"] == g)
+                 & (df["status.terminal_state"] == "success")]
+        if sub.empty:
+            lines.append(f"{b} & -- & -- & -- & -- & missing\\\\")
+            continue
+        tok_step = [float(t) / max(int(m), 1) for t, m in
+                    zip(pd.to_numeric(sub["runtime.tokens_processed"],
+                                      errors="coerce"),
+                        pd.to_numeric(sub["runtime.measured_steps"],
+                                      errors="coerce"))]
+        a = mean_sd_ci(tok_step) or {}
+        ts = (f"{a.get('mean', 0):.0f}" +
+              (f"±{a['sd']:.0f}" if a.get("sd") is not None else ""))
+        lines.append(
+            f"{b} & {ts} & {_agg_cell(sub, 'tm.median_step_time_seconds')} & "
+            f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
+            f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
+            f"success$\\times${len(sub)}\\\\")
+    lines.append("8 & $\\sim$4088 & -- & -- & $>$16 (sys swap $\\to$20) & "
+                 "SIGKILL$\\times$3 (exit 137, 0 steps; D5 notes)\\\\")
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    (TABLES / "table5_batch_axis.tex").write_text("\n".join(lines) + "\n",
+                                                  encoding="utf-8")
+    print("[table] table5_batch_axis.tex")
+
+
+def table6(df: pd.DataFrame) -> None:
+    """轴 3 rank（r8 复用轴 1 点）。"""
+    lines = [
+        "\\begin{table}[t]\\centering",
+        "\\caption{LoRA rank axis (Qwen3-4B-4bit QLoRA, ctx512, b1, 20 steps "
+        "for r4/r32; r8 point reused from the 100-step axis-1 cell per "
+        "preregistration; mean$\\pm$SD).}",
+        "\\label{tab:rank}", "\\small",
+        "\\begin{tabular}{rrrr}", "\\toprule",
+        "Rank & Median step (s) & Tok/s & Peak mem (GiB)\\\\", "\\midrule",
+    ]
+    for r, g in ((4, "formal-axis3-r4"), (8, "formal-axis1-4b-4bit-qlora"),
+                 (32, "formal-axis3-r32")):
+        sub = df[(df["experiment.comparison_group_id"] == g)
+                 & (df["status.terminal_state"] == "success")]
+        if sub.empty:
+            lines.append(f"{r} & -- & -- & --\\\\")
+            continue
+        lines.append(
+            f"{r} & {_agg_cell(sub, 'tm.median_step_time_seconds')} & "
+            f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
+            f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)}\\\\")
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    (TABLES / "table6_rank_axis.tex").write_text("\n".join(lines) + "\n",
+                                                 encoding="utf-8")
+    print("[table] table6_rank_axis.tex")
+
+
 def main() -> int:
     df = _load()
     table1(df)
     table2(df)
     table3(df)
     table4(df)
+    table5(df)
+    table6(df)
     return 0
