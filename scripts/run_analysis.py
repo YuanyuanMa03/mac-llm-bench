@@ -12,9 +12,10 @@ sys.path.insert(0, str(ROOT / "src"))
 
 def main() -> int:
     from analysis import failure_taxonomy, figures, flatten, summary, tables
-    from analysis import context_boundary
+    from analysis import context_boundary, coverage
 
     flatten.main()
+    coverage.main()
     failure_taxonomy.main()
     context_boundary.main([])
     summary.main()

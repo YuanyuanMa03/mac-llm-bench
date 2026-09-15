@@ -1,0 +1,712 @@
+{
+  "schema_version": "1.0.0",
+  "generated_utc": "2026-09-15T16:54:00+00:00",
+  "generator_commit": "b37c02bf3a57f7ae27aeb258d271fd2d03801faa",
+  "raw_total": 113,
+  "validation_total": 16,
+  "processed_total": 113,
+  "formal_total": 92,
+  "probe_total": 11,
+  "by_kind": {
+    "calibration": 6,
+    "exp0-smoke": 4,
+    "formal": 92,
+    "probe": 11
+  },
+  "dispositions": {
+    "aggregation_included": 42,
+    "excluded:duplicate": 14,
+    "excluded:implementation-invalid-d5": 9,
+    "excluded:superseded": 19,
+    "failed_retained_for_taxonomy": 8,
+    "non-formal:calibration": 6,
+    "non-formal:exp0-smoke": 4,
+    "non-formal:probe": 11
+  },
+  "exclusion_reasons": {
+    "excluded:superseded": "superseded by later run (supersedes_experiment_id)",
+    "excluded:duplicate": "same (group, seed, state) has a retained run (D2 dedup: Tier-A first, then earliest)",
+    "excluded:implementation-invalid-d5": "D5 trainer bug signature in error_message; not usable as failure/boundary evidence"
+  },
+  "reconciliation_ok": true,
+  "per_run": {
+    "20260907T021942754783Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079aa-0d22-7b82-b087-2e81025cf45b": {
+      "kind": "exp0-smoke",
+      "group": "exp0-smoke",
+      "state": "runtime_error",
+      "disposition": "non-formal:exp0-smoke"
+    },
+    "20260907T022132013680Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079ab-b7ed-7447-a05f-b39f0285f29c": {
+      "kind": "exp0-smoke",
+      "group": "exp0-smoke",
+      "state": "runtime_error",
+      "disposition": "non-formal:exp0-smoke"
+    },
+    "20260907T022332559211Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079ad-8ecf-7cbe-b5e3-d272557aa348": {
+      "kind": "exp0-smoke",
+      "group": "exp0-smoke",
+      "state": "success",
+      "disposition": "non-formal:exp0-smoke"
+    },
+    "20260907T022556721693Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079af-c1f1-73d0-966a-a96df7d37d9e": {
+      "kind": "exp0-smoke",
+      "group": "exp0-smoke",
+      "state": "success",
+      "disposition": "non-formal:exp0-smoke"
+    },
+    "20260907T024058016577Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079bd-82a0-7e05-8094-4012df9f2def": {
+      "kind": "calibration",
+      "group": "calibration-0.6b-lora100-seed42",
+      "state": "success",
+      "disposition": "non-formal:calibration"
+    },
+    "20260907T024106970990Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079bd-a59b-799e-ba6b-0ea7a10b3ff2": {
+      "kind": "calibration",
+      "group": "calibration-0.6b-lora100-seed42",
+      "state": "success",
+      "disposition": "non-formal:calibration"
+    },
+    "20260907T024115717682Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079bd-c7c5-70da-a357-155d77baf283": {
+      "kind": "calibration",
+      "group": "calibration-0.6b-lora100-seed42",
+      "state": "success",
+      "disposition": "non-formal:calibration"
+    },
+    "20260907T024646490250Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079c2-d3da-7155-86ac-53cf7f4ae3b2": {
+      "kind": "calibration",
+      "group": "calibration-1.7b-lora100-seed42",
+      "state": "success",
+      "disposition": "non-formal:calibration"
+    },
+    "20260907T024709149499Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079c3-2c5d-7344-b870-479dba0fefc8": {
+      "kind": "calibration",
+      "group": "calibration-1.7b-lora100-seed42",
+      "state": "success",
+      "disposition": "non-formal:calibration"
+    },
+    "20260907T024732247104Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s42__01a079c3-8697-7052-b0ed-584850171716": {
+      "kind": "calibration",
+      "group": "calibration-1.7b-lora100-seed42",
+      "state": "success",
+      "disposition": "non-formal:calibration"
+    },
+    "20260907T040127366397Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a07a07-3346-7299-a88e-5b27ca4db995": {
+      "kind": "probe",
+      "group": "probe-4b-bf16-lora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T040620496121Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a07a0b-ac50-747e-9d35-b06afa67336c": {
+      "kind": "probe",
+      "group": "probe-4b-bf16-lora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T072718449994Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07ac3-a9b2-7e63-aee6-c2ce5f44e305": {
+      "kind": "probe",
+      "group": "probe-4b-4bit-qlora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T080508682710Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a07ae6-4dca-722d-b073-f4b3153e03d0": {
+      "kind": "probe",
+      "group": "probe-4b-bf16-lora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T080735708838Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07ae8-8c1c-72cb-a2fb-351e0e6545a5": {
+      "kind": "probe",
+      "group": "probe-4b-4bit-qlora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T090653918143Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07b1e-d75e-7f92-88af-6222d8638cbf": {
+      "kind": "probe",
+      "group": "probe-8b-4bit-qlora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T095600405930Z__mlx-community-qwen3-14b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a07b4b-cd16-7c6e-b3d7-69566ded52b8": {
+      "kind": "probe",
+      "group": "probe-14b-4bit-qlora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61": {
+      "kind": "probe",
+      "group": "probe-4b-4bit-ctx2048-qlora20-seed42",
+      "state": "success",
+      "disposition": "non-formal:probe"
+    },
+    "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0": {
+      "kind": "probe",
+      "group": "probe-4b-4bit-ctx8192-qlora20-seed42",
+      "state": "runtime_error",
+      "disposition": "non-formal:probe"
+    },
+    "20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467": {
+      "kind": "probe",
+      "group": "probe-4b-4bit-ctx4096-qlora20-seed42",
+      "state": "runtime_error",
+      "disposition": "non-formal:probe"
+    },
+    "20260911T174043530559Z__mlx-community-qwen3-0-6b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0918e-b38b-7093-b4d6-b6cab6007e33": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T174225806700Z__mlx-community-qwen3-0-6b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a09190-430f-705c-9ebd-086dbc4c3c70": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T174406709536Z__mlx-community-qwen3-0-6b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a09191-cd35-735e-a573-46588bffb459": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T174548789351Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s123__01a09193-5bf5-76f0-869d-ebaec63efb60": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T174835359930Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s2026__01a09195-e6a0-7c81-819d-8b71c55af8a8": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T175128465640Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s42__01a09198-8ad2-7a31-a618-0cebffcd2689": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T175402744998Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s123__01a0919a-e57a-76d4-8914-17b78e960632": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T175538628879Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s2026__01a0919c-5c05-7e04-8816-e6a306369b0e": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T175713700410Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a0919d-cf64-73a5-bc8b-2add02361d07": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T175848555242Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0919f-41eb-789b-bb90-24db6dc9ee32": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T180253848519Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a091a3-0019-7912-8f8f-bd0e081a5ee0": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T180656788047Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a091a6-b514-7ed5-ae8c-ed1581c445db": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T181056825253Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s123__01a091aa-5eb9-7495-8274-d66b5c95af43": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T181441578192Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s2026__01a091ad-ccaa-738f-a5cd-23181c5aaf2d": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T181826006931Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s42__01a091b1-3957-71f6-ab9b-33d47af0d11c": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T182218892057Z__mlx-community-qwen3-14b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a091b4-c70c-70ea-bbb3-ffead92bbfd9": {
+      "kind": "formal",
+      "group": "formal-axis1-14b-4bit-qlora",
+      "state": "unknown_failure",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260911T185709437448Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s42__01a091d4-ad3d-7cd4-b0fa-ab39a44822bc": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T190157931498Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s123__01a091d9-142b-7ad4-8c1e-537e7c4f0dc3": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T190553096465Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s2026__01a091dc-aac8-7e24-b09b-9f415576628c": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "user_interrupted",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260911T190640114112Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s42__01a091dd-6272-739a-8f67-866c40dee85c": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T191010372777Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s123__01a091e0-97c4-7ba1-b597-4c60eb93b5da": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T191312326772Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s2026__01a091e3-5e87-729c-bf2f-7f576b9a45fe": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T191618034713Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a091e6-33f2-75a6-ad51-1f8974b65e97": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "user_interrupted",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260911T191829636336Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s42__01a091e8-3604-758f-b852-beb59029cb9b": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T192133823714Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s123__01a091eb-057f-7cfc-9064-6b21d84cee80": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T192439786665Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s2026__01a091ed-dbea-7759-a587-acd031129ba5": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T192740759539Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a091f0-9ed7-76fc-937b-2c0f67b6a2bd": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T193038681059Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a091f3-55d9-7064-8ee4-694d646068f9": {
+      "kind": "formal",
+      "group": "formal-axis1-4b-bf16-lora",
+      "state": "user_interrupted",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260911T195828174593Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a0920c-cf4e-7ef8-bff4-6efcfe5b2cdf": {
+      "kind": "formal",
+      "group": "formal-axis1-4b-bf16-lora",
+      "state": "user_interrupted",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T200759039181Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s2026__01a09215-8546-77d5-a1c0-9b36bc5cee2e": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T201150740528Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a09219-0e54-7373-88a5-76204a8dd07b": {
+      "kind": "formal",
+      "group": "formal-axis1b-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "excluded:superseded"
+    },
+    "20260911T203648798393Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0922f-ea1e-7e5a-9eca-6792b6d7bd7f": {
+      "kind": "formal",
+      "group": "formal-axis1b-4b-4bit-qlora",
+      "state": "user_interrupted",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260911T204908355472Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s42__01a0923b-3303-77bc-a728-898f5a3bbce8": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T205646972887Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s123__01a09242-327d-7917-b98b-f8d333a6cb0f": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T210822672354Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s2026__01a0924c-d010-7cd4-a9ec-5fe8231f633b": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T215934133340Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s42__01a0927b-adf5-7032-82cf-26011657a862": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T220239149628Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s123__01a0927e-80ad-7ced-b20e-c20c70dfa79d": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T220546189282Z__qwen-qwen3-0-6b__full-qnone__ctx512__b1-ga1__rna__s2026__01a09281-5b4d-77c3-829e-83f6f7f16bc7": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-full",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T220906899506Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s42__01a09284-6b53-7097-a4c2-1413faa72d22": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "excluded:duplicate"
+    },
+    "20260911T221111158558Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s123__01a09286-50b6-79c6-87bb-a79f0c53c08a": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T221315568724Z__qwen-qwen3-0-6b__lora-qnone__ctx512__b1-ga1__r8__s2026__01a09288-36b0-751a-a7c4-9e311dccf329": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T221519615040Z__mlx-community-qwen3-0-6b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a0928a-1b3f-76f4-8d07-348dc8d058e0": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T221731131287Z__mlx-community-qwen3-0-6b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0928c-1cfb-75b7-b600-5fadccb13f6f": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T221944104849Z__mlx-community-qwen3-0-6b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a0928e-2468-7e99-b122-1df85235deb2": {
+      "kind": "formal",
+      "group": "formal-axis1-0.6b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T222156750583Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s42__01a09290-2a8e-76cb-a897-bacd1d83ce03": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T222616713158Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s123__01a09294-2209-772a-a046-f6b62c22e592": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T223000003930Z__qwen-qwen3-1-7b__lora-qnone__ctx512__b1-ga1__r8__s2026__01a09297-8a44-7410-9bb9-ff754164f943": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T223414077670Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a0929b-6abd-793f-8431-57626dcf2668": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T223842463348Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0929f-831f-71b8-9360-1c1b939dd5e5": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T224410028357Z__mlx-community-qwen3-1-7b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a092a4-82ac-7d64-a513-911a27ae446d": {
+      "kind": "formal",
+      "group": "formal-axis1-1.7b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T225009694894Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s42__01a092a9-ff9f-7e8e-b33e-a7ee909f9593": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T225407165563Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s123__01a092ad-9f3d-756e-a8d7-f37dea27440e": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T225842679493Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r4__s2026__01a092b1-d377-774b-b1bd-26e115f01fed": {
+      "kind": "formal",
+      "group": "formal-axis3-r4",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T230323003522Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a092b6-1a7b-76ea-bf96-a460fbae8087": {
+      "kind": "formal",
+      "group": "formal-axis1-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T231215022069Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a092be-38ae-7387-9328-a314da7130fc": {
+      "kind": "formal",
+      "group": "formal-axis1b-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T233730664754Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a092d5-5928-7ce3-a6f9-9f519cf2685e": {
+      "kind": "formal",
+      "group": "formal-axis1-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260911T234624093498Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a092dd-7cdd-73dd-b708-86e57dbae943": {
+      "kind": "formal",
+      "group": "formal-axis1b-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T001156818610Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a092f4-e012-7a36-bb7c-891bb24e407b": {
+      "kind": "formal",
+      "group": "formal-axis1-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T002049088671Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a092fc-ff40-738d-b11c-029a4d91bfc3": {
+      "kind": "formal",
+      "group": "formal-axis1b-4b-4bit-qlora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T004751556601Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r32__s42__01a09315-c104-7e07-a512-7ef4150ab322": {
+      "kind": "formal",
+      "group": "formal-axis3-r32",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T005229332707Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r32__s123__01a09319-fe14-7502-8e56-166f4d12f256": {
+      "kind": "formal",
+      "group": "formal-axis3-r32",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T005628891394Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r32__s2026__01a0931d-a5db-72e7-862e-d873772e8ad4": {
+      "kind": "formal",
+      "group": "formal-axis3-r32",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T010039277561Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s42__01a09321-77ed-781d-9525-c73e2f13f47c": {
+      "kind": "formal",
+      "group": "formal-axis4-b2",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010057032957Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s123__01a09321-bd49-74c0-b8a1-0782b7750f54": {
+      "kind": "formal",
+      "group": "formal-axis4-b2",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010113537018Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s2026__01a09321-fdc1-7318-9bb8-17062e743279": {
+      "kind": "formal",
+      "group": "formal-axis4-b2",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010129965737Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s42__01a09322-3dee-714c-a8eb-64e1429d9826": {
+      "kind": "formal",
+      "group": "formal-axis4-b4",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010153968541Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s123__01a09322-9bb0-754e-accc-539b548284ca": {
+      "kind": "formal",
+      "group": "formal-axis4-b4",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010221754536Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s2026__01a09323-083a-7124-9f61-789f550b20ba": {
+      "kind": "formal",
+      "group": "formal-axis4-b4",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010247917130Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s42__01a09323-6e6d-7bbc-a2c4-00d73e72c23c": {
+      "kind": "formal",
+      "group": "formal-axis4-b8",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010255423307Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s123__01a09323-8bbf-760e-a3d8-f8a9763ccbc8": {
+      "kind": "formal",
+      "group": "formal-axis4-b8",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010259241894Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s2026__01a09323-9aaa-7934-b499-d66e8245049e": {
+      "kind": "formal",
+      "group": "formal-axis4-b8",
+      "state": "runtime_error",
+      "disposition": "excluded:implementation-invalid-d5"
+    },
+    "20260912T010303078430Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx1024__b1-ga1__r8__s42__01a09323-a9a6-748f-a030-bab82bc1ccb3": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx1024",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T012504760374Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx1024__b1-ga1__r8__s123__01a09337-d478-73f2-b8ba-f06c31d275c2": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx1024",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T014748248831Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx1024__b1-ga1__r8__s2026__01a0934c-a299-7785-a8ed-9037c924a6a4": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx1024",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T020930772906Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a09360-8295-745d-a8ac-c648df627edd": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx2048",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T023351577599Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s123__01a09376-ccd9-730a-b2a2-113c0abe7ba8": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx2048",
+      "state": "runtime_error",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260912T030114247664Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s2026__01a0938f-dd87-7c0f-a464-eee1ecd9e307": {
+      "kind": "formal",
+      "group": "formal-axis2-ctx2048",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T032808727860Z__qwen-qwen3-8b__lora-qnone__ctx512__b1-ga1__r8__s42__01a093a8-8018-747f-a315-30835d4ea4ec": {
+      "kind": "probe",
+      "group": "probe-8b-bf16-ctx512",
+      "state": "timeout",
+      "disposition": "non-formal:probe"
+    },
+    "20260912T050812117342Z__mlx-community-qwen3-8b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a09404-1ad5-7311-b264-28faabcb0e11": {
+      "kind": "formal",
+      "group": "formal-axis1-8b-4bit-qlora",
+      "state": "timeout",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260912T083403639485Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a094c0-92f7-7ba5-b5a6-dc98f8ffed72": {
+      "kind": "formal",
+      "group": "formal-axis1-4b-bf16-lora",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260912T084135321518Z__qwen-qwen3-4b__lora-qnone__ctx512__b1-ga1__r8__s42__01a094c7-7759-783a-8420-ac1d0b056806": {
+      "kind": "formal",
+      "group": "formal-axis1b-4b-bf16-lora",
+      "state": "timeout",
+      "disposition": "failed_retained_for_taxonomy"
+    },
+    "20260915T142046551250Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a0a571-1457-7b61-8265-5755de7d3b5a": {
+      "kind": "formal",
+      "group": "formal-axis4-b1",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T142630515233Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a0a576-53f3-7adf-b7c3-0d01216c0a0e": {
+      "kind": "formal",
+      "group": "formal-axis4-b1",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T143216877870Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a0a57b-9cee-73bd-83c1-43119599f617": {
+      "kind": "formal",
+      "group": "formal-axis4-b1",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T143807188631Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s42__01a0a580-f555-70f4-a96a-3efd755eb8be": {
+      "kind": "formal",
+      "group": "formal-axis4-b2",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T144725655817Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s123__01a0a589-7ad8-7dcc-9245-9b241b4e4916": {
+      "kind": "formal",
+      "group": "formal-axis4-b2",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T145711514556Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b2-ga1__r8__s2026__01a0a592-6b5b-780f-b112-cbe8e1b58187": {
+      "kind": "formal",
+      "group": "formal-axis4-b2",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T150556205439Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s42__01a0a59a-6ced-7d6a-8e7b-c78f25b37862": {
+      "kind": "formal",
+      "group": "formal-axis4-b4",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T153646433720Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s123__01a0a5b6-a861-7c80-b2c3-dfc788eb6072": {
+      "kind": "formal",
+      "group": "formal-axis4-b4",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T161011059799Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b4-ga1__r8__s2026__01a0a5d5-3ef4-738d-b32c-f0a2233b4260": {
+      "kind": "formal",
+      "group": "formal-axis4-b4",
+      "state": "success",
+      "disposition": "aggregation_included"
+    },
+    "20260915T164129648692Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s42__01a0a5f1-e930-7242-9ebd-bfb9f735cb03": {
+      "kind": "formal",
+      "group": "formal-axis4-b8",
+      "state": "runtime_error",
+      "disposition": "excluded:duplicate"
+    },
+    "20260915T164414079542Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s123__01a0a5f4-6b7f-75ff-b238-30a384c43889": {
+      "kind": "formal",
+      "group": "formal-axis4-b8",
+      "state": "runtime_error",
+      "disposition": "excluded:duplicate"
+    },
+    "20260915T164550471089Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s2026__01a0a5f5-e407-7904-9c86-f6a77dac3a89": {
+      "kind": "formal",
+      "group": "formal-axis4-b8",
+      "state": "runtime_error",
+      "disposition": "excluded:duplicate"
+    }
+  }
+}

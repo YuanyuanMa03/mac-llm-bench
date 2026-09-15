@@ -140,3 +140,34 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   warmup 排除（2 步）的严格可比性，新增 `formal-axis4-b1` 组作为
   same-commit control。轴 1 的 b1 100-step run 继续按预注册用于跨轴复用；
   轴 4 分析报告将同时呈现两者以供交叉核验）。
+
+  **重跑结果（2026-09-15，batch11，trainer commit f381ffc，12/12 有效观测）**：
+  b1/b2/b4 × 3 seeds 全部 success（b1 ~350s、b2 ~9.8min、b4 ~31min/run，
+  含换页状态下的慢退出）；**b8 × 3 seeds 一致 exit 137（SIGKILL）**、
+  stdout/stderr 空、peak_swap 19.5–20.4 GiB——batch 可行性边界落在
+  [4, 8)（4B-4bit、ctx512、swap_before 3–4 GiB 基线）。b8 三个 run
+  保留为 boundary evidence（SIGKILL-consistent，非 OOM 断言），
+  preflight 可比性声明见各 run 的 initial_swap_bytes。
+
+## D6 — 5 个失败/中断 run 的 finalize 缺少 manifest.sha256（2026-09-15 登记）
+
+- 现象：flatten 的 manifest 复算显示 5 个 run 目录无 `manifest.sha256`
+  （supervisor 对 timeout/user_interrupted 类 run 的 finalize 路径未写出
+  manifest）：
+  - `20260911T191618034713Z__qwen-qwen3-0-6b__lora-qnone__…`（user_interrupted）
+  - `20260911T203648798393Z__mlx-community-qwen3-4b-4bit__…`（user_interrupted）
+  - `20260912T032808727860Z__qwen-qwen3-8b__lora-qnone__…`（timeout，probe）
+  - `20260912T050812117342Z__mlx-community-qwen3-8b-4bit__…`（timeout）
+  - `20260912T084135321518Z__qwen-qwen3-4b__lora-qnone__…`（timeout）
+- 处置：按协议 §7 不事后补写（finalize 后目录不可变；事后补写的
+  manifest 无防伪价值）。这些 run 的 result.json/logs 原样可用，仅
+  evidence 质量降级（`_manifest_verified=False`，experiments.csv 与
+  coverage_report.json 可见）。
+- 影响评估：**零聚合影响**——coverage audit（2026-09-15）确认全部 42 个
+  `aggregation_included` run 的 manifest 复算通过；上述 5 个均处
+  failed_retained_for_taxonomy / non-formal:probe 处置，不进入任何
+  性能聚合。
+- supervisor 根因修复（对失败路径同样写出 manifest）不在本轮执行：
+  避免在补实验窗口引入 supervisor code-revision confounder；
+  其缺陷仅影响失败 run 的证据完整性，成功 run 的 manifest 一直正常。
+

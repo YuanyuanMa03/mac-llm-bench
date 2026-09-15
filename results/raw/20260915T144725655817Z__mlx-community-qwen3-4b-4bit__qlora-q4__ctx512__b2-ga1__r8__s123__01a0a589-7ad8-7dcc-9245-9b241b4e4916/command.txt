@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "uv",
+    "run",
+    "python",
+    "scripts/train_lora.py",
+    "configs/experiments/formal/axis4_4b-4bit_qlora_ctx512_r8_b2_steps20_s123.yaml"
+  ],
+  "display": "uv run python scripts/train_lora.py configs/experiments/formal/axis4_4b-4bit_qlora_ctx512_r8_b2_steps20_s123.yaml",
+  "working_directory": "<volume>/mac-llm-bench",
+  "timeout_seconds": 7200.0
+}

@@ -1,0 +1,24 @@
+[val] step 0 loss=2.2935
+step 1/20 loss=1.6835 tokens=1022 step_time=12.097s
+step 2/20 loss=2.1503 tokens=851 step_time=12.014s
+step 3/20 loss=1.7011 tokens=1022 step_time=14.288s
+step 4/20 loss=1.7912 tokens=1022 step_time=17.500s
+step 5/20 loss=1.6403 tokens=1022 step_time=17.601s
+step 6/20 loss=1.9972 tokens=1022 step_time=16.713s
+step 7/20 loss=2.3406 tokens=1022 step_time=15.944s
+step 8/20 loss=1.3584 tokens=1022 step_time=18.463s
+step 9/20 loss=1.1930 tokens=1022 step_time=17.680s
+step 10/20 loss=1.6896 tokens=793 step_time=16.012s
+[val] step 10 loss=1.5902
+step 11/20 loss=1.0804 tokens=1022 step_time=16.690s
+step 12/20 loss=1.8763 tokens=1022 step_time=13.618s
+step 13/20 loss=1.5074 tokens=951 step_time=13.992s
+step 14/20 loss=1.0587 tokens=1022 step_time=14.679s
+step 15/20 loss=1.2133 tokens=1022 step_time=18.273s
+step 16/20 loss=1.1071 tokens=1022 step_time=12.692s
+step 17/20 loss=2.1631 tokens=1022 step_time=12.953s
+step 18/20 loss=1.1114 tokens=1022 step_time=12.591s
+step 19/20 loss=1.4292 tokens=709 step_time=17.963s
+step 20/20 loss=1.4834 tokens=985 step_time=13.349s
+[val] step 20 loss=1.5240
+[train] done: 20 steps, final_loss=1.4834, tokens=19619, trainable=5.898M/634.574M
