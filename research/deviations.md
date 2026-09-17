@@ -244,3 +244,55 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
     不得表述为 unsupported / impossible / OOM。
   - 14B ctx2048 probe 取消（不再执行）。
 
+
+## D9 — 分析层偏差披露：审计规则结果后修订 + paging-Tier 计算缺陷（2026-09-16 登记，round-1 review 触发）
+
+性质：**analysis-layer deviation**（不涉及任何 raw run 的采集或修改）。
+论文 round-1 五席位评审（reviews/2026-09-16-panel-review-round1.md）发现两项
+分析层事项必须在论文中作为偏差披露：
+
+1. **H2/H6 审计判定规则的结果后修订**。
+   `results/processed/hypothesis_audit.json` 的 `rule_revision` 字段载明：
+   H2 v1（2026-09-15 冻结）以 "14B 3/3" 为 supported 锚点；在 8B 3/3 成功与
+   14B D7 timeout 落地后，2026-09-16 修订为 v2（锚 8B 3/3，14B 作为
+   system-state boundary 不构成反例）。修订动机在 json 中有声明（14B 失败
+   被定性为环境归因而非规模极限，与 D1/D7 同构），但修订发生在结果之后，
+   且未在论文正文披露。按 v1 规则，H2 应判 not supported / 不可判定。
+   处置：论文附录（app:deviations）作为 D9 披露 v1/v2 与时间线；正文引用
+   H2 结论处按修订后规则表述，并以 8B 完成种子集 + D8 边界定位的措辞
+   为主，不单独依赖 audit 判定。H6 同为 v2 dual-evidence 规则。
+2. **paging-Tier（D4）计算缺陷：全部 run 被误标 Tier-B**。
+   `src/analysis/flatten.py` 的 `_swapin_per_step` 读取未展平的 JSON 列名
+   （`runtime.system_vm_counters_before`），在展平后的 experiments.csv 上
+   KeyError 被异常处理静默吞掉并返回 inf，导致所有 run 判为 Tier-B：
+   论文初稿 §4.3 的 "All timing figures are Tier-B / every formal run
+   exchanged >50 MB of swap-in per step" 与 hypothesis_audit.json 的
+   `tier_a_runs: 0` 均为该缺陷产物。修复（2026-09-16）：函数兼容展平列名，
+   重算得真实混合分层（0.6B/1.7B-4bit、0.6B-BF16-LoRA、4B-BF16(零驻留)
+   为 Tier-A 8–37 MB/步；4B/8B-4bit 等为 Tier-B 100–848 MB/步；见
+   results/processed/tier_classification.json 与论文 Table 7）。修复不改变
+   任何聚合数字（各组内重复行 Tier 一致，retained 去重选择不变），仅修正
+   分层标注；hypothesis_audit.json 重算后 `tier_a_runs: 6`。
+
+处置一致性：以上两项均不改动 results/raw；experiments.csv 等 processed
+文件由修复后的 committed scripts 从 raw 全量重算（scripts/run_analysis.py）。
+
+> **D3 勘误注（2026-09-16，Stage 3'' 复核触发）**：本条上文"swap 基线
+> 12.9 GiB"为事件发生时操作者观察到的系统快照口径；该 run
+> （`20260911T182218892057Z`）在 experiments.csv 中的
+> `runtime.initial_swap_bytes` 为 6.64 GiB（supervisor pre-run 快照）。
+> 两个数字口径不同（事件背景观察 vs run 启动快照），论文附录 B 的 D3
+> 摘要已不再引用具体数值。原文保留不改（记录不可变原则）。
+
+> **D7/D8 勘误注（2026-09-16，Stage 4.5 final-integrity 触发）**：本文件上文
+> D7/D8 中对 14B 第二次 formal 的手记描述（"推进至 50/100 步、step_time
+> 27–86 s 波动、末端 >10 min 停滞于 step 50"）与不可变 raw stdout 不符：
+> `results/raw/20260915T184033…/logs/stdout.log` 实际记录 **70 行 step
+> （step_time 9.44–105.07 s，中段最慢、尾部部分回落；manifest 快照含
+> step 1–69，finalize 后追加 step 70）**，停滞发生在 step 70 之后约 23 分钟。
+> 同批手记偏差：14B 起始驻留实为 2.52/3.47 GiB（CSV initial_swap_bytes，
+> 上文写 2.7/3.7）；4B BF16 零步 run 实测 1627.4 s = 27.1 min（上文写
+> 26 分钟）。论文正文与 hypothesis_audit.json 已改用 raw/CSV 口径
+> （70/100 步、9.4–105 s、stall@70 后、2.5/6.6/3.5 GiB、27 分钟）。
+> 原文保留不改（记录不可变原则）；结论不受影响（70/100 比 50/100 更接近
+> 完成，即上文反而低估了 14B 的进度）。

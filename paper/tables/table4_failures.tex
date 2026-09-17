@@ -1,40 +1,17 @@
 \begin{table*}[t]\centering
-\caption{Failure and boundary observations (raw terminal states, never reclassified as OOM without direct evidence).}
+\caption{Failure taxonomy over all 27 failed runs (terminal states preserved verbatim; categories are evidence-based labels, never reclassifications).}
 \label{tab:failures}
-\small
-\begin{tabular}{p{3.4cm}ll}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{3.0cm}rp{3.4cm}p{7.0cm}}
 \toprule
-Run & Status & Key observation\\
+Category & Runs & Configurations & Evidence\\
 \midrule
-\texttt{20260907T021942754783Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260907T022132013680Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260907T111824441175Z} & runtime\_error (SIGKILL) & steps=n/a; sigkill\_consistent\\
-\texttt{20260911T164322546359Z} & runtime\_error & steps=n/a; sigkill\_consistent\\
-\texttt{20260911T182218892057Z} & unknown\_failure & steps=n/a; no\_specific\_pattern\\
-\texttt{20260911T190553096465Z} & user\_interrupted & steps=n/a; no\_specific\_pattern\\
-\texttt{20260911T191618034713Z} & user\_interrupted & steps=n/a; no\_specific\_pattern\\
-\texttt{20260911T193038681059Z} & user\_interrupted & steps=n/a; no\_specific\_pattern\\
-\texttt{20260911T195828174593Z} & user\_interrupted & steps=n/a; no\_specific\_pattern\\
-\texttt{20260911T203648798393Z} & user\_interrupted & steps=n/a; no\_specific\_pattern\\
-\texttt{20260912T010039277561Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010057032957Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010113537018Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010129965737Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010153968541Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010221754536Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010247917130Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010255423307Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T010259241894Z} & runtime\_error & steps=n/a; stderr:python\_traceback\\
-\texttt{20260912T023351577599Z} & runtime\_error & steps=n/a; sigkill\_consistent\\
-\texttt{20260912T032808727860Z} & timeout (SIGKILL) & steps=n/a; sigkill\_consistent\\
-\texttt{20260912T050812117342Z} & timeout (SIGKILL) & steps=n/a; sigkill\_consistent\\
-\texttt{20260912T084135321518Z} & timeout (SIGKILL) & steps=n/a; sigkill\_consistent\\
-\texttt{20260915T164129648692Z} & runtime\_error & steps=n/a; sigkill\_consistent\\
-\texttt{20260915T164414079542Z} & runtime\_error & steps=n/a; sigkill\_consistent\\
-\texttt{20260915T164550471089Z} & runtime\_error & steps=n/a; sigkill\_consistent\\
-\texttt{20260915T184033756783Z} & timeout (SIGKILL) & steps=n/a; sigkill\_consistent\\
-\midrule
-\multicolumn{3}{p{9cm}}{Context boundary: Trainable $\in$ [2048, 4096) under preflight-comparable conditions.}\\
+External SIGKILL (memory pressure) & 6 & qwen3-4b-4bit (b8$\times$3, ctx2048, ctx4096 [probe], ctx8192 [probe]) & exit 137 / SIGKILL, steps not recorded; kernel JetsamEvent confirms one b8 kill (App.~\ref{app:jetsam}); rest SIGKILL-consistent only, not reclassified as OOM; terminal state: runtime\_error (SIGKILL)\\
+Supervisor timeout & 4 & qwen3-14b-4bit; qwen3-4b (BF16); qwen3-8b (BF16) [probe]; qwen3-8b-4bit & killed at the configured supervisor limit 2400--7200\,s under multi-GiB swap residency; terminal state: timeout (SIGKILL)\\
+Operator interrupt & 5 & qwen3-0.6b (BF16); qwen3-4b (BF16)$\times$2; qwen3-4b-4bit$\times$2 & operator halt after 15--1627\,s; retained as system-state evidence (D1/D7); terminal state: user\_interrupted\\
+Trainer implementation bug (D5) & 9 & qwen3-4b-4bit (b2$\times$3, b4$\times$3, b8$\times$3) & python traceback in variable-length validation batching (micro-batch $\ge$2); rerun on the fixed trainer; terminal state: runtime\_error\\
+Pre-formal pipeline debug & 2 & qwen3-0.6b (BF16)$\times$2 & python traceback before the formal matrix was frozen; terminal state: runtime\_error\\
+Unresolved failure & 1 & qwen3-14b-4bit & no specific pattern in exit evidence; 14B attempt attributed to operator KeyboardInterrupt per D8; terminal state: unknown\_failure\\
 \bottomrule
 \end{tabular}
 \end{table*}

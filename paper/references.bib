@@ -1,5 +1,9 @@
-% references.bib — all entries verified against primary sources 2026-09-11.
-% Verification evidence per entry: research/literature_ledger.csv
+% references.bib — all entries verified against primary sources.
+% Re-verified 2026-09-16 (arXiv export API / ACL Anthology .bib / PMLR /
+% Crossref / GitHub API / Apple Newsroom); Stage 4.5 audit trail in
+% reviews/2026-09-16-stage45-final-integrity.md. Three camera-ready
+% author lists corrected per ACL Anthology on 2026-09-16
+% (ding2023ultrachat, zheng2024llamafactory, lv2024lomo).
 
 @misc{mlx2023,
   author = {Hannun, Awni and Digani, Jagrit and Katharopoulos, Angelos and Collobert, Ronan},
@@ -19,7 +23,8 @@
 @inproceedings{dettmers2023qlora,
   author = {Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
   title = {{QLoRA}: Efficient finetuning of quantized {LLMs}},
-  booktitle = {Advances in Neural Information Processing Systems 36 (NeurIPS)},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {36},
   year = {2023}
 }
 
@@ -31,11 +36,12 @@
 }
 
 @inproceedings{ding2023ultrachat,
-  author = {Ding, Ning and Chen, Yulin and Xu, Bokai and Qin, Yujia and Zheng, Zhi and Hu, Shengding and Liu, Zhiyuan and Sun, Maosong and Zhou, Bowen},
+  author = {Ding, Ning and Chen, Yulin and Xu, Bokai and Qin, Yujia and Hu, Shengding and Liu, Zhiyuan and Sun, Maosong and Zhou, Bowen},
   title = {Enhancing chat language models by scaling high-quality instructional conversations},
-  booktitle = {Proceedings of EMNLP 2023},
-  pages = {3022--3044},
-  year = {2023}
+  booktitle = {Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  pages = {3029--3051},
+  year = {2023},
+  note = {arXiv:2305.14233; camera-ready author list per ACL Anthology}
 }
 
 @inproceedings{zhao2024galore,
@@ -55,15 +61,16 @@
 @inproceedings{ajayi2025benchmarking,
   author = {Ajayi, Oluwaseun A. and Odunayo, Ogundepo},
   title = {Benchmarking on-device machine learning on {Apple Silicon} with {MLX}},
-  booktitle = {6th Deep Learning Indaba (DLI 2024), Dakar, Senegal; arXiv:2510.18921},
-  year = {2024},
-  note = {Non-archival presentation}
+  booktitle = {6th Deep Learning Indaba (DLI 2024), Dakar, Senegal},
+  year = {2025},
+  note = {Non-archival presentation; arXiv:2510.18921}
 }
 
 @inproceedings{dettmers2022llmint8,
   author = {Dettmers, Tim and Lewis, Mike and Belkada, Younes and Zettlemoyer, Luke},
   title = {{LLM.int8()}: 8-bit matrix multiplication for transformers at scale},
-  booktitle = {Advances in Neural Information Processing Systems 35 (NeurIPS)},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {35},
   year = {2022}
 }
 
@@ -86,7 +93,7 @@
   author = {Gerganov, Georgi and contributors},
   title = {llama.cpp: {LLM} inference in {C/C++}},
   howpublished = {GitHub repository},
-  url = {https://github.com/ggerganov/llama.cpp},
+  url = {https://github.com/ggml-org/llama.cpp},
   year = {2023}
 }
 
@@ -104,4 +111,50 @@
   howpublished = {Press release},
   url = {https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/},
   year = {2024}
+}
+
+@inproceedings{loshchilov2019adamw,
+  author = {Loshchilov, Ilya and Hutter, Frank},
+  title = {Decoupled weight decay regularization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year = {2019}
+}
+
+@inproceedings{zheng2024llamafactory,
+  author = {Zheng, Yaowei and Zhang, Richong and Zhang, Junhao and Ye, Yanhan and Luo, Zheyan},
+  title = {{LlamaFactory}: Unified efficient fine-tuning of 100+ language models},
+  booktitle = {Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL): System Demonstrations},
+  pages = {400--410},
+  year = {2024},
+  note = {Camera-ready author list per ACL Anthology; arXiv:2403.13372}
+}
+
+@article{rajesh2025production,
+  author = {Rajesh, Varun and Jodhpurkar, Om and Anbuselvan, Pooja and Singh, Mantinder and Jallepali, Ashok and Godbole, Shantanu and Sharma, Pradeep Kumar and Shrivastava, Hritvik},
+  title = {Production-grade local {LLM} inference on {Apple Silicon}: A comparative study of {MLX}, {MLC-LLM}, {Ollama}, {llama.cpp}, and {PyTorch MPS}},
+  journal = {arXiv preprint arXiv:2511.05502},
+  year = {2025}
+}
+
+@article{baral2026distillation,
+  author = {Baral, Gaurab and Khanal, Aaditya and Tao, Yangyang and Zhou, Junxiu},
+  title = {Knowledge distillation from large reasoning models to compact student models: A case study on the {John O'Bryan} mathematics competition},
+  journal = {arXiv preprint arXiv:2606.31048},
+  year = {2026}
+}
+
+@article{geng2025mobilefinetuner,
+  author = {Geng, Jiaxiang and Zhao, Lunyu and Lu, Yiyi and Luo, Bing},
+  title = {{MobileFineTuner}: A mobile-native framework for on-device {LLM} fine-tuning in real-world embedded {AI} applications},
+  journal = {arXiv preprint arXiv:2512.08211},
+  year = {2025}
+}
+
+@inproceedings{lv2024lomo,
+  author = {Lv, Kai and Yang, Yuqing and Liu, Tengxiao and Guo, Qipeng and Qiu, Xipeng},
+  title = {Full parameter fine-tuning for large language models with limited resources},
+  booktitle = {Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL)},
+  pages = {8187--8198},
+  year = {2024},
+  note = {Camera-ready author list per ACL Anthology; arXiv:2306.09782}
 }

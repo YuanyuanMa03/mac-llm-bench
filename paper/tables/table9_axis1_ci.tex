@@ -1,0 +1,18 @@
+\begin{table}[t]\centering
+\caption{Axis-1 cells, mean [95\% $t$-CI] (preregistration \S9: wide intervals reported honestly; CI $= t_{0.975,n-1}\,\mathrm{SD}/\sqrt{n}$; per-seed SD in Table~\ref{tab:matrix}).}
+\label{tab:ci}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrr}
+\toprule
+Cell & Median step (s) & Tok/s & Val loss\\
+\midrule
+\texttt{0.6b 4bit} & 0.70 [0.69,0.71] & 721 [711,731] & 1.93 [1.92,1.93]\\
+\texttt{1.7b 4bit} & 1.70 [1.68,1.71] & 301 [298,304] & 1.63 [1.61,1.66]\\
+\texttt{4b 4bit} & 3.66 [3.65,3.68] & 137 [135,140] & 1.47 [1.47,1.47]\\
+\texttt{8b 4bit} & 10.04 [10.02,10.05] & 43 [40,46] & 1.38 [1.36,1.39]\\
+\texttt{0.6b BF16} & 0.62 [0.60,0.64] & 810 [787,833] & 1.81 [1.81,1.82]\\
+\texttt{1.7b BF16} & 1.40 [1.38,1.41] & 366 [360,372] & 1.55 [1.55,1.55]\\
+\texttt{0.6b fullFT} & 1.08 [1.07,1.09] & 429 [305,553] & 4.44 [4.08,4.81]\\
+\bottomrule
+\end{tabular}
+\end{table}

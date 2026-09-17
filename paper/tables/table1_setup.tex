@@ -2,25 +2,25 @@
 \caption{Hardware, software, and model revisions (provenance from raw experiment records).}
 \label{tab:setup}
 \footnotesize
-\begin{tabular}{ll}
+\begin{tabular}{@{}p{1.9cm}p{3.6cm}@{}}
 \toprule
 Hardware & \\
 \quad Chip & Apple M4\\
 \quad Memory & 16 GiB unified\\
-\quad CPU cores & 10P / 10L\\
+\quad CPU cores & 10-core (4P+6E, 10 logical)\\
 OS & macOS 26.5 (build 25F71)\\
 Python & 3.13.11 (uv-managed venv)\\
 MLX / mlx-lm & 0.32.2 / 0.31.3\\
 Training data & ultrachat\_200k@8049631c, frozen 2048/32 subset\\
 \midrule
 Qwen3 models & resolved revision (8-char prefix)\\
-\quad \texttt{14B-4bit} & \texttt{a4d9b2df}...\\
 \quad \texttt{Qwen/0.6B} & \texttt{c1899de2}...\\
 \quad \texttt{0.6B-4bit} & \texttt{73e3e38d}...\\
-\quad \texttt{Qwen/1.7B} & \texttt{70d244cc}...\\
 \quad \texttt{1.7B-4bit} & \texttt{3b1b1768}...\\
-\quad \texttt{4B-4bit} & \texttt{4dcb3d10}...\\
 \quad \texttt{Qwen/4B} & \texttt{1cfa9a72}...\\
+\quad \texttt{14B-4bit} & \texttt{a4d9b2df}...\\
+\quad \texttt{Qwen/1.7B} & \texttt{70d244cc}...\\
+\quad \texttt{4B-4bit} & \texttt{4dcb3d10}...\\
 \quad \texttt{8B-4bit} & \texttt{545dc425}...\\
 \bottomrule
 \end{tabular}

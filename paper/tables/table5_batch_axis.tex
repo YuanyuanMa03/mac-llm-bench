@@ -1,15 +1,15 @@
 \begin{table*}[t]\centering
-\caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, seeds \{42,123,2026\}, all cells rerun on the D5-fixed trainer in one window; mean$\pm$SD).}
+\caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, seeds \{42,123,2026\}, all cells rerun on the D5-fixed trainer in one window; mean$\pm$SD; swap-in is the D4 paging-intensity measure, all cells Tier-B; batch-8 kills recorded zero completed steps with empty stdout).}
 \label{tab:batch}
-\small
-\begin{tabular}{rrrrrl}
+\footnotesize\setlength{\tabcolsep}{2.8pt}
+\begin{tabular}{rrrrrrl}
 \toprule
-Batch & Tok/step & Median step (s) & Tok/s & Peak mem (GiB) & Status\\
+Batch & Median step (s) & Tok/s & Peak mem (GiB) & Swap-in (MB/step) & Status\\
 \midrule
-1 & 489±0 & 5.620±0.055 & 89.5±0.9 & 6.19±0.00 GiB & success$\times$3\\
-2 & 986±0 & 14.394±1.730 & 66.4±4.0 & 10.04±0.00 GiB & success$\times$3\\
-4 & 1987±0 & 55.387±4.603 & 34.6±1.5 & 16.98±0.00 GiB & success$\times$3\\
-8 & $\sim$4088 & -- & -- & $>$16 (sys swap $\to$20) & SIGKILL$\times$3 (exit 137, 0 steps; D5 notes)\\
+1 & 5.620$\pm$0.055 & 89.5$\pm$0.9 & 6.19$\pm$0.00 GiB & 231--339 & success$\times$3\\
+2 & 14.394$\pm$1.730 & 66.4$\pm$4.0 & 10.04$\pm$0.00 GiB & 1430--2329 & success$\times$3\\
+4 & 55.387$\pm$4.603 & 34.6$\pm$1.5 & 16.98$\pm$0.00 GiB & 13142--13636 & success$\times$3\\
+8 & -- & -- & $>$16 (swap $\to$20\,GiB) & -- & SIGKILL$\times$3 (exit 137)\\
 \bottomrule
 \end{tabular}
 \end{table*}
