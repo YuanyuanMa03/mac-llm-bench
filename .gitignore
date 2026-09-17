@@ -17,3 +17,6 @@ paper/*.out
 paper/submission/
 paper/*.tar.gz
 preferences/
+.agents/
+research/evidence/*.ips
+research/evidence/*.ips.sha256
