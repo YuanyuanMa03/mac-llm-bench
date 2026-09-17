@@ -245,7 +245,7 @@ def threshold_sensitivity() -> dict:
         json.dumps(out, indent=2) + "\n")
     lines = [
         "\\begin{table}[t]\\centering",
-        "\\caption{Threshold sensitivity (preregistration \\S5: \\emph{results "
+        "\\caption{Threshold sensitivity (preregistration Sect.~5: \\emph{results "
         "must be shown if conclusions flip under $\\pm 2\\times$ threshold "
         "changes}). Pass/fail of the frozen \\practical{} criteria P1 (swap "
         "growth $\\le$4\\,GiB), P2 (median step $\\le$10\\,s) and the "
@@ -362,7 +362,7 @@ def slope_confidence_intervals() -> dict:
     lines = [
         "\\begin{table}[t]\\centering",
         "\\caption{Axis-1 cells, mean [95\\% $t$-CI] "
-        "(preregistration \\S9: wide intervals reported honestly; "
+        "(preregistration Sect.~9: wide intervals reported honestly; "
         "CI $= t_{0.975,n-1}\\,\\mathrm{SD}/\\sqrt{n}$; per-seed SD in "
         "Table~\\ref{tab:matrix}).}",
         "\\label{tab:ci}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
