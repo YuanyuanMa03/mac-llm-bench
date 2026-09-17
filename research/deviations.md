@@ -303,7 +303,7 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   `research/evidence/JetsamEvent-2026-09-16-004948.ips(+.sha256)`、
   `.video_agent/`、`paper/main.{log,aux,blg,out}` 的全部历史版本
   （.ips 含设备级 crashReporterKey 与主机全进程清单，编译产物含
-  本机绝对路径）；② 全历史字符串替换 `<home> → `<home>`。
+  本机绝对路径）；② 全历史字符串替换本机用户主目录前缀（`<home> 形式）→ `<home>`。
 - **影响**：65 个 commit 哈希改变（早期无泄露物的 commit 不变）。
   新旧映射表：`research/history_rewrite_map.csv`。改写前完整备份
   存于操作者本机（/tmp clone，临时）。
@@ -315,5 +315,5 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   中的哈希引用已同步为新值。
 - **不变式核查**：freeze ID `04f90a840b8ea8fb…` 为
   `experiment_freeze_manifest.sha256` 的文件 SHA-256，与 git 历史无关，
-  不受影响；改写后 `git log --all -S mayuanyuan` 与
+  不受影响；改写后对用户主目录前缀的全历史 pickaxe 检索与
   `git log --all -- <ips 路径>` 均为零命中（已验证）。
