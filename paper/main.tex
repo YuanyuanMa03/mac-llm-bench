@@ -297,8 +297,8 @@ QLoRA), a negative quality result we retain as-is.
   $\times$ precision at ctx512; green marks cells whose preregistered seed
   set completed 3/3, purple marks boundary cells whose outcome depended on
   system memory state (D1: 4B BF16; D8: 14B 4-bit). Right: the context
-  axis for 4B 4-bit, with the SIGKILL failure interval shaded by
-  evidence.}
+  axis for 4B 4-bit; red marks the ctx$\ge$4096 probe runs that were
+  killed before completing a training step.}
   \label{fig:feas}
 \end{figure*}
 
@@ -330,7 +330,8 @@ parameter-proportional estimates suggest.
   \caption{Peak memory vs.\ model scale at ctx=512 (mean$\pm$SD of three
   seeds; the open marker is the 4B BF16 boundary observation of D1,
   1/3 seeds at zero swap residency, included in the fit). Fits are log-log
-  least squares over the plotted points.}
+  least squares over the plotted points; slopes with 95\% CIs are
+  reported in Table~\ref{tab:ci}.}
   \label{fig:memscale}
 \end{figure}
 
