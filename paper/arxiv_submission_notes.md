@@ -28,7 +28,9 @@ tables/   table1..table10 .tex（脚本生成，由 main.tex \input）
           + main.tex 内联 2 表（失败处置审计表等）
 ```
 
-规模：**17 页、8 figures、13 tables（12 生成 + 1 附录偏差摘要引用台账）、bib 20 条**。
+规模：**16 页、8 figures、13 tables（12 生成 + 1 附录偏差摘要引用台账）、bib 20 条**。
+版式：**IEEE 会议风格**（Times 正文 + CM 数学/真小型大写 + 罗马节号 + run-in Abstract/Index Terms，纯本地宏包实现于导言区，无外部 .cls 依赖——arXiv 自包含）。
+编译门：err=0 / undefined=0 / overfull=0 / Type3=0（首次全绿；此前版本带有被 nonstopmode 吞掉的表格下划线与列定义错误，已根治）。
 
 ## 提交表单元数据（可直接粘贴）
 

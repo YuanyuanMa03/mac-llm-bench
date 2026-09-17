@@ -551,7 +551,7 @@ def table11(df: pd.DataFrame) -> None:
         "($\\dagger$, Table~\\ref{tab:paired}); the within-window count is "
         "6, and the verdict is unchanged either way.}",
         "\\label{tab:hyp}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
-        "\\begin{tabular}{@{}lp{4.0cm}p{5.8cm}rp{2.5cm}\\raggedright@{}}", "\\toprule",
+        "\\begin{tabular}{@{}lp{4.0cm}p{5.8cm}rp{2.5cm}@{}}", "\\toprule",
         "ID & Hypothesis (frozen) & Decision rule & $n$ & Verdict\\\\",
         "\\midrule",
     ]
@@ -589,7 +589,8 @@ def table12(df: pd.DataFrame) -> None:
         disp.setdefault(v["disposition"], []).append(v)
     dup = disp.get("excluded:duplicate", [])
     dup_states = ", ".join(
-        f"{sum(1 for x in dup if x['state'] == st)}$\\times$ {st}"
+        f"{sum(1 for x in dup if x['state'] == st)}$\\times$ "
+        f"{st.replace('_', '\\_')}"
         for st in sorted({x["state"] for x in dup}))
     dup_groups = ", ".join(sorted({x["group"].replace("formal-", "")
                                    for x in dup}))
@@ -609,7 +610,8 @@ def table12(df: pd.DataFrame) -> None:
          "retained as evidence."),
         ("Duplicate", len(dup),
          f"D2 dedup applied to failures ({dup_states}; groups: "
-         f"{dup_groups}); see Sec.~\\ref{sec:failures} for the "
+         f"{dup_groups}); see Sec.~"
+         "\\ref{sec:failures} for the "
          "batch-8 ledger subtlety."),
         ("Non-formal (probe / exp0-smoke)", len(nf),
          f"pre-formal debug and probe runs outside the formal matrix "
@@ -632,7 +634,7 @@ def table12(df: pd.DataFrame) -> None:
     ]
     for name, cnt, meaning in rows:
         lines.append(f"{name} & {cnt} & {meaning}\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table12_disposition.tex").write_text(
         "\n".join(lines) + "\n", encoding="utf-8")
     print("[table] table12_disposition.tex")
