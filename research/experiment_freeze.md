@@ -10,7 +10,7 @@
 | Freeze ID | `freeze-04f90a840b8ea8fb` |
 | Freeze manifest | `research/experiment_freeze_manifest.sha256`（每个 finalized run 的 `manifest.sha256` 文件哈希清单；5 个 manifest 缺失 run 记为 `MISSING:<id>`，见 D6） |
 | Freeze manifest SHA-256 | `04f90a840b8ea8fb3e60c3ccb18df88e6596e23e431d5be354a8b35a553532e5` |
-| Git commit at freeze | `c5b9178f04243b59f2e4eacc42335a9eb3858e90` |
+| Git commit at freeze | `dcf84dbc9dfb770bc315cae26ccc047900233a6e` |
 | Freeze timestamp (UTC) | 2026-09-15T22:17:33Z |
 
 ## Counts（全部来自 finalized `results/raw/*/result.json`，逐个读取）

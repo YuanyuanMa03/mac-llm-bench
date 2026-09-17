@@ -296,3 +296,24 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
 > （70/100 步、9.4–105 s、stall@70 后、2.5/6.6/3.5 GiB、27 分钟）。
 > 原文保留不改（记录不可变原则）；结论不受影响（70/100 比 50/100 更接近
 > 完成，即上文反而低估了 14B 的进度）。
+
+## D10 — git 历史清理（开源前隐私处置，2026-09-17 登记）
+
+- **动作**：为准备开源，用 `git filter-repo` 改写全历史：① 删除
+  `research/evidence/JetsamEvent-2026-09-16-004948.ips(+.sha256)`、
+  `.video_agent/`、`paper/main.{log,aux,blg,out}` 的全部历史版本
+  （.ips 含设备级 crashReporterKey 与主机全进程清单，编译产物含
+  本机绝对路径）；② 全历史字符串替换 `<home> → `<home>`。
+- **影响**：65 个 commit 哈希改变（早期无泄露物的 commit 不变）。
+  新旧映射表：`research/history_rewrite_map.csv`。改写前完整备份
+  存于操作者本机（/tmp clone，临时）。
+- **不可变记录不动原则**：raw `result.json`、processed CSV、
+  `evidence_ledger.csv`、`reviews/`、以及本日志中记录的旧哈希
+  **原样保留**（它们是实验 provenance / 评审快照的事实记录），
+  通过映射表换算到新历史。活文档（论文 `main.tex`、`PROMPT.md`、
+  `README*.md`、`experiment_freeze.md`、`reproducibility_audit.md`）
+  中的哈希引用已同步为新值。
+- **不变式核查**：freeze ID `04f90a840b8ea8fb…` 为
+  `experiment_freeze_manifest.sha256` 的文件 SHA-256，与 git 历史无关，
+  不受影响；改写后 `git log --all -S mayuanyuan` 与
+  `git log --all -- <ips 路径>` 均为零命中（已验证）。

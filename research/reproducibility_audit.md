@@ -25,7 +25,7 @@
 
 - 全部 figures（fig1–fig8）/ tables（table1–table6）/ key_numbers /
   coverage / hypothesis_audit 由 `scripts/run_analysis.py` 从冻结 raw
-  一键重生成（generator commit `f7fea5e` 之后），旧 processed 已删除
+  一键重生成（generator commit `5c8675d` 之后），旧 processed 已删除
   重建（非增量）。
 - 论文 PDF 只 include `results/figures/*.pdf` 与 `paper/tables/*.tex`
   （两者均程序生成）；正文数字以 `key_numbers.json` /
@@ -33,7 +33,7 @@
 
 ## 3. Git / 环境溯源
 
-- Freeze 点 commit：`c5b9178`（数据）/ 冻结文档提交 `f7fea5e`。
+- Freeze 点 commit：`dcf84db`（数据）/ 冻结文档提交 `5c8675d`。
 - 每个 raw run 记录 git commit + dirty 状态（80/81 历史 formal run 为
   dirty，supervisor v0 未存 patch artifact——见 §4 WARNING）。
 - 软件版本锁定：uv lock（Python 3.13.11 / mlx 0.32.2 / mlx-lm 0.31.3）。

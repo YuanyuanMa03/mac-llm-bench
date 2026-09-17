@@ -144,10 +144,10 @@ results/figures/      从原始结果程序化生成
 | [prompt08](PROMPT.md#prompt08) | 2026-09-07 | ✅ 已完成 | `bb2a941` |
 | [prompt09](PROMPT.md#prompt09) | 2026-09-07 | ✅ 已完成 | `099092c` |
 | [prompt10](PROMPT.md#prompt10) | 2026-09-07 | ✅ 已完成 | `72cc3ca` |
-| [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ 已完成 | `56a324d` |
-| [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ 已完成 | `ebb2869` |
-| [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ 已完成 | `8b53186` |
-| [prompt14](PROMPT.md#prompt14) | 2026-09-07 | ✅ 已完成 | `62e2de9` |
+| [prompt11](PROMPT.md#prompt11) | 2026-09-07 | ✅ 已完成 | `44c05bf` |
+| [prompt12](PROMPT.md#prompt12) | 2026-09-07 | ✅ 已完成 | `6ef789f` |
+| [prompt13](PROMPT.md#prompt13) | 2026-09-07 | ✅ 已完成 | `29a18b6` |
+| [prompt14](PROMPT.md#prompt14) | 2026-09-07 | ✅ 已完成 | `23dd83d` |
 <!-- prompt-log:end -->
 
 ## 文档
