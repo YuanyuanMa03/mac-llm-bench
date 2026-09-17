@@ -16,3 +16,4 @@ paper/*.out
 .video_agent/
 paper/submission/
 paper/*.tar.gz
+preferences/
