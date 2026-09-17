@@ -10,12 +10,11 @@ identifiers:
       research/experiment_freeze.md)
     type: other
     value: freeze-04f90a840b8ea8fb
-repository-code: "https://github.com/anonymous/mac-llm-bench"
+repository-code: "https://github.com/YuanyuanMa03/mac-llm-bench"
 authors:
-  - name: mac-llm-bench maintainers
-    alias: Anonymous (double-blind submission)
+  - name: Yuanyuan Ma
 version: 1.0.0-rc1
-date-released: "2026-09-16"
+date-released: "2026-09-17"
 keywords:
   - llm
   - fine-tuning
@@ -33,4 +32,4 @@ preferred-citation:
     on Consumer Apple Silicon
   year: 2026
   authors:
-    - name: Anonymous
+    - name: Yuanyuan Ma
