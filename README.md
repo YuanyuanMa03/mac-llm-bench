@@ -36,7 +36,7 @@ Loadable → Trainable → Practical → Efficient
 | Deviation ledger | ✅ D1–D8 logged — [research/deviations.md](research/deviations.md) |
 | Analysis pipeline | ✅ one-command rebuild — `uv run python scripts/run_analysis.py` (tables/figures/key numbers/coverage/hypothesis audit) |
 | Hypothesis audit (H1–H6) | ✅ [results/processed/hypothesis_audit.json](results/processed/hypothesis_audit.json) |
-| Paper | ✅ draft complete, compiles (8 pp, 0 undefined refs) — [paper/main.tex](paper/main.tex) |
+| Paper | ✅ 15 pp final draft; **LaTeX source intentionally not tracked here** — this repo hosts the experiment process only; the paper is deposited on arXiv (link to follow after upload) |
 | Reproducibility audit | ✅ [research/reproducibility_audit.md](research/reproducibility_audit.md) |
 
 ## Quickstart (minimal reproduction)
@@ -57,8 +57,10 @@ uv run python -m pytest tests/ -q          # 48 tests
 uv run python scripts/audit_reproducibility.py
 uv run python scripts/build_claim_ledger.py
 
-# 5. Compile the paper (TeX Live with pdflatex+bibtex)
-cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+# 5. (paper) The LaTeX source is deliberately outside this repo. Generated
+#    tables/figures are written to the git-ignored paper/submission/ for the
+#    maintainer's local pdflatex+bibtex build; the paper itself is published
+#    on arXiv.
 ```
 
 Re-running experiments (optional) additionally requires the pinned model

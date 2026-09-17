@@ -686,7 +686,7 @@ results/raw
     ↓
 src/analysis
     ↓
-paper/tables/table_2.tex
+paper/submission/tables/table_2.tex
 ```
 
 这样可以避免论文里的数字和真实实验结果不一致。

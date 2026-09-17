@@ -32,7 +32,8 @@ Loadable（可加载）→ Trainable（可训练）→ Practical（实用）→ 
 uv sync                                   # 锁定环境（Python 3.13, mlx 0.32.2）
 uv run python -m pytest tests/ -q         # 48 项测试
 uv run python scripts/run_analysis.py     # 从冻结 raw 一键重建全部派生产物
-cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+# 论文 LaTeX 源码有意不入库：生成的表格/图表写入 git-ignored 的
+# paper/submission/ 供维护者本地编译；论文经 arXiv 发布
 ```
 
 模型权重不入库（git-ignored），revision 锚定见 `models/MANIFEST.md`。

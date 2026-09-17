@@ -1,4 +1,5 @@
-"""论文表格生成（全部从 processed 数据派生 → paper/tables/*.tex）。
+"""论文表格生成（全部从 processed 数据派生 → paper/submission/tables/*.tex；
+该目录 git-ignored——论文成品只经 arXiv 发布，LaTeX 源码不进仓库）。
 
 Table 1 hardware/software/model revisions（来自 formal run 的 raw provenance）
 Table 2 formal matrix 汇总（mean±SD over 3 seeds）
@@ -18,7 +19,7 @@ import pandas as pd
 from .stats import mean_sd_ci, paired_ratio
 
 ROOT = Path(__file__).resolve().parents[2]
-TABLES = ROOT / "paper" / "tables"
+TABLES = ROOT / "paper" / "submission" / "tables"
 
 
 def _load() -> pd.DataFrame:

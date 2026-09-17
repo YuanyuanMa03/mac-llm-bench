@@ -1,7 +1,8 @@
 """论文图表生成（预注册 §9；全部从 processed/raw 派生，禁止手工数字）。
 
 输出：results/figures/fig1..fig8 的 PDF+PNG（300 dpi），并同步 PDF 到
-paper/figures/（LaTeX/arXiv 自包含源码用）。
+paper/submission/figures/（论文源码目录，git-ignored——论文成品只经
+arXiv 发布，LaTeX 源码不进仓库）。
 数据源：results/processed/experiments.csv、step_timings.parquet、
 context_boundary_probe_summary.json、failure_taxonomy.json。
 任何 group 缺失时 fail loudly（不静默空图）。
@@ -35,7 +36,7 @@ from .stats import loglog_fit, mean_sd_ci
 
 ROOT = Path(__file__).resolve().parents[2]
 FIG = ROOT / "results" / "figures"
-PAPER_FIG = ROOT / "paper" / "figures"
+PAPER_FIG = ROOT / "paper" / "submission" / "figures"
 
 plt.rcParams.update({
     "figure.dpi": 110, "savefig.dpi": 300, "font.size": 9,
