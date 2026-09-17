@@ -181,8 +181,10 @@ def main() -> int:
             if sub.empty:
                 continue
             xs.append(float(sub["tm.logical_parameter_count"].iloc[0]) / 1e9)
-            ys_mem.append(float(sub["tm.peak_metal_gpu_memory_bytes"].iloc[0]) / 2**30)
-            ys_time.append(float(sub["tm.median_step_time_seconds"].iloc[0]))
+            # 用组内 seed 均值而非 iloc[0]（首 seed），与 figures.py 的拟合口径一致；
+            # 否则 step-time 斜率与 *_scaling_fits.json（图所画的那套）漂移
+            ys_mem.append(_agg(sub, "tm.peak_metal_gpu_memory_bytes")["mean"] / 2**30)
+            ys_time.append(_agg(sub, "tm.median_step_time_seconds")["mean"])
         out.setdefault("fits", {})[label] = {
             "memory": loglog_fit(xs, ys_mem),
             "step_time": loglog_fit(xs, ys_time),

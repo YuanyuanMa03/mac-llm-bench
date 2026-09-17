@@ -251,7 +251,7 @@ def threshold_sensitivity() -> dict:
         "growth $\\le$4\\,GiB), P2 (median step $\\le$10\\,s) and the "
         "exploratory \\efficient{} criterion ($\\ge$100 loss-bearing "
         "tokens/s) at $0.5\\times$/$1\\times$/$2\\times$ the frozen values.}",
-        "\\label{tab:sens}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\label{tab:sens}", "\\footnotesize\\setlength{\\tabcolsep}{2pt}",
         "\\begin{tabular}{lccc}", "\\toprule",
         "Cell & P1 (2/4/8\\,GiB) & P2 (5/10/20\\,s) & Eff.\\ (50/100/200)\\\\",
         "\\midrule",
@@ -365,7 +365,7 @@ def slope_confidence_intervals() -> dict:
         "(preregistration Sect.~9: wide intervals reported honestly; "
         "CI $= t_{0.975,n-1}\\,\\mathrm{SD}/\\sqrt{n}$; per-seed SD in "
         "Table~\\ref{tab:matrix}).}",
-        "\\label{tab:ci}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\label{tab:ci}", "\\footnotesize\\setlength{\\tabcolsep}{2pt}",
         "\\begin{tabular}{lrrr}", "\\toprule",
         "Cell & Median step (s) & Tok/s & Val loss\\\\", "\\midrule",
     ]

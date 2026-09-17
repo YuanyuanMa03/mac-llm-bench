@@ -449,7 +449,7 @@ def table6(df: pd.DataFrame) -> None:
         "\\caption{LoRA rank axis (Qwen3-4B-4bit QLoRA, ctx512, b1, 20 steps "
         "for r4/r32; r8 point reused from the 100-step axis-1 cell per "
         "preregistration; mean$\\pm$SD; all cells Tier-B).}",
-        "\\label{tab:rank}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\label{tab:rank}", "\\footnotesize\\setlength{\\tabcolsep}{2pt}",
         "\\begin{tabular}{rrrrr}", "\\toprule",
         "Rank & Median step (s) & Tok/s & Peak mem (GiB) & "
         "Swap-in\\\\", "\\midrule",
@@ -472,6 +472,80 @@ def table6(df: pd.DataFrame) -> None:
     print("[table] table6_rank_axis.tex")
 
 
+def _mean(sub: pd.DataFrame, col: str) -> float | None:
+    vals = pd.to_numeric(sub[col], errors="coerce").dropna()
+    return float(vals.mean()) if len(vals) else None
+
+
+def table10(df: pd.DataFrame) -> None:
+    """Table 10: feasibility quick-ref (at-a-glance decision table).
+
+    Verdicts are derived programmatically from the same retained formal cell
+    that Table~2 tabulates, so no number or label is hand-typed:
+      - ``Boundary (system-state)``: D1 (4B BF16) / D8 (14B 4-bit) cells,
+        whose preregistered seed set did not complete under one window.
+      - ``Negative (diverged)``: full-FT cell completed but its validation
+        loss (4.44) shows the frozen-lr divergence of Sec.~Effectiveness.
+      - ``Practical`` / ``Trainable (P2 miss)``: completed 3/3 seeds,
+        split by the frozen median-step bound of 10 s (P2). The
+        system-wide P1 swap-growth criterion is confounded by background
+        load and is deliberately not gated here.
+    """
+    # (model, fit, display name, is_boundary_cell)
+    order = [("0.6b", "bf16-full", "Full FT", False),
+             ("0.6b", "bf16-lora", "BF16 LoRA", False),
+             ("1.7b", "bf16-lora", "BF16 LoRA", False),
+             ("4b", "bf16-lora", "BF16 LoRA", True),   # D1
+             ("0.6b", "4bit-qlora", "4-bit QLoRA", False),
+             ("1.7b", "4bit-qlora", "4-bit QLoRA", False),
+             ("4b", "4bit-qlora", "4-bit QLoRA", False),
+             ("8b", "4bit-qlora", "4-bit QLoRA", False),
+             ("14b", "4bit-qlora", "4-bit QLoRA", True)]  # D8
+    lines = [
+        "\\begin{table*}[h]\\centering",
+        "\\caption{Feasibility quick-ref at ctx512, b1-ga1, rank 8, lr 1e-4, "
+        "100 steps (same retained formal cells as "
+        "Table~\\ref{tab:matrix}; mean over completed seeds). Verdicts are "
+        "derived programmatically: completed-seed count and the frozen "
+        "median-step bound of 10\\,s (P2); the system-wide P1 swap-growth "
+        "criterion is confounded by background load (Sec.~\\ref{sec:whatenable}) "
+        "and is not gated here. ``Negative'' is the full-FT divergence; "
+        "``Boundary'' marks the D1/D8 system-state cells.}",
+        "\\label{tab:speedref}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
+        "\\begin{tabular}{@{}lp{3.2cm}rrrrr@{}}", "\\toprule",
+        "Model & Method & Verdict & Peak (GiB) & Med step (s) & Tok/s & "
+        "Val loss\\\\", "\\midrule",
+    ]
+    for m, fit, nice, boundary in order:
+        g = f"formal-axis1-{m}-{fit}"
+        sub = df[(df["experiment.comparison_group_id"] == g)
+                 & (df["status.terminal_state"] == "success")]
+        n = len(sub)
+        med = _mean(sub, "tm.median_step_time_seconds")
+        peak_raw = _mean(sub, "tm.peak_metal_gpu_memory_bytes")
+        peak = peak_raw / 2**30 if peak_raw is not None else None
+        tok = _mean(sub, "runtime.tokens_per_second")
+        vl = _mean(sub, "metrics.validation_loss_final")
+        full = "full" in fit
+        if boundary and n < 3:
+            verdict = "Boundary (system-state)"
+        elif full and vl is not None and vl > 2.5:
+            verdict = "Negative (diverged)"
+        elif n >= 3 and med is not None:
+            verdict = "Practical" if med <= 10.0 else "Trainable (P2 miss)"
+        else:
+            verdict = f"{n}/3 seeds"
+        fmt = lambda v, spec: "--" if v is None else f"{v:{spec}}"
+        lines.append(
+            f"Qwen3-{m} & {nice} & {verdict} & {fmt(peak, '.2f')} & "
+            f"{fmt(med, '.3f')} & {fmt(tok, '.1f')} & {fmt(vl, '.3f')}\\\\")
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
+    TABLES.mkdir(parents=True, exist_ok=True)
+    (TABLES / "table10_speedref.tex").write_text("\n".join(lines) + "\n",
+                                                 encoding="utf-8")
+    print("[table] table10_speedref.tex")
+
+
 def main() -> int:
     df = _load()
     table1(df)
@@ -480,4 +554,5 @@ def main() -> int:
     table4(df)
     table5(df)
     table6(df)
+    table10(df)
     return 0

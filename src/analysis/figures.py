@@ -38,10 +38,10 @@ FIG = ROOT / "results" / "figures"
 PAPER_FIG = ROOT / "paper" / "figures"
 
 plt.rcParams.update({
-    "figure.dpi": 110, "savefig.dpi": 300, "font.size": 8,
-    "axes.titlesize": 8.5, "axes.titleweight": "bold", "axes.labelsize": 8,
-    "legend.fontsize": 7, "legend.frameon": False,
-    "xtick.labelsize": 7.5, "ytick.labelsize": 7.5,
+    "figure.dpi": 110, "savefig.dpi": 300, "font.size": 9,
+    "axes.titlesize": 9.5, "axes.titleweight": "bold", "axes.labelsize": 9,
+    "legend.fontsize": 8, "legend.frameon": False,
+    "xtick.labelsize": 8.5, "ytick.labelsize": 8.5,
     "axes.linewidth": 0.8, "axes.grid": True, "axes.grid.axis": "y",
     "grid.alpha": 0.35, "grid.linewidth": 0.5,
     "axes.spines.top": False, "axes.spines.right": False,
@@ -115,13 +115,24 @@ def _ram_line(ax, y: float = 16.0, label: str = "16 GiB physical RAM",
         f = (y - lo) / (hi - lo)
     x = xfrac if side == "right" else 1 - xfrac
     ax.text(x, min(f + 0.04, 0.97), label, transform=ax.transAxes,
-            ha=side, fontsize=5.8, color=RAM_COLOR)
+            ha=side, fontsize=8, color=RAM_COLOR)
 
 
-def _legend_out(fig, entries: list[tuple[str, str]], ncol: int) -> None:
-    """图例整体外置顶部横排（GaLore/ZO 母版式；只出现一次）。"""
-    handles = [Line2D([], [], color=c, marker="o", ms=3.5, lw=1.4) for c, _ in entries]
-    fig.legend(handles, [t for _, t in entries], loc="outside upper center",
+def _legend_out(fig, entries: list, ncol: int) -> None:
+    """图例整体外置顶部横排（GaLore/ZO 母版式；只出现一次）。
+
+    entries 项为 (color, label) 或 (color, label, marker)；后者用于标记
+    区分（如 BF16 用方点 vs 4bit 用圆点），灰度打印也保持可辨。
+    """
+    handles = []
+    labels = []
+    for e in entries:
+        color, label = e[0], e[1]
+        marker = e[2] if len(e) > 2 else "o"
+        handles.append(Line2D([], [], color=color, marker=marker, ms=3.5,
+                              lw=1.4))
+        labels.append(label)
+    fig.legend(handles, labels, loc="outside upper center",
                ncol=ncol, frameon=False, handletextpad=0.5, columnspacing=1.4)
 
 
@@ -139,15 +150,15 @@ def fig1_architecture() -> None:
     for i, (b, s) in enumerate(zip(boxes, sub)):
         ax.add_patch(Rectangle((xs[i] - 0.075, 0.35), 0.15, 0.42,
                                fc="#eaf1fd", ec=Q4_COLOR, lw=1.2))
-        ax.text(xs[i], 0.60, b, ha="center", va="center", fontsize=7.2)
-        ax.text(xs[i], 0.44, s, ha="center", va="center", fontsize=6,
+        ax.text(xs[i], 0.60, b, ha="center", va="center", fontsize=8)
+        ax.text(xs[i], 0.44, s, ha="center", va="center", fontsize=7,
                 color="#555555")
         if i < len(boxes) - 1:
             ax.annotate("", xy=(xs[i + 1] - 0.078, 0.56),
                         xytext=(xs[i] + 0.078, 0.56),
                         arrowprops=dict(arrowstyle="->", lw=1.2, color=Q4_COLOR))
     ax.text(0.5, 0.12, "every number in the paper traces back to an immutable raw result",
-            ha="center", fontsize=7, style="italic", color="#444444")
+            ha="center", fontsize=8, style="italic", color="#444444")
     ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
     ax.set_title("Benchmark pipeline", fontsize=10)
     _save(fig, "fig1_architecture")
@@ -163,7 +174,7 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.55), layout="constrained")
     fig.get_layout_engine().set(w_pad=0.18, wspace=0.06)
 
-    def cell(ax, x, y, bg, lines, fg="#333333", fs=6.0, weight="normal"):
+    def cell(ax, x, y, bg, lines, fg="#333333", fs=7.5, weight="normal"):
         ax.add_patch(Rectangle((x - 0.5, y - 0.5), 1, 1, fc=bg,
                                ec="white", lw=1.6, zorder=1))
         ax.text(x, y, lines, ha="center", va="center", fontsize=fs, color=fg,
@@ -206,34 +217,36 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
             elif n_all == 0:
                 cell(ax, j, i, "white", "untested", fg=GRAY_FG)
             elif n_ok == n_all and n_ok >= 3:
-                cell(ax, j, i, GREEN_BG, "✓ 3/3", fg=GREEN_FG, weight="bold")
+                cell(ax, j, i, GREEN_BG, "✓ 3/3", fg=GREEN_FG, fs=8,
+                     weight="bold")
             elif (method, mkey) in BOUNDARY:
                 if n_ok:
-                    cell(ax, j, i, PURPLE_BG, f"✓{n_ok}/{n_all}\nstate-dep.\n(D1)",
-                         fg=PURPLE_FG, fs=5.5)
+                    cell(ax, j, i, PURPLE_BG, f"◐ {n_ok}/{n_all}\nstate-dep.\n(D1)",
+                         fg=PURPLE_FG, fs=7, weight="bold")
                 else:
-                    cell(ax, j, i, PURPLE_BG, "state-dep.\n(D8)", fg=PURPLE_FG)
+                    cell(ax, j, i, PURPLE_BG, "◐ state-dep.\n(D8)",
+                         fg=PURPLE_FG, fs=7, weight="bold")
             else:
                 states = "/".join(sorted(set(sub["status.terminal_state"])))
-                cell(ax, j, i, RED_BG, states, fg=KILL_COLOR, fs=5.5)
+                cell(ax, j, i, RED_BG, f"✗ {states}", fg=KILL_COLOR, fs=7)
     ax.set_xticks(range(len(models)), models)
     ax.set_yticks(range(len(methods)), ["BF16 LoRA", "4bit QLoRA", "Full FT"])
     ax.set_xlim(-0.5, len(models) - 0.5)
     ax.set_ylim(len(methods) - 0.5, -0.5)
     strip(ax)
-    ax.set_title("Model-scale feasibility @ ctx512", fontsize=8.5)
+    ax.set_title("Model-scale feasibility @ ctx512", fontsize=9.5)
 
     ax = axes[1]
     ctxs = ["512", "1024", "2048", "4096", "8192"]
     ok_groups = set(df["experiment.comparison_group_id"])
     for j, c in enumerate(ctxs):
         if c in ("4096", "8192"):
-            cell(ax, j, 0, RED_BG, "SIGKILL\n(probe)", fg=KILL_COLOR, fs=5.8)
+            cell(ax, j, 0, RED_BG, "✗ SIGKILL\n(probe)", fg=KILL_COLOR, fs=7)
         elif c == "512":
             # 预注册复用轴 1 的 4B-4bit cell（3/3 success），非 untested
-            cell(ax, j, 0, GREEN_BG, "✓\n(reuse a1)", fg=GREEN_FG, fs=6.2)
+            cell(ax, j, 0, GREEN_BG, "✓\n(reuse a1)", fg=GREEN_FG, fs=7.5)
         elif f"formal-axis2-ctx{c}" in ok_groups:
-            cell(ax, j, 0, GREEN_BG, "✓", fg=GREEN_FG, fs=9, weight="bold")
+            cell(ax, j, 0, GREEN_BG, "✓", fg=GREEN_FG, fs=9.5, weight="bold")
         else:
             cell(ax, j, 0, "white", "untested", fg=GRAY_FG)
     ax.set_xticks(range(len(ctxs)), ctxs)
@@ -241,7 +254,7 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
     ax.set_xlim(-0.5, len(ctxs) - 0.5)
     ax.set_ylim(0.5, -0.5)
     strip(ax)
-    ax.set_title("Context axis (4B-4bit)", fontsize=8.5)
+    ax.set_title("Context axis (4B-4bit)", fontsize=9.5)
     _save(fig, "fig2_feasibility_map")
 
 
@@ -249,12 +262,13 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(3.35, 3.0), layout="constrained")
     # BF16 的 4B 点为 D1 边界观测（1/3 种子、零驻留窗口），以开口标记画出并
     # 计入拟合——与 summary.py / key_numbers.json 的 n=3 拟合口径一致
+    # 值 = (color, marker)；BF16 用方点与 4bit 圆点区分（灰度打印也可辨）
     series = {
-        "BF16 LoRA": (BF16_COLOR,
+        "BF16 LoRA": (BF16_COLOR, "s",
                       ["formal-axis1-0.6b-bf16-lora",
                        "formal-axis1-1.7b-bf16-lora"],
                       ["formal-axis1-4b-bf16-lora"]),
-        "4bit QLoRA": (Q4_COLOR,
+        "4bit QLoRA": (Q4_COLOR, "o",
                        ["formal-axis1-0.6b-4bit-qlora",
                         "formal-axis1-1.7b-4bit-qlora",
                         "formal-axis1-4b-4bit-qlora",
@@ -264,7 +278,7 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
     fits = {}
     all_xs: set[float] = set()
     legend_entries = []
-    for label, (color, gnames, boundary_gnames) in series.items():
+    for label, (color, marker, gnames, boundary_gnames) in series.items():
         xs, ys, es = [], [], []
         for g in gnames + boundary_gnames:
             sub = _group(df, g)
@@ -278,11 +292,11 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
         all_xs.update(round(x, 2) for x in xs)
         n_formal = len(gnames)
         ax.errorbar(xs[:n_formal], ys[:n_formal], yerr=es[:n_formal],
-                    marker="o", ms=4, lw=1.4, color=color, capsize=2)
+                    marker=marker, ms=4, lw=1.4, color=color, capsize=2)
         if len(xs) > n_formal:
             ax.scatter(xs[n_formal:], ys[n_formal:], s=22, facecolors="none",
-                       edgecolors=color, linewidths=1.4, zorder=5)
-            ax.annotate("D1", xy=(xs[-1], ys[-1]), fontsize=6.5, color=color,
+                       edgecolors=color, linewidths=1.4, zorder=5, marker=marker)
+            ax.annotate("D1", xy=(xs[-1], ys[-1]), fontsize=7, color=color,
                         xytext=(5, -3), textcoords="offset points",
                         ha="left", va="top", fontweight="bold")
             ax.plot(xs[n_formal - 1:], ys[n_formal - 1:], lw=1.0,
@@ -293,9 +307,10 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
             xx = np.logspace(np.log10(min(xs)), np.log10(max(xs)), 50)
             ax.plot(xx, 10 ** fit["intercept"] * xx ** fit["slope"], "--",
                     color=color, alpha=0.6, lw=1)
-            legend_entries.append((color, f"{label} (slope {fit['slope']:.2f})"))
+            legend_entries.append((color, f"{label} (slope {fit['slope']:.2f})",
+                                   marker))
         else:
-            legend_entries.append((color, label))
+            legend_entries.append((color, label, marker))
     # slope 数值进图例（GaLore 母版式），CI/R²/n 见 Table 9
     _legend_out(fig, legend_entries, ncol=1)
     ax.set_yscale("log")
@@ -314,12 +329,13 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.7), layout="constrained")
     fig.get_layout_engine().set(w_pad=0.2, wspace=0.06)
     # 同 fig3：BF16 的 4B 点为 D1 边界观测，开口标记并计入拟合（n=3）
+    # 值 = (color, marker)；BF16 方点 vs 4bit 圆点（灰度可辨）
     series = {
-        "BF16 LoRA": (BF16_COLOR,
+        "BF16 LoRA": (BF16_COLOR, "s",
                       ["formal-axis1-0.6b-bf16-lora",
                        "formal-axis1-1.7b-bf16-lora"],
                       ["formal-axis1-4b-bf16-lora"]),
-        "4bit QLoRA": (Q4_COLOR,
+        "4bit QLoRA": (Q4_COLOR, "o",
                        ["formal-axis1-0.6b-4bit-qlora",
                         "formal-axis1-1.7b-4bit-qlora",
                         "formal-axis1-4b-4bit-qlora",
@@ -329,7 +345,7 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
     fits = {}
     all_xs4: set[float] = set()
     legend_entries = []
-    for label, (color, gnames, boundary_gnames) in series.items():
+    for label, (color, marker, gnames, boundary_gnames) in series.items():
         xs, st, ste, tp, tpe = [], [], [], [], []
         for g in gnames + boundary_gnames:
             sub = _group(df, g)
@@ -345,15 +361,15 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
         n_formal = len(gnames)
         for ax_i, ys_, es_ in ((axes[0], st, ste), (axes[1], tp, tpe)):
             ax_i.errorbar(xs[:n_formal], ys_[:n_formal], yerr=es_[:n_formal],
-                          marker="o", ms=4, lw=1.4, color=color, capsize=2)
+                          marker=marker, ms=4, lw=1.4, color=color, capsize=2)
         if len(xs) > n_formal:
             for ax_i, ys_ in ((axes[0], st), (axes[1], tp)):
                 ax_i.scatter(xs[n_formal:], ys_[n_formal:], s=22,
                              facecolors="none", edgecolors=color,
-                             linewidths=1.4, zorder=5)
+                             linewidths=1.4, zorder=5, marker=marker)
                 ax_i.plot(xs[n_formal - 1:], ys_[n_formal - 1:], lw=1.0,
                           color=color, alpha=0.5)
-            axes[0].annotate("D1", xy=(xs[-1], st[-1]), fontsize=6.5,
+            axes[0].annotate("D1", xy=(xs[-1], st[-1]), fontsize=7,
                              color=color, xytext=(-2, 7),
                              textcoords="offset points", ha="right",
                              fontweight="bold")
@@ -363,9 +379,10 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
             xx = np.logspace(np.log10(min(xs)), np.log10(max(xs)), 50)
             axes[0].plot(xx, 10 ** fit["intercept"] * xx ** fit["slope"], "--",
                          color=color, alpha=0.6, lw=1)
-            legend_entries.append((color, f"{label} (step-time slope {fit['slope']:.2f})"))
+            legend_entries.append((color, f"{label} (step-time slope "
+                                          f"{fit['slope']:.2f})", marker))
         else:
-            legend_entries.append((color, label))
+            legend_entries.append((color, label, marker))
     # 图例只出现一次（ZO 母版式）：跨面板共享系列 + 步时拟合斜率
     _legend_out(fig, legend_entries, ncol=2)
     for ax, ylab, title in ((axes[0], "median step time (s)",
@@ -375,7 +392,7 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
         ax.set_yscale("log")
         _logx_ticks(ax, sorted(all_xs4))
         ax.set_xlabel("logical parameters (B)"); ax.set_ylabel(ylab)
-        ax.set_title(title, fontsize=8.5)
+        ax.set_title(title, fontsize=9.5)
     (ROOT / "results" / "processed" / "step_time_scaling_fits.json").write_text(
         json.dumps(fits, indent=2) + "\n")
     _save(fig, "fig4_time_scaling")
@@ -415,7 +432,7 @@ def fig5_context_scaling(df: pd.DataFrame) -> None:
         axes[0].scatter(kxs, [kill_y] * len(kxs), marker="x", s=55,
                         color=KILL_COLOR, zorder=5)
         axes[0].annotate("SIGKILL (0 steps)",
-                         xy=(float(np.mean(kxs)), kill_y), fontsize=6.2,
+                         xy=(float(np.mean(kxs)), kill_y), fontsize=8,
                          color=KILL_COLOR, xytext=(0, 9),
                          textcoords="offset points", ha="center",
                          fontweight="bold")
@@ -426,7 +443,7 @@ def fig5_context_scaling(df: pd.DataFrame) -> None:
     _logx_ticks(axes[0], ctx_ticks)
     axes[0].set_xlim(400, 14000)
     axes[0].set_xlabel("sequence length"); axes[0].set_ylabel("median step time (s)")
-    axes[0].set_title("Step time vs context (4B-4bit QLoRA, b1)", fontsize=8.5)
+    axes[0].set_title("Step time vs context (4B-4bit QLoRA, b1)", fontsize=9.5)
 
     axes[1].errorbar(xs, [pts[x]["mem"]["mean"] / 2**30 for x in xs],
                      yerr=[(pts[x]["mem"]["sd"] or 0) / 2**30 for x in xs],
@@ -439,7 +456,7 @@ def fig5_context_scaling(df: pd.DataFrame) -> None:
     _ram_line(axes[1], 16, xfrac=0.985)
     axes[1].set_xlabel("sequence length")
     axes[1].set_ylabel("MLX peak memory (GiB)")
-    axes[1].set_title("Peak memory vs context", fontsize=8.5)
+    axes[1].set_title("Peak memory vs context", fontsize=9.5)
     _legend_out(fig, legend_entries, ncol=2)
     _save(fig, "fig5_context_scaling")
 
@@ -473,13 +490,14 @@ def fig6_paired_effects(df: pd.DataFrame) -> None:
                              "ratio_min": float(min(r)), "ratio_max": float(max(r)),
                              "n_seeds": len(r)})
         ax.bar(xs, ratios, yerr=[lo, hi], capsize=3,
-               color=["#9ecae1", "#f4a582", "#fdae6b"][:len(xs)], width=0.55)
+               color=["#9ecae1", "#f4a582", "#fdae6b"][:len(xs)],
+               hatch=["", "//", "xx"][:len(xs)], width=0.55)
         if col == "tm.median_step_time_seconds":
             ax.axhspan(0.80, 1.25, color="#2ca02c", alpha=0.12, zorder=0)
             ax.text(0.02, 0.90, "±25% equivalence margin (frozen)",
-                    transform=ax.transAxes, fontsize=6, color="#2ca02c")
+                    transform=ax.transAxes, fontsize=8, color="#2ca02c")
         ax.axhline(1.0, color="#555555", lw=0.8, ls="--")
-        ax.set_title(title, fontsize=8.5)
+        ax.set_title(title, fontsize=9.5)
         ax.set_ylim(0, max(1.6, max(ratios) * 1.25 if ratios else 1.6))
     (ROOT / "results" / "processed" / "paired_quantization_effects.csv").write_text(
         pd.DataFrame(rows).to_csv(index=False))
@@ -506,19 +524,18 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
                      color=Q4_COLOR, capsize=2, label="trainable (3 seeds)")
     axes[0].scatter([8], [0], marker="x", s=70, color=KILL_COLOR, zorder=5)
     axes[0].annotate("SIGKILL ×3 seeds\n(exit 137, zero steps)",
-                     xy=(8, 0), fontsize=6.5, color=KILL_COLOR,
+                     xy=(8, 0), fontsize=8, color=KILL_COLOR,
                      xytext=(-10, 12), textcoords="offset points", ha="right")
     axes[0].set_xticks([1, 2, 4, 8])
     axes[0].set_ylim(0, max(tp) * 1.3)
     axes[0].set_xlabel("micro-batch size"); axes[0].set_ylabel("loss-bearing tokens/s")
-    axes[0].set_title("Throughput vs batch (4B-4bit, ctx512)", fontsize=9)
-    axes[0].legend(loc="lower left")
+    axes[0].set_title("Throughput vs batch (4B-4bit, ctx512)", fontsize=9.5)
 
     axes[1].errorbar(xs, mem, yerr=meme, marker="o", ms=4, lw=1.4,
-                     color=Q4_COLOR, capsize=2, label="MLX peak (mean±SD)")
+                     color=Q4_COLOR, capsize=2)
     axes[1].scatter([8], [16], marker="x", s=70, color=KILL_COLOR, zorder=5)
     axes[1].annotate("SIGKILL ×3\n(system swap→~20 GiB)",
-                     xy=(8, 16), fontsize=6.5, color=KILL_COLOR,
+                     xy=(8, 16), fontsize=8, color=KILL_COLOR,
                      xytext=(-10, -20), textcoords="offset points", ha="right",
                      va="top")
     axes[1].set_xticks([1, 2, 4, 8])
@@ -526,8 +543,9 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
     _ram_line(axes[1], 16, xfrac=0.985)
     axes[1].set_xlabel("micro-batch size"); axes[1].set_ylabel("MLX peak memory (GiB)")
     axes[1].set_title("Peak memory vs batch (batch boundary ∈ [4,8))",
-                      fontsize=9)
-    axes[1].legend(loc="lower right")
+                      fontsize=9.5)
+    _legend_out(fig, [(Q4_COLOR, "trainable (3 seeds)", "o"),
+                      (KILL_COLOR, "SIGKILL ×3 (probe)", "x")], ncol=2)
     _save(fig, "fig7_batch_axis")
 
 
@@ -553,7 +571,7 @@ def fig8_rank_axis(df: pd.DataFrame) -> None:
                     marker="o", ms=4, lw=1.4, color=Q4_COLOR, capsize=2)
         _logx_ticks(ax, xs, base=2)
         ax.set_ylabel(ylab)
-        ax.set_title(title, fontsize=8.5)
+        ax.set_title(title, fontsize=9.5)
         if ax is axes[1]:
             ax.set_xlabel("LoRA rank")
     _legend_out(fig, [(Q4_COLOR, "mean±SD (3 seeds)")], ncol=1)
