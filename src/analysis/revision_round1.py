@@ -29,7 +29,7 @@ from scipy import stats as sps
 
 ROOT = Path(__file__).resolve().parents[2]
 PROC = ROOT / "results" / "processed"
-TABLES = ROOT / "paper" / "tables"
+TABLES = ROOT / "paper" / "submission" / "tables"
 
 SW_IN_B = "runtime.system_vm_counters_before.value.counters_pages.swapins"
 SW_OUT_B = "runtime.system_vm_counters_before.value.counters_pages.swapouts"
@@ -129,7 +129,7 @@ def tier_table() -> dict:
         "Tier-A $=$ swap-in $<$50\\,MB/step (compute-bound), Tier-B otherwise. "
         "Residency is the pre-run system swap level. The axis1b 300-step "
         "duplicate-retention group (D2) is aggregated in the 46 "
-        "(Sec.~6) but outside these axis strata. Group prefixes "
+        "(Sec.~\\ref{sec:failures}) but outside these axis strata. Group prefixes "
         "a1--a4 denote axis-1 model scale, axis-2 context, axis-3 "
         "rank, axis-4 micro-batch.}",
         "\\label{tab:tier}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
@@ -149,7 +149,7 @@ def tier_table() -> dict:
         hi = _m.floor(d["mb_step_max"] + 0.5)
         lines.append(
             f"{nice} & {d['runs']} & {d['tier_a']} & {d['tier_b']} & "
-            f"{lo}--{hi} & "
+            f"{lo}--{hi} & " +
             (f"{d['init_swap_min']:.1f}" if d['init_swap_min'] == d['init_swap_max']
              else f"{d['init_swap_min']:.1f}--{d['init_swap_max']:.1f}") + "\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
@@ -254,7 +254,8 @@ def threshold_sensitivity() -> dict:
         "growth $\\le$4\\,GiB), P2 (median step $\\le$10\\,s) and the "
         "exploratory \\efficient{} criterion ($\\ge$100 loss-bearing "
         "tokens/s) at $0.5\\times$/$1\\times$/$2\\times$ the frozen values "
-        "(Y = pass, N = fail; efficiency thresholds are in loss-bearing "
+        "(Y = pass, N = fail; $^{D1}$ marks the 4b BF16 boundary cell (1/3 seeds); "
+        "efficiency thresholds are in loss-bearing "
         "tokens/s).}",
         "\\label{tab:sens}", "\\footnotesize\\setlength{\\tabcolsep}{2pt}",
         "\\begin{tabular}{lccc}", "\\toprule",
@@ -264,9 +265,11 @@ def threshold_sensitivity() -> dict:
     for r in rows:
         cell = (r["group"].replace("formal-axis1-", "")
                 .replace("-4bit-qlora", " 4bit").replace("-bf16-lora", " BF16"))
-        p1 = "/".join("Y" if x else "n" for x in r["P1_pass_at_2_4_8"])
-        p2 = "/".join("Y" if x else "n" for x in r["P2_pass_at_5_10_20"])
-        ef = "/".join("Y" if x else "n" for x in r["eff_pass_at_50_100_200"])
+        if r["group"] == "formal-axis1-4b-bf16-lora":
+            cell += "$^{D1}$"
+        p1 = "/".join("Y" if x else "N" for x in r["P1_pass_at_2_4_8"])
+        p2 = "/".join("Y" if x else "N" for x in r["P2_pass_at_5_10_20"])
+        ef = "/".join("Y" if x else "N" for x in r["eff_pass_at_50_100_200"])
         lines.append(f"\\texttt{{{cell.replace('_', '-')}}} & {p1} & {p2} & {ef}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
     (TABLES / "table8_sensitivity.tex").write_text("\n".join(lines) + "\n",

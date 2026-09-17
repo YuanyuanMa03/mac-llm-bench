@@ -310,8 +310,9 @@ def audit_h6(df: pd.DataFrame, kn: dict) -> dict:
         status = "unsupported"
     return {
         "hypothesis": "H6: context scaling shows a clear cliff/boundary",
-        "rule": "v2 dual evidence: (a) Tier-B-comparable time amplification "
-                f">= {H6_CLIFF_MIN_FACTOR:.0f}x token amplification; "
+        "rule": "v2 dual evidence: (a) Tier-B-comparable step-time "
+                f"amplification at least {H6_CLIFF_MIN_FACTOR:.0f} times the "
+                "token-count amplification; "
                 "(b) SIGKILL boundary in [2048,4096); both -> supported, "
                 "boundary-only -> partially",
         "supporting_experiments": supporting,

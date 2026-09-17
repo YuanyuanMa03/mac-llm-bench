@@ -28,7 +28,7 @@ tables/   table1..table10 .tex（脚本生成，由 main.tex \input）
           + main.tex 内联 2 表（失败处置审计表等）
 ```
 
-规模：**15 页、8 figures、12 tables（10 生成 + 2 内联）、bib 20 条**。
+规模：**17 页、8 figures、13 tables（12 生成 + 1 附录偏差摘要引用台账）、bib 20 条**。
 
 ## 提交表单元数据（可直接粘贴）
 
@@ -60,7 +60,7 @@ tables/   table1..table10 .tex（脚本生成，由 main.tex \input）
       `figures.py _save` 已加防回写保护（重跑管线不会把 matplotlib 版
       fig1 带回论文目录）
 - [x] tarball 抽取独立构建：pdflatex ×2（包内 main.bbl，无 bibtex）exit 0，
-      **15 页**，0 Overfull、0 undefined（产出 1,118,356 B，与
+      **17 页**，0 Overfull、0 undefined（产出 1,145,180 B，与
       `paper/submission/` 本地构建报告尺寸一致）
 - [x] figures 与 `results/figures/`（2026-09-17 二轮重绘版）逐字节一致
 - [x] 本轮新增内容隐私扫描（main.tex/全部 tables/分析脚本）：本地路径、

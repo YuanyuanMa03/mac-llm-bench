@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-17T12:31:18+00:00",
-  "generator_commit": "8277d6910b3eb7f53c822cdc8d3f94081289a3c4",
+  "generated_utc": "2026-09-17T13:46:10+00:00",
+  "generator_commit": "0c2fe85c1646ce3424b2a5511e5faef92d5ae7af",
   "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
   "hypotheses": {
     "H1": {
@@ -104,7 +104,7 @@
     },
     "H6": {
       "hypothesis": "H6: context scaling shows a clear cliff/boundary",
-      "rule": "v2 dual evidence: (a) Tier-B-comparable time amplification >= 10x token amplification; (b) SIGKILL boundary in [2048,4096); both -> supported, boundary-only -> partially",
+      "rule": "v2 dual evidence: (a) Tier-B-comparable step-time amplification at least 10 times the token-count amplification; (b) SIGKILL boundary in [2048,4096); both -> supported, boundary-only -> partially",
       "supporting_experiments": [
         "probe ctx4096: SIGKILL before any step (boundary evidence)",
         "probe ctx8192: SIGKILL before any step (boundary evidence)",

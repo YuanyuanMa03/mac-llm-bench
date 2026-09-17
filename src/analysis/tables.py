@@ -77,7 +77,10 @@ def table1(df: pd.DataFrame) -> None:
         if key[0] in seen or pd.isna(r["model.resolved_revision"]):
             continue
         seen.add(key[0])
-        short = str(key[0]).replace("mlx-community/", "").replace("Qwen3-", "")
+        short = (str(key[0]).replace("mlx-community/", "")
+                 .replace("Qwen3-", "").replace("Qwen/", ""))
+        if "4bit" not in short:
+            short += "-BF16"
         models.append((short, str(key[1])[:8]))
     # 按规模升序、同规模 BF16 在前 4bit 在后，与 Table 2 行序一致
     def _sort_key(item):
@@ -101,7 +104,7 @@ def table1(df: pd.DataFrame) -> None:
     lines.append("\\midrule")
     lines.append("Qwen3 models & resolved revision (8-char prefix)\\\\")
     for name, rev in models:
-        lines.append(f"\\quad \\texttt{{{name}}} & \\texttt{{{rev}}}...\\\\")
+        lines.append(f"\\quad \\texttt{{{name}}} & \\texttt{{{rev}}}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
     TABLES.mkdir(parents=True, exist_ok=True)
     (TABLES / "table1_setup.tex").write_text("\n".join(lines) + "\n",
@@ -122,9 +125,8 @@ def table2(df: pd.DataFrame) -> None:
         "median-step bound of 10\\,s; the system-wide P1 swap-growth "
         "criterion is confounded by background load "
         "(Sec.~\\ref{sec:whatenable}) and is reported "
-        "(Table~\\ref{tab:sens}) but not gated (D11; under the frozen "
-        "P1$\\wedge$P2 rule the two 0.6B cells would lose "
-        "\\practical). ``Boundary'' marks the "
+        "(Table~\\ref{tab:sens}) but not gated (D11 and its "
+        "counterfactual, App.~B). ``Boundary'' marks the "
         "D1/D8 system-state cells; ``Negative (diverged)'' is the frozen-lr "
         "full-FT divergence; alongside the four operational terms "
         "(Sec.~\\ref{sec:definitions}) these two auxiliary kinds complete the "
@@ -180,15 +182,17 @@ def table2(df: pd.DataFrame) -> None:
         if sub.empty:
             lines.append(f"Qwen3-{model}b{params_txt} & {nice[method]} & "
                          f"{seeds} & {verdict} & -- & -- & -- & --\\\\")
-            continue
-        params = float(params_col.iloc[0]) / 1e9
-        lines.append(
-            f"Qwen3-{model}b ({params:.1f}B) & {nice[method]} & {seeds} & "
-            f"{verdict} & "
-            f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
-            f"{_agg_cell(sub, 'tm.median_step_time_seconds')} & "
-            f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
-            f"{_agg_cell(sub, 'metrics.validation_loss_final', 3)}\\\\")
+        else:
+            params = float(params_col.iloc[0]) / 1e9
+            lines.append(
+                f"Qwen3-{model}b ({params:.1f}B) & {nice[method]} & {seeds} & "
+                f"{verdict} & "
+                f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
+                f"{_agg_cell(sub, 'tm.median_step_time_seconds')} & "
+                f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
+                f"{_agg_cell(sub, 'metrics.validation_loss_final', 3)}\\\\")
+        if g.endswith("bf16-full") or g == "formal-axis1-4b-bf16-lora":
+            lines.append("\\midrule")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table2_matrix.tex").write_text("\n".join(lines) + "\n",
                                               encoding="utf-8")
@@ -605,7 +609,8 @@ def table12(df: pd.DataFrame) -> None:
          "retained as evidence."),
         ("Duplicate", len(dup),
          f"D2 dedup applied to failures ({dup_states}; groups: "
-         f"{dup_groups}); see Sec.~6 for the batch-8 ledger subtlety."),
+         f"{dup_groups}); see Sec.~\\ref{sec:failures} for the "
+         "batch-8 ledger subtlety."),
         ("Non-formal (probe / exp0-smoke)", len(nf),
          f"pre-formal debug and probe runs outside the formal matrix "
          f"({nf_groups}); not formal cells."),
@@ -633,6 +638,42 @@ def table12(df: pd.DataFrame) -> None:
     print("[table] table12_disposition.tex")
 
 
+def table13(df: pd.DataFrame) -> None:
+    """Context axis (axis-2) 每格中位数（R2 建议的数据表，来源同 fig5）。"""
+    groups = [("512 (reuse a1)", "formal-axis1-4b-4bit-qlora"),
+              ("1024", "formal-axis2-ctx1024"),
+              ("2048", "formal-axis2-ctx2048")]
+    lines = [
+        "\\begin{table}[t]\\centering",
+        "\\caption{Context axis (Qwen3-4B-4bit QLoRA, 20 steps; ctx512 "
+        "reuses the axis-1 100-step cell per preregistration; mean$\\pm$SD "
+        "over completed seeds; the ctx2048 s123 rerun completed in a "
+        "lower-residency window than its peers, Sec.~\\ref{sec:ctx}). "
+        "ctx4096/8192 probes were SIGKILLed before any step and have no "
+        "measurable medians. The non-monotonic medians (23.98 vs 20.66) reflect opposite window-state biases, not a context cliff (Sec.~\\ref{sec:ctx}).}",
+        "\\label{tab:ctx}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\begin{tabular}{lrrr}", "\\toprule",
+        "ctx & Med step (s) & Peak (GiB) & Seeds\\\\", "\\midrule",
+    ]
+    for label, g in groups:
+        sub = df[(df["experiment.comparison_group_id"] == g)
+                 & (df["status.terminal_state"] == "success")]
+        if sub.empty:
+            lines.append(f"{label} & -- & -- & 0/3\\\\"); continue
+        lines.append(f"{label} & "
+                     f"{_agg_cell(sub, 'tm.median_step_time_seconds')} & "
+                     f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
+                     f"{len(sub)}/3\\\\")
+    lines += ["4096 [probe] & \\multicolumn{3}{l}{SIGKILL, 0 steps "
+             "(single seed)}\\\\",
+             "8192 [probe] & \\multicolumn{3}{l}{SIGKILL, 0 steps "
+             "(single seed)}\\\\",
+             "\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    (TABLES / "table13_context.tex").write_text("\n".join(lines) + "\n",
+                                                encoding="utf-8")
+    print("[table] table13_context.tex")
+
+
 def main() -> int:
     df = _load()
     table1(df)
@@ -643,4 +684,5 @@ def main() -> int:
     table6(df)
     table11(df)
     table12(df)
+    table13(df)
     return 0
