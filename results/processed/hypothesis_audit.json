@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-16T13:01:57+00:00",
-  "generator_commit": "3f1fa5858a9c07b8e957b3d85bce616fc45b97cd",
+  "generated_utc": "2026-09-17T12:31:18+00:00",
+  "generator_commit": "8277d6910b3eb7f53c822cdc8d3f94081289a3c4",
   "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
   "hypotheses": {
     "H1": {
@@ -23,7 +23,7 @@
     },
     "H2": {
       "hypothesis": "H2: 4bit extends the trainable model-size boundary",
-      "rule": "v2 tiered: 8B-4bit >=3 seeds -> supported (BF16 formal boundary 1.7B/4B-regime-dependent); 4B-only -> partial; 14B reported as system-state boundary (D7), not a contradiction of extension",
+      "rule": "v2 tiered: 8B-4bit >=3 seeds -> supported (BF16 formal boundary 1.7B/4B-regime-dependent); 4B-only -> partial; 14B reported as system-state boundary (D8), not a contradiction of extension",
       "rule_revision": "v1 (2026-09-15) anchored on 14B 3/3; revised 2026-09-16 after 8B 3/3 + 14B D7 timeout, motivation declared",
       "supporting_experiments": [
         "formal-axis1-8b-4bit-qlora s42 success",
@@ -36,7 +36,7 @@
         "4B BF16 formal: regime-dependent (deviations.md D1)",
         "14B BF16: declared out-of-budget (preregistration §3)"
       ],
-      "boundary_evidence": "14B-4bit: system-state-dependent boundary (D7) — probe success at swap 2.5 GiB (0.68 s/step) vs formal timeout at swap 3.5 GiB residency (70/100 steps in 7200 s, per raw stdout log); not proof of untrainability",
+      "boundary_evidence": "14B-4bit: system-state-dependent boundary (D7/D8) — probe success at swap 2.5 GiB (0.68 s/step) vs formal timeout at swap 3.5 GiB residency (70/100 steps in 7200 s, per raw stdout log); not proof of untrainability",
       "contradictory_experiments": [],
       "sample_size": {
         "14b_success": 0,
@@ -81,8 +81,8 @@
       "contradictory_experiments": [],
       "sample_size": 4,
       "uncertainty": {
-        "slope": 0.5725382523459467,
-        "r_squared": 0.9865197468822215
+        "slope": 0.5725382495906224,
+        "r_squared": 0.9865197470327681
       },
       "conclusion_status": "unsupported"
     },
@@ -95,8 +95,8 @@
       "contradictory_experiments": [],
       "sample_size": 4,
       "uncertainty": {
-        "slope": 0.9985611284827887,
-        "r_squared": 0.9853884642732076,
+        "slope": 0.9965940603098162,
+        "r_squared": 0.9847780645124578,
         "tier_a_runs": 6,
         "tier_note": "mixed/has Tier-A"
       },

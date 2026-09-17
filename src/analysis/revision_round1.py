@@ -128,8 +128,10 @@ def tier_table() -> dict:
         "snapshots in each raw record): "
         "Tier-A $=$ swap-in $<$50\\,MB/step (compute-bound), Tier-B otherwise. "
         "Residency is the pre-run system swap level. The axis1b 300-step "
-        "duplicate-retention group (D2) is excluded from the aggregated "
-        "matrix and hence here.}",
+        "duplicate-retention group (D2) is aggregated in the 46 "
+        "(Sec.~6) but outside these axis strata. Group prefixes "
+        "a1--a4 denote axis-1 model scale, axis-2 context, axis-3 "
+        "rank, axis-4 micro-batch.}",
         "\\label{tab:tier}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
         "\\begin{tabular}{lrrrrr}", "\\toprule",
         "Group & Runs & Tier-A & Tier-B & Swap-in (MB/step) & "
@@ -148,7 +150,8 @@ def tier_table() -> dict:
         lines.append(
             f"{nice} & {d['runs']} & {d['tier_a']} & {d['tier_b']} & "
             f"{lo}--{hi} & "
-            f"{d['init_swap_min']:.1f}--{d['init_swap_max']:.1f}\\\\")
+            (f"{d['init_swap_min']:.1f}" if d['init_swap_min'] == d['init_swap_max']
+             else f"{d['init_swap_min']:.1f}--{d['init_swap_max']:.1f}") + "\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table7_tier.tex").write_text("\n".join(lines) + "\n",
                                             encoding="utf-8")
@@ -250,7 +253,9 @@ def threshold_sensitivity() -> dict:
         "changes}). Pass/fail of the frozen \\practical{} criteria P1 (swap "
         "growth $\\le$4\\,GiB), P2 (median step $\\le$10\\,s) and the "
         "exploratory \\efficient{} criterion ($\\ge$100 loss-bearing "
-        "tokens/s) at $0.5\\times$/$1\\times$/$2\\times$ the frozen values.}",
+        "tokens/s) at $0.5\\times$/$1\\times$/$2\\times$ the frozen values "
+        "(Y = pass, N = fail; efficiency thresholds are in loss-bearing "
+        "tokens/s).}",
         "\\label{tab:sens}", "\\footnotesize\\setlength{\\tabcolsep}{2pt}",
         "\\begin{tabular}{lccc}", "\\toprule",
         "Cell & P1 (2/4/8\\,GiB) & P2 (5/10/20\\,s) & Eff.\\ (50/100/200)\\\\",

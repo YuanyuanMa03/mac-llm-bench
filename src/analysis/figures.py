@@ -120,8 +120,10 @@ def _ram_line(ax, y: float = 16.0, label: str = "16 GiB physical RAM",
     else:
         f = (y - lo) / (hi - lo)
     x = xfrac if side == "right" else 1 - xfrac
-    ax.text(x, min(f + 0.04, 0.97), label, transform=ax.transAxes,
-            ha=side, fontsize=8, color=RAM_COLOR)
+    ax.text(x, min(f + 0.055, 0.97), label, transform=ax.transAxes,
+            ha=side, va="bottom", fontsize=8, color=RAM_COLOR,
+            bbox=dict(boxstyle="square,pad=0.12", fc="white", ec="none",
+                      alpha=0.9))
 
 
 def _legend_out(fig, entries: list, ncol: int) -> None:
@@ -227,14 +229,21 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
                      weight="bold")
             elif (method, mkey) in BOUNDARY:
                 if n_ok:
-                    cell(ax, j, i, PURPLE_BG, f"◐ {n_ok}/{n_all}\nstate-dep.\n(D1)",
-                         fg=PURPLE_FG, fs=7, weight="bold")
+                    cell(ax, j, i, PURPLE_BG, f"◐ {n_ok}/{n_all}\nstate-\ndep. (D1)",
+                         fg=PURPLE_FG, fs=6.1, weight="bold")
                 else:
-                    cell(ax, j, i, PURPLE_BG, "◐ state-dep.\n(D8)",
-                         fg=PURPLE_FG, fs=7, weight="bold")
+                    cell(ax, j, i, PURPLE_BG, "◐ state-\ndep.\n(D8)",
+                         fg=PURPLE_FG, fs=6.1, weight="bold")
             else:
-                states = "/".join(sorted(set(sub["status.terminal_state"])))
-                cell(ax, j, i, RED_BG, f"✗ {states}", fg=KILL_COLOR, fs=7)
+                # 失败态单元格：状态名缩写为短码并按状态分行计数，避免长文本
+                # 溢出单元格（缩写图例见 main.tex fig2 caption）
+                abbr = {"success": "ok", "user_interrupted": "intr",
+                        "timeout": "t/o", "runtime_error": "err"}
+                counts = sub["status.terminal_state"].value_counts()
+                parts = [f"{int(n)}×{abbr.get(str(s), str(s)[:4])}"
+                         for s, n in counts.items()]
+                cell(ax, j, i, RED_BG, "✗ " + "\n".join(parts),
+                     fg=KILL_COLOR, fs=7)
     ax.set_xticks(range(len(models)), models)
     ax.set_yticks(range(len(methods)), ["BF16 LoRA", "4bit QLoRA", "Full FT"])
     ax.set_xlim(-0.5, len(models) - 0.5)
@@ -250,7 +259,7 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
             cell(ax, j, 0, RED_BG, "✗ SIGKILL\n(probe)", fg=KILL_COLOR, fs=7)
         elif c == "512":
             # 预注册复用轴 1 的 4B-4bit cell（3/3 success），非 untested
-            cell(ax, j, 0, GREEN_BG, "✓\n(reuse a1)", fg=GREEN_FG, fs=7.5)
+            cell(ax, j, 0, GREEN_BG, "✓\n(reuse a1)", fg=GREEN_FG, fs=7)
         elif f"formal-axis2-ctx{c}" in ok_groups:
             cell(ax, j, 0, GREEN_BG, "✓", fg=GREEN_FG, fs=9.5, weight="bold")
         else:
@@ -303,8 +312,10 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
             ax.scatter(xs[n_formal:], ys[n_formal:], s=22, facecolors="none",
                        edgecolors=color, linewidths=1.4, zorder=5, marker=marker)
             ax.annotate("D1", xy=(xs[-1], ys[-1]), fontsize=7, color=color,
-                        xytext=(5, -3), textcoords="offset points",
-                        ha="left", va="top", fontweight="bold")
+                        xytext=(6, -6), textcoords="offset points",
+                        ha="left", va="top", fontweight="bold",
+                        bbox=dict(boxstyle="square,pad=0.15", fc="white",
+                                  ec="none", alpha=0.8))
             ax.plot(xs[n_formal - 1:], ys[n_formal - 1:], lw=1.0,
                     color=color, alpha=0.5)
         fit = loglog_fit(xs, ys)
@@ -375,10 +386,10 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
                              linewidths=1.4, zorder=5, marker=marker)
                 ax_i.plot(xs[n_formal - 1:], ys_[n_formal - 1:], lw=1.0,
                           color=color, alpha=0.5)
-            axes[0].annotate("D1", xy=(xs[-1], st[-1]), fontsize=7,
-                             color=color, xytext=(-2, 7),
-                             textcoords="offset points", ha="right",
-                             fontweight="bold")
+                axes[0].annotate("D1", xy=(xs[-1], st[-1]), fontsize=7,
+                                 color=color, xytext=(6, -7),
+                                 textcoords="offset points", ha="left",
+                                 va="top", fontweight="bold")
         fit = loglog_fit(xs, st)
         if fit:
             fits[label] = fit
@@ -531,7 +542,9 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
     axes[0].scatter([8], [0], marker="x", s=70, color=KILL_COLOR, zorder=5)
     axes[0].annotate("SIGKILL ×3 seeds\n(exit 137, zero steps)",
                      xy=(8, 0), fontsize=8, color=KILL_COLOR,
-                     xytext=(-10, 12), textcoords="offset points", ha="right")
+                     xytext=(-10, 12), textcoords="offset points", ha="right",
+                     bbox=dict(boxstyle="square,pad=0.18", fc="white",
+                               ec="none", alpha=1.0))
     axes[0].set_xticks([1, 2, 4, 8])
     axes[0].set_ylim(0, max(tp) * 1.3)
     axes[0].set_xlabel("micro-batch size"); axes[0].set_ylabel("loss-bearing tokens/s")
@@ -543,7 +556,9 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
     axes[1].annotate("SIGKILL ×3\n(system swap→~20 GiB)",
                      xy=(8, 16), fontsize=8, color=KILL_COLOR,
                      xytext=(-10, -20), textcoords="offset points", ha="right",
-                     va="top")
+                     va="top",
+                     bbox=dict(boxstyle="square,pad=0.18", fc="white",
+                               ec="none", alpha=1.0))
     axes[1].set_xticks([1, 2, 4, 8])
     axes[1].set_ylim(0, 26)
     _ram_line(axes[1], 16, xfrac=0.985)

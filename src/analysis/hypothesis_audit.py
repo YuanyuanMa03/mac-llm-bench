@@ -120,7 +120,7 @@ def audit_h2(df: pd.DataFrame, kn: dict) -> dict:
         "14B BF16: declared out-of-budget (preregistration §3)",
     ]
     boundary_14b = (
-        "14B-4bit: system-state-dependent boundary (D7) — probe success at "
+        "14B-4bit: system-state-dependent boundary (D7/D8) — probe success at "
         "swap 2.5 GiB (0.68 s/step) vs formal timeout at swap 3.5 GiB "
         "residency (70/100 steps in 7200 s, per raw stdout log); "
         "not proof of untrainability"
@@ -142,8 +142,8 @@ def audit_h2(df: pd.DataFrame, kn: dict) -> dict:
         "hypothesis": "H2: 4bit extends the trainable model-size boundary",
         "rule": "v2 tiered: 8B-4bit >=3 seeds -> supported (BF16 formal "
                 "boundary 1.7B/4B-regime-dependent); 4B-only -> partial; "
-                "14B reported as system-state boundary (D7), not a "
-                "contradiction of extension",
+        "14B reported as system-state boundary (D8), not a "
+        "contradiction of extension",
         "rule_revision": "v1 (2026-09-15) anchored on 14B 3/3; revised "
                          "2026-09-16 after 8B 3/3 + 14B D7 timeout, "
                          "motivation declared",

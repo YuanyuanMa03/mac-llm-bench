@@ -39,7 +39,7 @@ def _agg_cell(sub: pd.DataFrame, col: str, digits: int = 3) -> str:
     suffix = ""
     if col == "tm.peak_metal_gpu_memory_bytes":
         unit_scale = 2**30
-        suffix = " GiB"
+        suffix = ""  # 单位由表头声明，不在每个单元格重复
     if a["sd"] is None:
         return f"{a['mean'] / unit_scale:.{digits}f}{suffix}"
     # 用数学模式 \pm（cmsy Type1）；字面 UTF-8 ± 会映射 TS1 文本伴随字体，
@@ -79,10 +79,19 @@ def table1(df: pd.DataFrame) -> None:
         seen.add(key[0])
         short = str(key[0]).replace("mlx-community/", "").replace("Qwen3-", "")
         models.append((short, str(key[1])[:8]))
+    # 按规模升序、同规模 BF16 在前 4bit 在后，与 Table 2 行序一致
+    def _sort_key(item):
+        name = item[0]
+        scale = "".join(ch for ch in name if ch.isdigit() or ch == ".")
+        return (float(scale.rstrip(".") or 0), "4bit" in name)
+    models.sort(key=_sort_key)
     lines = [
         "\\begin{table}[t]\\centering",
         "\\caption{Hardware, software, and model revisions "
-        "(provenance from raw experiment records).}",
+        "(provenance from raw experiment records; covers the formal "
+        "matrix---non-formal probes such as the timed-out 8B BF16 run "
+        "are not listed, and carry the same provenance fields in their "
+        "raw records).}",
         "\\label{tab:setup}",
         "\\footnotesize",
         "\\begin{tabular}{@{}p{1.9cm}p{3.6cm}@{}}", "\\toprule",
@@ -105,16 +114,27 @@ def table2(df: pd.DataFrame) -> None:
     # formal-axis1-<model>-bf16-lora / -4bit-qlora / -0.6b-bf16-full
     lines = [
         "\\begin{table*}[t]\\centering",
-        "\\caption{Formal benchmark at ctx=512, b1-ga1, rank 8, lr 1e-4, "
+        "\\caption{Formal benchmark at ctx512, b1-ga1, rank 8, lr 1e-4, "
         "100 steps, preregistered seeds \\{42,123,2026\\} (mean$\\pm$SD over "
         "completed seeds; memory is MLX allocator peak; $\\pm$0.00 marks "
-        "bit-identical allocator peaks across seeds; D1/D8 cells are "
-        "regime-dependent boundary observations discussed in the text; "
-        "95\\% $t$-CIs in Table~\\ref{tab:ci}).}",
-        "\\label{tab:matrix}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
-        "\\begin{tabular}{llrrrrr}", "\\toprule",
-        "Model & Method & Seeds & Peak mem (GiB) & Median step (s) & Tok/s & "
-        "Val loss\\\\", "\\midrule",
+        "bit-identical allocator peaks across seeds). Verdicts are derived "
+        "programmatically from the completed-seed count and the frozen P2 "
+        "median-step bound of 10\\,s; the system-wide P1 swap-growth "
+        "criterion is confounded by background load "
+        "(Sec.~\\ref{sec:whatenable}) and is reported "
+        "(Table~\\ref{tab:sens}) but not gated (D11; under the frozen "
+        "P1$\\wedge$P2 rule the two 0.6B cells would lose "
+        "\\practical). ``Boundary'' marks the "
+        "D1/D8 system-state cells; ``Negative (diverged)'' is the frozen-lr "
+        "full-FT divergence; alongside the four operational terms "
+        "(Sec.~\\ref{sec:definitions}) these two auxiliary kinds complete the "
+        "verdict vocabulary. Tok/s counts loss-bearing tokens "
+        "(tokens contributing to the LM loss). 95\\% $t$-CIs in "
+        "Table~\\ref{tab:ci}.}",
+        "\\label{tab:matrix}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\begin{tabular}{llrlrrrr}", "\\toprule",
+        "Model & Method & Seeds & Verdict & Peak (GiB) & Med step (s) & "
+        "Tok/s & Val loss\\\\", "\\midrule",
     ]
     order = [("0.6", "formal-axis1-0.6b-bf16-full", None),
              ("0.6", "formal-axis1-0.6b-bf16-lora", None),
@@ -125,7 +145,7 @@ def table2(df: pd.DataFrame) -> None:
              ("4", "formal-axis1-4b-4bit-qlora", None),
              ("8", "formal-axis1-8b-4bit-qlora", None),
              ("14", "formal-axis1-14b-4bit-qlora", "D8")]
-    nice = {"bf16-lora": "BF16 LoRA", "4bit-qlora": "4bit QLoRA",
+    nice = {"bf16-lora": "BF16 LoRA", "4bit-qlora": "4-bit QLoRA",
             "bf16-full": "Full FT"}
     n_prereg = 3  # 预注册每格 3 种子（research/preregistration.md）
     # 参数量优先取组内实测；全失败组（如 14B formal）回退到同模型的
@@ -135,7 +155,8 @@ def table2(df: pd.DataFrame) -> None:
         method = g.rsplit("formal-axis1-", 1)[1].split("-", 1)[1]
         sub = df[(df["experiment.comparison_group_id"] == g)
                  & (df["status.terminal_state"] == "success")]
-        seeds = f"{len(sub)}/{n_prereg}" + (f" ({tag})" if tag else "")
+        n = len(sub)
+        seeds = f"{n}/{n_prereg}" + (f" ({tag})" if tag else "")
         # 参数量取同模型任意可用行（14B formal 全失败时回退到 probe 实测）
         params_src = df[df["experiment.comparison_group_id"].isin(
             [g] + ([probe_fallback[model]] if model in probe_fallback
@@ -144,13 +165,26 @@ def table2(df: pd.DataFrame) -> None:
             params_src["tm.logical_parameter_count"], errors="coerce").dropna()
         params_txt = (f" ({params_col.iloc[0] / 1e9:.1f}B)"
                       if len(params_col) else "")
+        # 判定口径：完成种子数 + 冻结 P2（10 s）；P1 被背景负载支配，只报告不门控
+        med = _mean(sub, "tm.median_step_time_seconds")
+        vl = _mean(sub, "metrics.validation_loss_final")
+        if tag and n < n_prereg:
+            verdict = f"Boundary ({tag})"
+        elif "full" in g and vl is not None and vl > 2.5:
+            verdict = "Negative (diverged)"
+        elif n >= n_prereg and med is not None:
+            verdict = ("\\textsc{Practical} (P2)" if med <= 10.0
+                       else "\\textsc{Trainable} (P2 miss)")
+        else:
+            verdict = "see text"
         if sub.empty:
             lines.append(f"Qwen3-{model}b{params_txt} & {nice[method]} & "
-                         f"{seeds} & -- & -- & -- & --\\\\")
+                         f"{seeds} & {verdict} & -- & -- & -- & --\\\\")
             continue
         params = float(params_col.iloc[0]) / 1e9
         lines.append(
             f"Qwen3-{model}b ({params:.1f}B) & {nice[method]} & {seeds} & "
+            f"{verdict} & "
             f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
             f"{_agg_cell(sub, 'tm.median_step_time_seconds')} & "
             f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
@@ -165,7 +199,8 @@ def table3(df: pd.DataFrame) -> None:
     lines = [
         "\\begin{table}[t]\\centering",
         "\\caption{Paired quantization effects (same model/seed; ratios = "
-        "4bit/BF16, mean [min--max over seed pairs]). Timing equivalence "
+        "4bit/BF16, mean [min--max over seed pairs], computed from "
+        "unrounded per-seed values). Timing equivalence "
         "margin $\\pm$25\\% frozen before benchmark. $^\\dagger$The 4B "
         "step-time ratio is a single seed pair whose BF16 denominator is "
         "the zero-residency D1 rerun, i.e.\\ a cross-window comparison "
@@ -405,7 +440,7 @@ def table5(df: pd.DataFrame) -> None:
         "measure, all cells Tier-B; batch-8 kills recorded zero completed "
         "steps with empty stdout).}",
         "\\label{tab:batch}", "\\footnotesize\\setlength{\\tabcolsep}{2.8pt}",
-        "\\begin{tabular}{rrrrrrl}", "\\toprule",
+        "\\begin{tabular}{rrrrrl}", "\\toprule",
         "Batch & Median step (s) & Tok/s & Peak mem (GiB) & "
         "Swap-in (MB/step) & Status\\\\", "\\midrule",
     ]
@@ -430,10 +465,11 @@ def table5(df: pd.DataFrame) -> None:
     if len(b8):
         swap_peak = pd.to_numeric(b8["runtime.peak_swap_bytes.value"],
                                   errors="coerce").max()
-        swap_txt = (f"$\\to${swap_peak / 2**30:.0f}\\,GiB"
+        swap_txt = (f"near {swap_peak / 2**30:.0f}\\,GiB"
                     if pd.notna(swap_peak) else "")
-        lines.append(f"8 & -- & -- & $>$16 (swap {swap_txt}) & -- & "
-                     f"SIGKILL$\\times${len(b8)} (exit 137)\\\\")
+        lines.append(f"8 & -- & -- & $>$16 & -- & "
+                     f"SIGKILL$\\times${len(b8)} (exit 137; system swap "
+                     f"{swap_txt})\\\\")
     else:
         lines.append("8 & -- & -- & -- & -- & "
                      "no exit-137 evidence rows\\\\")
@@ -478,73 +514,123 @@ def _mean(sub: pd.DataFrame, col: str) -> float | None:
     return float(vals.mean()) if len(vals) else None
 
 
-def table10(df: pd.DataFrame) -> None:
-    """Table 10: feasibility quick-ref (at-a-glance decision table).
+def _latex_escape(s: str) -> str:
+    s = s.replace("\\", "")
+    s = s.replace("%", "\\%").replace("&", "\\&").replace("_", "\\_")
+    s = s.replace("<=", "$\\le$").replace(">=", "$\\ge$")
+    s = s.replace("->", "$\\to$").replace("+/-", "$\\pm$")
+    s = s.replace("<", "$<$").replace(">", "$>$")
+    return s
 
-    Verdicts are derived programmatically from the same retained formal cell
-    that Table~2 tabulates, so no number or label is hand-typed:
-      - ``Boundary (system-state)``: D1 (4B BF16) / D8 (14B 4-bit) cells,
-        whose preregistered seed set did not complete under one window.
-      - ``Negative (diverged)``: full-FT cell completed but its validation
-        loss (4.44) shows the frozen-lr divergence of Sec.~Effectiveness.
-      - ``Practical`` / ``Trainable (P2 miss)``: completed 3/3 seeds,
-        split by the frozen median-step bound of 10 s (P2). The
-        system-wide P1 swap-growth criterion is confounded by background
-        load and is deliberately not gated here.
+
+def table11(df: pd.DataFrame) -> None:
+    """H1-H6 预注册假设、冻结判定规则与审计结论。
+
+    数据源 results/processed/hypothesis_audit.json（由 hypothesis_audit.py
+    从 raw 生成）；正文各处 "audit Hx" 均指向本表，规则原文不手改。
     """
-    # (model, fit, display name, is_boundary_cell)
-    order = [("0.6b", "bf16-full", "Full FT", False),
-             ("0.6b", "bf16-lora", "BF16 LoRA", False),
-             ("1.7b", "bf16-lora", "BF16 LoRA", False),
-             ("4b", "bf16-lora", "BF16 LoRA", True),   # D1
-             ("0.6b", "4bit-qlora", "4-bit QLoRA", False),
-             ("1.7b", "4bit-qlora", "4-bit QLoRA", False),
-             ("4b", "4bit-qlora", "4-bit QLoRA", False),
-             ("8b", "4bit-qlora", "4-bit QLoRA", False),
-             ("14b", "4bit-qlora", "4-bit QLoRA", True)]  # D8
+    audit = json.loads((ROOT / "results" / "processed" /
+                        "hypothesis_audit.json").read_text())
+    status_nice = {"supported": "Supported",
+                   "partially_supported": "Partially supported",
+                   "unsupported": "Unsupported",
+                   "insufficient": "Insufficient"}
     lines = [
-        "\\begin{table*}[h]\\centering",
-        "\\caption{Feasibility quick-ref at ctx512, b1-ga1, rank 8, lr 1e-4, "
-        "100 steps (same retained formal cells as "
-        "Table~\\ref{tab:matrix}; mean over completed seeds). Verdicts are "
-        "derived programmatically: completed-seed count and the frozen "
-        "median-step bound of 10\\,s (P2); the system-wide P1 swap-growth "
-        "criterion is confounded by background load (Sec.~\\ref{sec:whatenable}) "
-        "and is not gated here. ``Negative'' is the full-FT divergence; "
-        "``Boundary'' marks the D1/D8 system-state cells.}",
-        "\\label{tab:speedref}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
-        "\\begin{tabular}{@{}lp{3.2cm}rrrrr@{}}", "\\toprule",
-        "Model & Method & Verdict & Peak (GiB) & Med step (s) & Tok/s & "
-        "Val loss\\\\", "\\midrule",
+        "\\begin{table*}[t]\\centering",
+        "\\caption{Preregistered hypotheses H1--H6 with their frozen "
+        "decision rules and audit verdicts (generated from the hypothesis "
+        "audit of the raw results). $^{\\dagger}$v2 rule: revised after "
+        "results under D9 (App.~\\ref{app:deviations}), with the "
+        "preregistration-era v1 rule and counterfactual verdict disclosed "
+        "there. ``audit Hx'' mentions throughout the text refer to this "
+        "table. H3's $n$=7 includes the cross-window 4B pair "
+        "($\\dagger$, Table~\\ref{tab:paired}); the within-window count is "
+        "6, and the verdict is unchanged either way.}",
+        "\\label{tab:hyp}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\begin{tabular}{@{}lp{4.0cm}p{5.8cm}rp{2.5cm}\\raggedright@{}}", "\\toprule",
+        "ID & Hypothesis (frozen) & Decision rule & $n$ & Verdict\\\\",
+        "\\midrule",
     ]
-    for m, fit, nice, boundary in order:
-        g = f"formal-axis1-{m}-{fit}"
-        sub = df[(df["experiment.comparison_group_id"] == g)
-                 & (df["status.terminal_state"] == "success")]
-        n = len(sub)
-        med = _mean(sub, "tm.median_step_time_seconds")
-        peak_raw = _mean(sub, "tm.peak_metal_gpu_memory_bytes")
-        peak = peak_raw / 2**30 if peak_raw is not None else None
-        tok = _mean(sub, "runtime.tokens_per_second")
-        vl = _mean(sub, "metrics.validation_loss_final")
-        full = "full" in fit
-        if boundary and n < 3:
-            verdict = "Boundary (system-state)"
-        elif full and vl is not None and vl > 2.5:
-            verdict = "Negative (diverged)"
-        elif n >= 3 and med is not None:
-            verdict = "Practical" if med <= 10.0 else "Trainable (P2 miss)"
+    for hid, v in audit["hypotheses"].items():
+        hyp = _latex_escape(v["hypothesis"].split(": ", 1)[1])
+        rule = _latex_escape(v["rule"])
+        v2 = v["rule"].startswith("v2")
+        mark = "$^{\\dagger}$" if v2 else ""
+        verdict = (status_nice.get(v["conclusion_status"],
+                                   v["conclusion_status"]) +
+                   (" (v2 rule)" if v2 else "") + mark)
+        n = v["sample_size"]
+        if isinstance(n, dict):
+            n_txt = ", ".join(f"{k.rsplit('_', 1)[0]}={x}"
+                              for k, x in n.items())
         else:
-            verdict = f"{n}/3 seeds"
-        fmt = lambda v, spec: "--" if v is None else f"{v:{spec}}"
-        lines.append(
-            f"Qwen3-{m} & {nice} & {verdict} & {fmt(peak, '.2f')} & "
-            f"{fmt(med, '.3f')} & {fmt(tok, '.1f')} & {fmt(vl, '.3f')}\\\\")
+            n_txt = str(n)
+        lines.append(f"{hid} & {hyp} & {rule}{mark} & {n_txt} & "
+                     f"{verdict}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     TABLES.mkdir(parents=True, exist_ok=True)
-    (TABLES / "table10_speedref.tex").write_text("\n".join(lines) + "\n",
-                                                 encoding="utf-8")
-    print("[table] table10_speedref.tex")
+    (TABLES / "table11_hypotheses.tex").write_text("\n".join(lines) + "\n",
+                                                   encoding="utf-8")
+    print("[table] table11_hypotheses.tex")
+
+
+def table12(df: pd.DataFrame) -> None:
+    """27 个失败运行的处置审计表（数据源 coverage_report.json，计数与命名均派生）。"""
+    cov = json.loads((ROOT / "results" / "processed" /
+                      "coverage_report.json").read_text())
+    fails = {rid: v for rid, v in cov["per_run"].items()
+             if v["state"] != "success"}
+    disp = {}
+    for v in fails.values():
+        disp.setdefault(v["disposition"], []).append(v)
+    dup = disp.get("excluded:duplicate", [])
+    dup_states = ", ".join(
+        f"{sum(1 for x in dup if x['state'] == st)}$\\times$ {st}"
+        for st in sorted({x["state"] for x in dup}))
+    dup_groups = ", ".join(sorted({x["group"].replace("formal-", "")
+                                   for x in dup}))
+    nf = (disp.get("non-formal:probe", []) +
+          disp.get("non-formal:exp0-smoke", []) +
+          disp.get("non-formal:calibration", []))
+    from collections import Counter as _C
+    _nfg = _C(x["group"].replace("probe-", "") for x in nf)
+    nf_groups = ", ".join(f"{v}$\\times$ {k}" for k, v in sorted(_nfg.items()))
+    rows = [
+        ("Implementation-invalid (D5)",
+         len(disp.get("excluded:implementation-invalid-d5", [])),
+         "D5 trainer-bug signature (Table~\\ref{tab:failures} D5 row); "
+         "rerun on the fixed trainer, preserved immutably."),
+        ("Retained failure", len(disp.get("failed_retained_for_taxonomy", [])),
+         "formal SIGKILL / timeout / operator-interrupt / unresolved runs "
+         "retained as evidence."),
+        ("Duplicate", len(dup),
+         f"D2 dedup applied to failures ({dup_states}; groups: "
+         f"{dup_groups}); see Sec.~6 for the batch-8 ledger subtlety."),
+        ("Non-formal (probe / exp0-smoke)", len(nf),
+         f"pre-formal debug and probe runs outside the formal matrix "
+         f"({nf_groups}); not formal cells."),
+        ("Superseded", 0,
+         "\\emph{no} failed run is superseded; all superseded rows are "
+         "successful early runs (D2)."),
+    ]
+    lines = [
+        "\\begin{table*}[t]\\centering",
+        "\\caption{Audit disposition of the 27 failed runs, generated "
+        "from the coverage report (abbreviating its machine-readable "
+        "dispositions; evidence-level categories are in "
+        "Table~\\ref{tab:failures}). The counts reconcile the failure "
+        "taxonomy with the 118-run coverage audit.}",
+        "\\label{tab:failedisposition}",
+        "\\footnotesize\\setlength{\\tabcolsep}{5pt}",
+        "\\begin{tabular}{@{}p{3.0cm}cp{8.0cm}@{}}", "\\toprule",
+        "Coverage disposition & Runs & Meaning\\\\", "\\midrule",
+    ]
+    for name, cnt, meaning in rows:
+        lines.append(f"{name} & {cnt} & {meaning}\\\\")
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    (TABLES / "table12_disposition.tex").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8")
+    print("[table] table12_disposition.tex")
 
 
 def main() -> int:
@@ -555,5 +641,6 @@ def main() -> int:
     table4(df)
     table5(df)
     table6(df)
-    table10(df)
+    table11(df)
+    table12(df)
     return 0

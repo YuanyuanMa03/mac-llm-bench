@@ -317,3 +317,16 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   `experiment_freeze_manifest.sha256` 的文件 SHA-256，与 git 历史无关，
   不受影响；改写后对用户主目录前缀的全历史 pickaxe 检索与
   `git log --all -- <ips 路径>` 均为零命中（已验证）。
+
+## D11 — Practical 判定门控规则的口径变更（2026-09-17 登记，Round-2 评审触发）
+
+- **动作**：论文中的 feasibility verdict（Table 2/§6）改为**仅以冻结 P2 判据门控**
+  （median step ≤10 s + 完成种子数）；冻结的 P1（swap 增长 ≤4 GiB）改为
+  报告不门控（Table 8）。
+- **依据**：敏感性分析显示 P1 被背景进程噪声支配——0.6B 格 swap 增长
+  5.19/4.18 GiB 反而高于 4B/8B 格的 3.66/3.14 GiB（processed:
+  threshold_sensitivity.json；论文 §6.1），与训练工作集无关。
+- **反事实**：若按冻结 P1∧P2 规则，两个 0.6B 格
+  （formal-axis1-0.6b-4bit-qlora 5.19 GiB、-0.6b-bf16-lora 4.18 GiB）
+  将失去 Practical 判定；其余判定不变。
+- **影响面**：仅判定标签口径；全部数值、表格数据、假设审计结论不变。
