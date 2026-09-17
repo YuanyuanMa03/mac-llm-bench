@@ -1,8 +1,9 @@
 """论文图表生成（预注册 §9；全部从 processed/raw 派生，禁止手工数字）。
 
-输出：results/figures/fig1..fig8 的 PDF+PNG（300 dpi），并同步 PDF 到
-paper/submission/figures/（论文源码目录，git-ignored——论文成品只经
-arXiv 发布，LaTeX 源码不进仓库）。
+输出：results/figures/fig1..fig8 的 PDF+PNG（300 dpi），并将 fig2–fig8 的
+PDF 同步到 paper/submission/figures/（论文源码目录，git-ignored——论文成品
+只经 arXiv 发布，LaTeX 源码不进仓库）。fig1 例外：论文中使用作者手绘的
+PNG（无数据数字的示意图），管线只输出生成版到 results/figures/。
 数据源：results/processed/experiments.csv、step_timings.parquet、
 context_boundary_probe_summary.json、failure_taxonomy.json。
 任何 group 缺失时 fail loudly（不静默空图）。
@@ -82,10 +83,14 @@ def _save(fig, name: str) -> None:
     FIG.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIG / f"{name}.pdf", bbox_inches="tight")
     fig.savefig(FIG / f"{name}.png", bbox_inches="tight")
-    PAPER_FIG.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(FIG / f"{name}.pdf", PAPER_FIG / f"{name}.pdf")
+    # fig1 在论文中已换成作者手绘 PNG（零数据数字的示意图）：不再把
+    # matplotlib 版 PDF 复制进 paper/submission/，避免旧图混入投稿包；
+    # results/figures/ 中的生成版仍照常输出并入库
+    if name != "fig1_architecture":
+        PAPER_FIG.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(FIG / f"{name}.pdf", PAPER_FIG / f"{name}.pdf")
     plt.close(fig)
-    print(f"[fig] {FIG / name}.pdf (+paper/figures/)")
+    print(f"[fig] {FIG / name}.pdf (+paper/submission/figures/ for fig2-8)")
 
 
 def _model_label(group: str) -> str:

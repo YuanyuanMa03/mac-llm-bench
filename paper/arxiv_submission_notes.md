@@ -14,14 +14,16 @@
 
 | 文件 | 说明 |
 |---|---|
-| `paper/mac-llm-bench-arxiv-v1.0.0-rc1.tar.gz` | arXiv 上传源码包（216,516 B；SHA-256 `046d373a0deba65f5c9e4115344b3490a2db6b40a397298f9af6e1fc95f92508`） |
+| `paper/mac-llm-bench-arxiv-v1.0.0-rc1.tar.gz` | arXiv 上传源码包（829,120 B；SHA-256 `fbeadee0eabb78835760d33475a2953a8fb3e2823272f3edb11c4ca4d6597f30`） |
 | `paper/submission/` | 与 tarball 内容一一对应的源码目录（编译产物 main.pdf/aux/log 不上传） |
 
 包内结构（main.tex 位于根，figures/ tables/ 为一级子目录，符合 arXiv 要求）：
 
 ```
 main.tex  references.bib  main.bbl
-figures/  fig1..fig8 .pdf（脚本生成，TrueType 全内嵌）
+figures/  fig1_architecture.png（作者手绘，1471×609，已裁除图内标题/说明带；
+          约 210 dpi @ 7in，若绘图源文件可导出 2× 分辨率更佳）
+          fig2..fig8 .pdf（脚本生成，TrueType 全内嵌）
 tables/   table1..table10 .tex（脚本生成，由 main.tex \input）
           + main.tex 内联 2 表（失败处置审计表等）
 ```
@@ -52,9 +54,14 @@ tables/   table1..table10 .tex（脚本生成，由 main.tex \input）
 
 ## 已验证项（2026-09-17 本轮全部复验）
 
+- [x] fig1 换作者手绘版：裁除图内自带的标题带与说明文字带（避免与 LaTeX
+      caption 重复），main.tex 引用改为 .png；重编译 15 页/0/0；第 4 页
+      渲染视觉验收（无内部标题、无裁切、无重叠）；
+      `figures.py _save` 已加防回写保护（重跑管线不会把 matplotlib 版
+      fig1 带回论文目录）
 - [x] tarball 抽取独立构建：pdflatex ×2（包内 main.bbl，无 bibtex）exit 0，
-      **15 页**，0 Overfull、0 undefined（产出 508,857 B，与 `paper/submission/`
-      本地构建报告尺寸一致）
+      **15 页**，0 Overfull、0 undefined（产出 1,118,356 B，与
+      `paper/submission/` 本地构建报告尺寸一致）
 - [x] figures 与 `results/figures/`（2026-09-17 二轮重绘版）逐字节一致
 - [x] 本轮新增内容隐私扫描（main.tex/全部 tables/分析脚本）：本地路径、
       用户名、机器标识 0 命中；唯一机器相关引用为 JetsamEvent 文件名取证
@@ -63,8 +70,8 @@ tables/   table1..table10 .tex（脚本生成，由 main.tex \input）
       `paper/submission/tables/`），无手写数字
 - [x] bib 20 条此前全部一手核验（台账 `research/literature_ledger.csv`），
       本轮未改动参考文献
-- [x] 旧 SHA 全部作废：`c99976ca…`、`2aceb876…`、`8c35316e…` → 现行
-      `046d373a…`
+- [x] 旧 SHA 全部作废：`c99976ca…`、`2aceb876…`、`8c35316e…`、
+      `046d373a…` → 现行 `fbeadee0…`
 - 字体全内嵌/0 Type 3 继承前轮验证；如 PDF 再变，重跑 `pdffonts` 复检
 
 ## 复验命令
