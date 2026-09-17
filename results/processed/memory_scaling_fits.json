@@ -1,4 +1,13 @@
 {
+  "BF16 LoRA": {
+    "n": 3,
+    "slope": 0.7145529640935232,
+    "intercept": 0.6107633316259926,
+    "r_squared": 0.9895348973693125,
+    "p_value": 0.06523974904373608,
+    "stderr_slope": 0.07348363199774266,
+    "model_form": "log10(y) = slope*log10(x) + intercept"
+  },
   "4bit QLoRA": {
     "n": 4,
     "slope": 0.5725382495906224,

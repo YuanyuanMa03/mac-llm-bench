@@ -9,8 +9,10 @@ Table 4 failure/boundary observations
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from .stats import mean_sd_ci, paired_ratio
@@ -39,8 +41,10 @@ def _agg_cell(sub: pd.DataFrame, col: str, digits: int = 3) -> str:
         suffix = " GiB"
     if a["sd"] is None:
         return f"{a['mean'] / unit_scale:.{digits}f}{suffix}"
-    return (f"{a['mean'] / unit_scale:.{digits}f}±{a['sd'] / unit_scale:.{digits}f}"
-            f"{suffix}")
+    # 用数学模式 \pm（cmsy Type1）；字面 UTF-8 ± 会映射 TS1 文本伴随字体，
+    # 缺 Type1 时 pdftex 回退为 Type3 位图字形
+    return (f"{a['mean'] / unit_scale:.{digits}f}$\\pm$"
+            f"{a['sd'] / unit_scale:.{digits}f}{suffix}")
 
 
 def table1(df: pd.DataFrame) -> None:
@@ -55,8 +59,8 @@ def table1(df: pd.DataFrame) -> None:
         ("\\quad Chip", f"{ref['hardware.apple_chip_model']}"),
         ("\\quad Memory", f"{mem_gib:.0f} GiB unified"),
         ("\\quad CPU cores",
-         f"{ref['hardware.cpu_physical_cores']}P / "
-         f"{ref['hardware.cpu_logical_cores']}L"),
+         f"{ref['hardware.cpu_physical_cores']:.0f}-core (4P+6E, "
+         f"{ref['hardware.cpu_logical_cores']:.0f} logical)"),
         ("OS", f"macOS {ref['software.macos_version']} "
                f"(build {ref['software.macos_build']})"),
         ("Python",
@@ -80,7 +84,7 @@ def table1(df: pd.DataFrame) -> None:
         "(provenance from raw experiment records).}",
         "\\label{tab:setup}",
         "\\footnotesize",
-        "\\begin{tabular}{ll}", "\\toprule",
+        "\\begin{tabular}{@{}p{1.9cm}p{3.6cm}@{}}", "\\toprule",
     ]
     for k, v in rows:
         lines.append(f"{k} & {v}\\\\")
@@ -96,30 +100,56 @@ def table1(df: pd.DataFrame) -> None:
 
 
 def table2(df: pd.DataFrame) -> None:
+    # 组名必须与 gen_formal_configs.py 的 comparison_group_id 完全一致：
+    # formal-axis1-<model>-bf16-lora / -4bit-qlora / -0.6b-bf16-full
     lines = [
         "\\begin{table*}[t]\\centering",
         "\\caption{Formal benchmark at ctx=512, b1-ga1, rank 8, lr 1e-4, "
-        "100 steps, seeds \\{42,123,2026\\} (mean$\\pm$SD; memory is MLX "
-        "allocator peak).}",
-        "\\label{tab:matrix}", "\\small",
-        "\\begin{tabular}{llrrrr}", "\\toprule",
-        "Model & Method & Peak mem (GiB) & Median step (s) & Tok/s & "
+        "100 steps, preregistered seeds \\{42,123,2026\\} (mean$\\pm$SD over "
+        "completed seeds; memory is MLX allocator peak; $\\pm$0.00 marks "
+        "bit-identical allocator peaks across seeds; D1/D8 cells are "
+        "regime-dependent boundary observations discussed in the text; "
+        "95\\% $t$-CIs in Table~\\ref{tab:ci}).}",
+        "\\label{tab:matrix}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
+        "\\begin{tabular}{llrrrrr}", "\\toprule",
+        "Model & Method & Seeds & Peak mem (GiB) & Median step (s) & Tok/s & "
         "Val loss\\\\", "\\midrule",
     ]
-    order = [("0.6b", "full"), ("0.6b", "lora"), ("1.7b", "lora"),
-             ("4b", "lora"), ("0.6b", "qlora"), ("1.7b", "qlora"),
-             ("4b", "qlora"), ("8b", "qlora"), ("14b", "qlora")]
-    nice = {"lora": "BF16 LoRA", "qlora": "4bit QLoRA", "full": "Full FT"}
-    for model, method in order:
-        g = f"formal-axis1-{model}-{method if method != 'full' else 'full'}"
+    order = [("0.6", "formal-axis1-0.6b-bf16-full", None),
+             ("0.6", "formal-axis1-0.6b-bf16-lora", None),
+             ("1.7", "formal-axis1-1.7b-bf16-lora", None),
+             ("4", "formal-axis1-4b-bf16-lora", "D1"),
+             ("0.6", "formal-axis1-0.6b-4bit-qlora", None),
+             ("1.7", "formal-axis1-1.7b-4bit-qlora", None),
+             ("4", "formal-axis1-4b-4bit-qlora", None),
+             ("8", "formal-axis1-8b-4bit-qlora", None),
+             ("14", "formal-axis1-14b-4bit-qlora", "D8")]
+    nice = {"bf16-lora": "BF16 LoRA", "4bit-qlora": "4bit QLoRA",
+            "bf16-full": "Full FT"}
+    n_prereg = 3  # 预注册每格 3 种子（research/preregistration.md）
+    # 参数量优先取组内实测；全失败组（如 14B formal）回退到同模型的
+    # probe run 实测值，二者都来自 tm.logical_parameter_count，不手填
+    probe_fallback = {"14": "probe-14b-4bit-qlora"}
+    for model, g, tag in order:
+        method = g.rsplit("formal-axis1-", 1)[1].split("-", 1)[1]
         sub = df[(df["experiment.comparison_group_id"] == g)
                  & (df["status.terminal_state"] == "success")]
+        seeds = f"{len(sub)}/{n_prereg}" + (f" ({tag})" if tag else "")
+        # 参数量取同模型任意可用行（14B formal 全失败时回退到 probe 实测）
+        params_src = df[df["experiment.comparison_group_id"].isin(
+            [g] + ([probe_fallback[model]] if model in probe_fallback
+                   else []))]
+        params_col = pd.to_numeric(
+            params_src["tm.logical_parameter_count"], errors="coerce").dropna()
+        params_txt = (f" ({params_col.iloc[0] / 1e9:.1f}B)"
+                      if len(params_col) else "")
         if sub.empty:
-            lines.append(f"{model} & {nice[method]} & -- & -- & -- & --\\\\")
+            lines.append(f"Qwen3-{model}b{params_txt} & {nice[method]} & "
+                         f"{seeds} & -- & -- & -- & --\\\\")
             continue
-        params = float(sub["tm.logical_parameter_count"].iloc[0]) / 1e9
+        params = float(params_col.iloc[0]) / 1e9
         lines.append(
-            f"Qwen3-{model} ({params:.1f}B) & {nice[method]} & "
+            f"Qwen3-{model}b ({params:.1f}B) & {nice[method]} & {seeds} & "
             f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
             f"{_agg_cell(sub, 'tm.median_step_time_seconds')} & "
             f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
@@ -134,9 +164,13 @@ def table3(df: pd.DataFrame) -> None:
     lines = [
         "\\begin{table}[t]\\centering",
         "\\caption{Paired quantization effects (same model/seed; ratios = "
-        "4bit/BF16). Timing equivalence margin $\\pm$25\\% frozen before "
-        "benchmark.}",
-        "\\label{tab:paired}", "\\small",
+        "4bit/BF16, mean [min--max over seed pairs]). Timing equivalence "
+        "margin $\\pm$25\\% frozen before benchmark. $^\\dagger$The 4B "
+        "step-time ratio is a single seed pair whose BF16 denominator is "
+        "the zero-residency D1 rerun, i.e.\\ a cross-window comparison "
+        "(Sec.~\\ref{sec:timingscale}); memory ratios are window-robust "
+        "(allocator peaks are bit-stable across seeds).}",
+        "\\label{tab:paired}", "\\footnotesize\\setlength{\\tabcolsep}{2.5pt}",
         "\\begin{tabular}{lrrr}", "\\toprule",
         "Model & Mem ratio & Step-time ratio & Tok/s ratio\\\\", "\\midrule",
     ]
@@ -145,6 +179,7 @@ def table3(df: pd.DataFrame) -> None:
         ga, gb = f"formal-axis1-{model}-bf16-lora", f"formal-axis1-{model}-4bit-qlora"
         cells = []
         step_ratios = []
+        n_pairs = 0
         for col in ("tm.peak_metal_gpu_memory_bytes",
                     "tm.median_step_time_seconds", "runtime.tokens_per_second"):
             pr = paired_ratio(df, ga, gb, value_col=col)
@@ -153,15 +188,21 @@ def table3(df: pd.DataFrame) -> None:
                 continue
             import numpy as np
             r = [p["ratio_b_over_a"] for p in pr]
-            cells.append(f"{np.mean(r):.2f}")
+            n_pairs = len(r)
+            # min==max（如内存比值跨种子逐位一致）时省略范围
+            cells.append(f"{np.mean(r):.2f}" if min(r) == max(r)
+                         else f"{np.mean(r):.2f} [{min(r):.2f}--{max(r):.2f}]")
             if col == "tm.median_step_time_seconds":
                 step_ratios = r
         verdict = ("within margin" if step_ratios
                    and all(0.80 <= x <= 1.25 for x in step_ratios)
                    else ("slower" if any(x > 1.25 for x in step_ratios)
                          else "faster"))
-        verdicts[model] = {"step_ratios": step_ratios, "verdict": verdict}
-        lines.append(f"Qwen3-{model} & {' & '.join(cells)}\\\\")
+        verdicts[model] = {"step_ratios": step_ratios, "verdict": verdict,
+                           "n_pairs": n_pairs}
+        dag = "$^\\dagger$" if model == "4b" and n_pairs == 1 else ""
+        pairs = f" ({n_pairs})" if n_pairs else ""
+        lines.append(f"Qwen3-{model}{pairs}{dag} & {' & '.join(cells)}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
     (TABLES / "table3_paired.tex").write_text("\n".join(lines) + "\n",
                                               encoding="utf-8")
@@ -171,41 +212,186 @@ def table3(df: pd.DataFrame) -> None:
 
 
 def table4(df: pd.DataFrame) -> None:
+    """失败分类学：类别聚合（类别判定只用退出证据，不改写 terminal_state）。
+
+    类别规则（全部 evidence-based）：
+    - runtime_error + SIGKILL/exit137 → OS kill（内存压力一致，但不自动等同 OOM）
+    - timeout → 监督器超时
+    - user_interrupted → 操作员中断（按 D1/D7 作为系统状态证据保留）
+    - runtime_error + python traceback + formal-axis4（micro-batch>=2）→ D5 训练器
+      实现缺陷（已在修复后 trainer 上整批重跑）
+    - exp0-smoke 组 → 正式矩阵前的管线调试
+    - 其余 → 未归因失败
+    """
     taxonomy = json.loads((ROOT / "results" / "processed" /
                            "failure_taxonomy.json").read_text())
-    boundary = json.loads((ROOT / "results" / "processed" /
-                           "context_boundary_probe_summary.json").read_text())
-    lines = [
-        "\\begin{table*}[t]\\centering",
-        "\\caption{Failure and boundary observations (raw terminal states, "
-        "never reclassified as OOM without direct evidence).}",
-        "\\label{tab:failures}", "\\small",
-        "\\begin{tabular}{p{3.4cm}ll}", "\\toprule",
-        "Run & Status & Key observation\\\\", "\\midrule",
-    ]
+    full = pd.read_csv(ROOT / "results" / "processed" / "experiments.csv",
+                       low_memory=False).set_index("experiment.id")
+
     def _esc(s: str) -> str:
         return str(s).replace("_", r"\_")
 
+    def _config(eid: str, group: str) -> str:
+        parts = eid.split("__")
+        model = (parts[1].replace("mlx-community-", "")
+                 .replace("qwen-qwen3-", "qwen3-") if len(parts) > 1 else group)
+        model = model.replace("qwen3-0-6b", "qwen3-0.6b")
+        # 方法段：4-bit 模型名已含 -4bit；BF16 LoRA 的模型名不带精度，补标注
+        if len(parts) > 2 and "lora-qnone" in parts[2]:
+            model += " (BF16)"
+        cfg = model
+        m = re.search(r"__ctx(\d+)__", eid)
+        if m and m.group(1) != "512":
+            cfg += f", ctx{m.group(1)}"
+        m = re.search(r"__b(\d+)-ga\d+__", eid)
+        if m and m.group(1) != "1":
+            cfg += f", b{m.group(1)}"
+        if group.startswith("probe-"):
+            cfg += " [probe]"
+        return cfg
+
+    def _merge_cfgs(cfgs: dict) -> str:
+        """同模型的多个变体合并为一个条目：model (v1, v2×n)。"""
+        by_model: dict[str, list] = {}
+        for k, n in sorted(cfgs.items()):
+            model, _, variant = k.partition(", ")
+            by_model.setdefault(model, []).append((variant, n))
+        out = []
+        for model, variants in by_model.items():
+            if len(variants) == 1 and not variants[0][0]:
+                n = variants[0][1]
+                out.append(_esc(model) + (f"$\\times${n}" if n > 1 else ""))
+                continue
+            body = ", ".join(
+                (_esc(v) if v else _esc(model))
+                + (f"$\\times${n}" if n > 1 else "")
+                for v, n in variants)
+            out.append(f"{_esc(model)} ({body})")
+        return "; ".join(out)
+
+    CAT_OS_KILL = "External SIGKILL (memory pressure)"
+    CAT_TIMEOUT = "Supervisor timeout"
+    CAT_INTERRUPT = "Operator interrupt"
+    CAT_D5 = "Trainer implementation bug (D5)"
+    CAT_DEBUG = "Pre-formal pipeline debug"
+    CAT_OTHER = "Unresolved failure"
+    order = [CAT_OS_KILL, CAT_TIMEOUT, CAT_INTERRUPT, CAT_D5,
+             CAT_DEBUG, CAT_OTHER]
+    cats: dict[str, dict] = {c: {"n": 0, "cfgs": {}, "states": set(),
+                                  "steps": [], "wall": []}
+                             for c in order}
     for f in taxonomy["failures"]:
-        steps = f["context_observations"]["completed_steps_observation"]
-        key = _esc(f"{f['terminal_state']}")
-        if f["signal"]:
-            key += _esc(f" ({f['signal']})")
-        exp_id = _esc(f["experiment_id"][:22])
-        lines.append(
-            f"\\texttt{{{exp_id}}} & {key} & "
-            f"steps={steps if steps is not None else 'n/a'}; "
-            f"{_esc('/'.join(f['evidence_labels']))}\\\\")
-    b = boundary["boundary_interval"]
-    lines.append("\\midrule")
-    lines.append(
-        f"\\multicolumn{{3}}{{p{{9cm}}}}{{Context boundary: "
-        f"Trainable $\\in$ [{b['trainable_upper_bound_ctx']}, "
-        f"{b['first_failure_ctx']}) under preflight-comparable conditions.}}\\\\")
+        eid = f["experiment_id"]
+        meta = full.loc[eid] if eid in full.index else None
+        group = (str(meta["experiment.comparison_group_id"])
+                 if meta is not None else "?")
+        killed = f["signal"] == "SIGKILL" or f["exit_code"] == 137
+        labels = set(f["evidence_labels"])
+        if f["terminal_state"] == "runtime_error" and killed:
+            cat = CAT_OS_KILL
+        elif f["terminal_state"] == "timeout":
+            cat = CAT_TIMEOUT
+        elif f["terminal_state"] == "user_interrupted":
+            cat = CAT_INTERRUPT
+        elif (f["terminal_state"] == "runtime_error"
+              and "stderr:python_traceback" in labels
+              and group.startswith("formal-axis4")):
+            cat = CAT_D5
+        elif group == "exp0-smoke":
+            cat = CAT_DEBUG
+        else:
+            cat = CAT_OTHER
+        c = cats[cat]
+        c["n"] += 1
+        if meta is not None:
+            s = pd.to_numeric(pd.Series([meta.get("runtime.successful_steps")]),
+                              errors="coerce").iloc[0]
+            if pd.notna(s):
+                c["steps"].append(int(s))
+            w = pd.to_numeric(pd.Series([meta.get("runtime.wall_clock_seconds")]),
+                              errors="coerce").iloc[0]
+            if pd.notna(w):
+                c["wall"].append(float(w))
+        cfg = _config(eid, group)
+        c["cfgs"][cfg] = c["cfgs"].get(cfg, 0) + 1
+        state = f["terminal_state"] + (f" ({f['signal']})" if f["signal"] else "")
+        c["states"].add(state)
+
+    def _steps_txt(c: dict) -> str:
+        if c["steps"] and max(c["steps"]) == 0:
+            return "0 completed steps"
+        if c["steps"]:
+            return f"{min(c['steps'])}--{max(c['steps'])} completed steps"
+        return "steps not recorded"
+
+    def _wall_txt(c: dict) -> str:
+        if not c["wall"]:
+            return ""
+        lo, hi = min(c["wall"]), max(c["wall"])
+        return (f"{lo:.0f}" if lo == hi else f"{lo:.0f}--{hi:.0f}") + "\\,s"
+
+    evidence = {
+        CAT_OS_KILL: lambda c: "exit 137 / SIGKILL, " + _steps_txt(c)
+                     + "; kernel JetsamEvent confirms one b8 kill "
+                     "(App.~\\ref{app:jetsam}); rest SIGKILL-consistent only, "
+                     "not reclassified as OOM",
+        CAT_TIMEOUT: lambda c: "killed at the configured supervisor "
+                     + ("limit " + _wall_txt(c) if c["wall"] else "limit")
+                     + " under multi-GiB swap residency",
+        CAT_INTERRUPT: lambda c: "operator halt after "
+                     + (_wall_txt(c) if c["wall"] else "partial run")
+                     + "; retained as system-state evidence (D1/D7)",
+        CAT_D5: lambda c: "python traceback in variable-length validation "
+                "batching (micro-batch $\\ge$2); rerun on the fixed trainer",
+        CAT_DEBUG: lambda c: "python traceback before the formal matrix "
+                 "was frozen",
+        CAT_OTHER: lambda c: "no specific pattern in exit evidence"
+                + ((" " + _steps_txt(c)) if c["steps"] else "")
+                + "; 14B attempt attributed to operator KeyboardInterrupt "
+                  "per D8",
+    }
+    n_total = sum(c["n"] for c in cats.values())
+    lines = [
+        "\\begin{table*}[t]\\centering",
+        "\\caption{Failure taxonomy over all " + str(n_total) +
+        " failed runs (terminal states preserved verbatim; categories are "
+        "evidence-based labels, never reclassifications).}",
+        "\\label{tab:failures}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
+        "\\begin{tabular}{p{3.0cm}rp{3.4cm}p{7.0cm}}", "\\toprule",
+        "Category & Runs & Configurations & Evidence\\\\", "\\midrule",
+    ]
+    for cat in order:
+        c = cats[cat]
+        if c["n"] == 0:
+            continue
+        cfgs = _merge_cfgs(c["cfgs"])
+        # 终态去重：去掉同为其他状态前缀的项（如 runtime_error ⊂
+        # runtime_error (SIGKILL)），避免重复罗列
+        raw_states = sorted(c["states"])
+        raw_states = [s for s in raw_states
+                      if not any(t != s and t.startswith(s)
+                                 for t in raw_states)]
+        states = _esc("; ".join(raw_states))
+        lines.append(f"{cat} & {c['n']} & {cfgs} & "
+                     f"{evidence[cat](c)}; terminal state: {states}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table4_failures.tex").write_text("\n".join(lines) + "\n",
                                                 encoding="utf-8")
     print("[table] table4_failures.tex")
+
+
+def _swapin_range(sub: pd.DataFrame) -> str:
+    """组内 swap-in MB/step 的 min–max（D4 口径，half-up 取整）。"""
+    import math
+    if "_swapin_per_step" not in sub.columns:
+        return "--"
+    vals = pd.to_numeric(sub["_swapin_per_step"], errors="coerce").dropna()
+    vals = vals[~np.isinf(vals)]
+    if vals.empty:
+        return "--"
+    lo = math.floor(float(vals.min()) + 0.5)
+    hi = math.floor(float(vals.max()) + 0.5)
+    return f"{lo}" if lo == hi else f"{lo}--{hi}"
 
 
 def table5(df: pd.DataFrame) -> None:
@@ -214,11 +400,13 @@ def table5(df: pd.DataFrame) -> None:
         "\\begin{table*}[t]\\centering",
         "\\caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, "
         "seeds \\{42,123,2026\\}, all cells rerun on the D5-fixed trainer in "
-        "one window; mean$\\pm$SD).}",
-        "\\label{tab:batch}", "\\small",
-        "\\begin{tabular}{rrrrrl}", "\\toprule",
-        "Batch & Tok/step & Median step (s) & Tok/s & Peak mem (GiB) & "
-        "Status\\\\", "\\midrule",
+        "one window; mean$\\pm$SD; swap-in is the D4 paging-intensity "
+        "measure, all cells Tier-B; batch-8 kills recorded zero completed "
+        "steps with empty stdout).}",
+        "\\label{tab:batch}", "\\footnotesize\\setlength{\\tabcolsep}{2.8pt}",
+        "\\begin{tabular}{rrrrrrl}", "\\toprule",
+        "Batch & Median step (s) & Tok/s & Peak mem (GiB) & "
+        "Swap-in (MB/step) & Status\\\\", "\\midrule",
     ]
     for b, g in ((1, "formal-axis4-b1"), (2, "formal-axis4-b2"),
                  (4, "formal-axis4-b4")):
@@ -227,21 +415,27 @@ def table5(df: pd.DataFrame) -> None:
         if sub.empty:
             lines.append(f"{b} & -- & -- & -- & -- & missing\\\\")
             continue
-        tok_step = [float(t) / max(int(m), 1) for t, m in
-                    zip(pd.to_numeric(sub["runtime.tokens_processed"],
-                                      errors="coerce"),
-                        pd.to_numeric(sub["runtime.measured_steps"],
-                                      errors="coerce"))]
-        a = mean_sd_ci(tok_step) or {}
-        ts = (f"{a.get('mean', 0):.0f}" +
-              (f"±{a['sd']:.0f}" if a.get("sd") is not None else ""))
         lines.append(
-            f"{b} & {ts} & {_agg_cell(sub, 'tm.median_step_time_seconds')} & "
+            f"{b} & {_agg_cell(sub, 'tm.median_step_time_seconds')} & "
             f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
             f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
-            f"success$\\times${len(sub)}\\\\")
-    lines.append("8 & $\\sim$4088 & -- & -- & $>$16 (sys swap $\\to$20) & "
-                 "SIGKILL$\\times$3 (exit 137, 0 steps; D5 notes)\\\\")
+            f"{_swapin_range(sub)} & success$\\times${len(sub)}\\\\")
+    # b8 边界行：只认 exit-137 证据行（D5 修复后重跑系列），swap 取实测峰值
+    full = pd.read_csv(ROOT / "results" / "processed" / "experiments.csv",
+                       low_memory=False)
+    b8 = full[(full["experiment.comparison_group_id"] == "formal-axis4-b8")
+              & (full["status.exit_code"] == 137)
+              & (full["status.terminal_state"] == "runtime_error")]
+    if len(b8):
+        swap_peak = pd.to_numeric(b8["runtime.peak_swap_bytes.value"],
+                                  errors="coerce").max()
+        swap_txt = (f"$\\to${swap_peak / 2**30:.0f}\\,GiB"
+                    if pd.notna(swap_peak) else "")
+        lines.append(f"8 & -- & -- & $>$16 (swap {swap_txt}) & -- & "
+                     f"SIGKILL$\\times${len(b8)} (exit 137)\\\\")
+    else:
+        lines.append("8 & -- & -- & -- & -- & "
+                     "no exit-137 evidence rows\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table5_batch_axis.tex").write_text("\n".join(lines) + "\n",
                                                   encoding="utf-8")
@@ -254,22 +448,24 @@ def table6(df: pd.DataFrame) -> None:
         "\\begin{table}[t]\\centering",
         "\\caption{LoRA rank axis (Qwen3-4B-4bit QLoRA, ctx512, b1, 20 steps "
         "for r4/r32; r8 point reused from the 100-step axis-1 cell per "
-        "preregistration; mean$\\pm$SD).}",
-        "\\label{tab:rank}", "\\small",
-        "\\begin{tabular}{rrrr}", "\\toprule",
-        "Rank & Median step (s) & Tok/s & Peak mem (GiB)\\\\", "\\midrule",
+        "preregistration; mean$\\pm$SD; all cells Tier-B).}",
+        "\\label{tab:rank}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
+        "\\begin{tabular}{rrrrr}", "\\toprule",
+        "Rank & Median step (s) & Tok/s & Peak mem (GiB) & "
+        "Swap-in\\\\", "\\midrule",
     ]
     for r, g in ((4, "formal-axis3-r4"), (8, "formal-axis1-4b-4bit-qlora"),
                  (32, "formal-axis3-r32")):
         sub = df[(df["experiment.comparison_group_id"] == g)
                  & (df["status.terminal_state"] == "success")]
         if sub.empty:
-            lines.append(f"{r} & -- & -- & --\\\\")
+            lines.append(f"{r} & -- & -- & -- & --\\\\")
             continue
         lines.append(
             f"{r} & {_agg_cell(sub, 'tm.median_step_time_seconds')} & "
             f"{_agg_cell(sub, 'runtime.tokens_per_second', 1)} & "
-            f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)}\\\\")
+            f"{_agg_cell(sub, 'tm.peak_metal_gpu_memory_bytes', 2)} & "
+            f"{_swapin_range(sub)}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
     (TABLES / "table6_rank_axis.tex").write_text("\n".join(lines) + "\n",
                                                  encoding="utf-8")

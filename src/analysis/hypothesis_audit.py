@@ -121,8 +121,9 @@ def audit_h2(df: pd.DataFrame, kn: dict) -> dict:
     ]
     boundary_14b = (
         "14B-4bit: system-state-dependent boundary (D7) — probe success at "
-        "swap 2.7 GiB (0.68 s/step) vs formal timeout at swap 3.7 GiB "
-        "residency (50/100 steps in 7200 s); not proof of untrainability"
+        "swap 2.5 GiB (0.68 s/step) vs formal timeout at swap 3.5 GiB "
+        "residency (70/100 steps in 7200 s, per raw stdout log); "
+        "not proof of untrainability"
     ) if not fail14.empty or n14 == 0 else None
     # 健康态（2026-09-15 低驻留窗口）的 4bit 失败才是反证
     for _, r in fail14.iterrows():

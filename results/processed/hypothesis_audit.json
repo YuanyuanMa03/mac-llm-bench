@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-15T22:33:24+00:00",
-  "generator_commit": "3baff6440a76bd919e7df619b63e0a9611deab8f",
+  "generated_utc": "2026-09-16T13:01:57+00:00",
+  "generator_commit": "3f1fa5858a9c07b8e957b3d85bce616fc45b97cd",
   "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
   "hypotheses": {
     "H1": {
@@ -36,7 +36,7 @@
         "4B BF16 formal: regime-dependent (deviations.md D1)",
         "14B BF16: declared out-of-budget (preregistration §3)"
       ],
-      "boundary_evidence": "14B-4bit: system-state-dependent boundary (D7) — probe success at swap 2.7 GiB (0.68 s/step) vs formal timeout at swap 3.7 GiB residency (50/100 steps in 7200 s); not proof of untrainability",
+      "boundary_evidence": "14B-4bit: system-state-dependent boundary (D7) — probe success at swap 2.5 GiB (0.68 s/step) vs formal timeout at swap 3.5 GiB residency (70/100 steps in 7200 s, per raw stdout log); not proof of untrainability",
       "contradictory_experiments": [],
       "sample_size": {
         "14b_success": 0,
@@ -97,8 +97,8 @@
       "uncertainty": {
         "slope": 0.9985611284827887,
         "r_squared": 0.9853884642732076,
-        "tier_a_runs": 0,
-        "tier_note": "all Tier-B: paging-confounded, descriptive only (D4)"
+        "tier_a_runs": 6,
+        "tier_note": "mixed/has Tier-A"
       },
       "conclusion_status": "partially_supported"
     },

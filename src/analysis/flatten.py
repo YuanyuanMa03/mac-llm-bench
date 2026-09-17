@@ -128,16 +128,34 @@ TIER_A_SWAPIN_MB_PER_STEP = 50.0  # deviations.md D4（预先冻结）
 
 
 def _swapin_per_step(row) -> float:
-    """vm_stat swap-in 增量 × 页大小 / 完成步数（MB/步）。"""
+    """vm_stat swap-in 增量 × 页大小 / 完成步数（MB/步）。
+
+    兼容两种行形态：flatten 内部（JSON 字符串字段）与展平后的
+    experiments.csv（嵌套字段展开为点分列名）。2026-09-16 修复：此前
+    只读 JSON 字符串列，在展平 CSV 上 KeyError 静默返回 inf，导致
+    全部 run 被判 Tier-B（round-1 review R1-W2 的根因）。
+    """
     import json as _json
+    b_col = "runtime.system_vm_counters_before"
+    a_col = "runtime.system_vm_counters_after"
     try:
-        b = _json.loads(row["runtime.system_vm_counters_before"])
-        a = _json.loads(row["runtime.system_vm_counters_after"])
+        if b_col in row.index and isinstance(row.get(b_col), str):
+            b = _json.loads(row[b_col])
+            a = _json.loads(row[a_col])
+            b_swap = b["counters_pages"]["swapins"]
+            a_swap = a["counters_pages"]["swapins"]
+            page = b["page_size_bytes"]
+        else:
+            page = float(row[
+                "runtime.system_vm_counters_before.value.page_size_bytes"])
+            b_swap = float(row[
+                "runtime.system_vm_counters_before.value.counters_pages.swapins"])
+            a_swap = float(row[
+                "runtime.system_vm_counters_after.value.counters_pages.swapins"])
         steps = float(row["runtime.successful_steps"] or 0)
         if not steps:
             return float("inf")
-        return ((a["counters_pages"]["swapins"] - b["counters_pages"]["swapins"])
-                * b["page_size_bytes"] / 2**20 / steps)
+        return (a_swap - b_swap) * page / 2**20 / steps
     except (TypeError, KeyError, ValueError, _json.JSONDecodeError):
         return float("inf")
 

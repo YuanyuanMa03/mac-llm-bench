@@ -1,0 +1,58 @@
+{
+  "memory": {
+    "BF16 LoRA": {
+      "n": 3,
+      "df": 1,
+      "slope": 0.7146,
+      "stderr": 0.0735,
+      "ci95": [
+        -0.219,
+        1.648
+      ],
+      "p_value": 0.06523974904373608,
+      "r_squared": 0.9895,
+      "ci_contains_1": true
+    },
+    "4bit QLoRA": {
+      "n": 4,
+      "df": 2,
+      "slope": 0.5725,
+      "stderr": 0.0473,
+      "ci95": [
+        0.369,
+        0.776
+      ],
+      "p_value": 0.006762995537939022,
+      "r_squared": 0.9865,
+      "ci_contains_1": false
+    }
+  },
+  "step_time": {
+    "BF16 LoRA": {
+      "n": 3,
+      "df": 1,
+      "slope": 0.8288,
+      "stderr": 0.0413,
+      "ci95": [
+        0.304,
+        1.354
+      ],
+      "p_value": 0.031704157400625974,
+      "r_squared": 0.9975,
+      "ci_contains_1": true
+    },
+    "4bit QLoRA": {
+      "n": 4,
+      "df": 2,
+      "slope": 0.9966,
+      "stderr": 0.0876,
+      "ci95": [
+        0.62,
+        1.374
+      ],
+      "p_value": 0.007640153718189932,
+      "r_squared": 0.9848,
+      "ci_contains_1": true
+    }
+  }
+}

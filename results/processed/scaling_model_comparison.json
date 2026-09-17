@@ -1,0 +1,60 @@
+{
+  "4bit QLoRA": {
+    "n_points": 4,
+    "params_B": [
+      0.6,
+      1.72,
+      4.02,
+      8.19
+    ],
+    "peak_gib": [
+      2.13,
+      3.3,
+      6.19,
+      9.19
+    ],
+    "power_law": {
+      "slope_loglog": 0.5725,
+      "sse_gib2": 0.2402,
+      "r2_raw": 0.992,
+      "aic": -7.25
+    },
+    "affine": {
+      "slope_gib_per_B": 0.933,
+      "intercept_gib": 1.8107,
+      "sse_gib2": 0.5358,
+      "r2_raw": 0.9821,
+      "aic": -4.04
+    },
+    "delta_aic_affine_minus_power": 3.21,
+    "weight_at_8b": 9.46
+  },
+  "BF16 LoRA": {
+    "n_points": 3,
+    "params_B": [
+      0.6,
+      1.72,
+      4.02
+    ],
+    "peak_gib": [
+      2.92,
+      5.55,
+      11.54
+    ],
+    "power_law": {
+      "slope_loglog": 0.7146,
+      "sse_gib2": 0.4873,
+      "r2_raw": 0.9875,
+      "aic": -1.45
+    },
+    "affine": {
+      "slope_gib_per_B": 2.5283,
+      "intercept_gib": 1.3276,
+      "sse_gib2": 0.027,
+      "r2_raw": 0.9993,
+      "aic": -10.13
+    },
+    "delta_aic_affine_minus_power": -8.68,
+    "weight_at_8b": 22.06
+  }
+}
