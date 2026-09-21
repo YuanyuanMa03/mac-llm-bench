@@ -132,6 +132,36 @@ def test_begin_flags_table_section_mismatch(
     _fails(["begin", "--file", str(_prompt_file(repo, "x"))], "编号不一致", capsys)
 
 
+def test_begin_accepts_finalized_legacy_summary_row_without_section(repo: Path) -> None:
+    text = _read(repo, "PROMPT.md")
+    rows = pl.parse_rows(text)
+    legacy = pl.render_row(4, "2026-08-31", "已完成", "`abc1234`", "历史摘要")
+    (repo / "PROMPT.md").write_text(
+        pl.insert_row_after_last(text, legacy, rows), encoding="utf-8"
+    )
+    assert pl.main(["sync"]) == 0
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "legacy summary")
+
+    assert pl.main(["begin", "--file", str(_prompt_file(repo, "prompt05 原文。")),
+                    "--date", "2026-09-01"]) == 0
+    assert "# prompt05:\n\nprompt05 原文。\n" in _read(repo, "PROMPT.md")
+
+
+def test_begin_rejects_active_row_without_section(
+        repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    text = _read(repo, "PROMPT.md")
+    rows = pl.parse_rows(text)
+    active = pl.render_row(4, "2026-08-31", "进行中", "（进行中）", "待补")
+    (repo / "PROMPT.md").write_text(
+        pl.insert_row_after_last(text, active, rows), encoding="utf-8"
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "broken active row")
+
+    _fails(["begin", "--file", str(_prompt_file(repo, "x"))], "编号不一致", capsys)
+
+
 def test_begin_rejects_empty_or_missing_file(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
     _fails(["begin", "--file", str(repo / "nope.txt")], "不存在", capsys)
     _fails(["begin", "--file", str(_prompt_file(repo, "  \n"))], "原文为空", capsys)

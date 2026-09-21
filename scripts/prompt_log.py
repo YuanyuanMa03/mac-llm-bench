@@ -2,7 +2,8 @@
 """prompt_log —— 正式任务 prompt 的台账 harness。
 
 PROMPT.md 是唯一事实源：元数据表（5 列）+ 逐字原文章节。本脚本负责全部
-机械操作：登记（begin）、终结（finish）、README 镜像同步（sync）。
+机械操作：登记（begin）、终结（finish）、README 镜像同步（sync）。历史上
+仅有摘要行且已经终结的旧记录可以保留；所有新记录仍必须附逐字原文章节。
 
 规则（与 AGENTS.md 对齐）：
 - 原文逐字入账，绝不改字；缺失值如实标注，不猜。
@@ -141,12 +142,18 @@ def section_numbers(text: str) -> set[int]:
 
 
 def check_consistency(rows: list[Row], text: str) -> None:
-    t = {r.number for r in rows}
+    row_by_number = {r.number: r for r in rows}
+    t = set(row_by_number)
     s = section_numbers(text)
-    if t != s:
+    orphan_sections = s - t
+    missing_active_sections = {
+        number for number in (t - s)
+        if row_by_number[number].status not in STATUS_FINAL
+    }
+    if orphan_sections or missing_active_sections:
         raise PromptLogError(
             f"表格行与章节标题编号不一致：表格={sorted(t)} 章节={sorted(s)}。"
-            "请手工核对 PROMPT.md 后重试。"
+            "仅允许已终结的历史摘要行缺少逐字章节；请手工核对 PROMPT.md 后重试。"
         )
 
 
