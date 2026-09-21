@@ -31,6 +31,8 @@ def main() -> int:
     failure_progress.main()
     final_corrections.main()
     revision_round1.main()
+    from build_claim_ledger import main as build_claim_ledger
+    build_claim_ledger()
     print("[analysis] 全部 processed/figures/tables 已从 raw results 重新生成")
     return 0
 

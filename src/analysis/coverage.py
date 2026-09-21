@@ -11,7 +11,7 @@
 disposition 规则（机械、可审计，按优先级）：
 - ``excluded:implementation-invalid-d5``：error_message 含
   "Initialization encountered non-uniform length"（D5 trainer bug 签名，
-  research/deviations.md D5）——不作为失败/边界证据聚合；
+  research/deviations_public.md D5）——不作为失败/边界证据聚合；
 - ``excluded:superseded``：被后续 run 的 supersedes_experiment_id 标记；
 - ``excluded:duplicate``：同 (group, seed, state) 已有更优 run
   （Tier-A 优先、最早；D2 dedup，与 flatten.retained 一致）；

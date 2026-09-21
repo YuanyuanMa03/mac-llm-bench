@@ -25,12 +25,15 @@ RAW = ROOT / "results" / "raw"
 # 使 processed CSV 可公开分发。仅作用于字符串字段，不触及任何数值。
 _REPO_PREFIX = re.compile(re.escape(str(ROOT)))
 _HOME_PREFIX = re.compile(r"<home>/\\\"']+")
+_DEVICE_PATH = re.compile(r"/dev/disk[^,\s\\\"']+")
 
 
 def _sanitize(value):
     if isinstance(value, str):
         value = _REPO_PREFIX.sub("<repo>", value)
         value = _HOME_PREFIX.sub("<home>", value)
+        value = _DEVICE_PATH.sub("<storage-device>", value)
+        value = value.replace("操作者中断", "external interruption")
     elif isinstance(value, (list, tuple)):
         value = [_sanitize(v) for v in value]
     return value
@@ -124,7 +127,7 @@ def _mark_superseded(df: pd.DataFrame) -> None:
     df["_superseded_by"] = df["experiment.id"].map(superseded_by)
 
 
-TIER_A_SWAPIN_MB_PER_STEP = 50.0  # deviations.md D4（预先冻结）
+TIER_A_SWAPIN_MB_PER_STEP = 50.0  # deviations_public.md D4（预先冻结）
 
 
 def whole_run_swapin_mb_per_completed_step(row) -> float:
@@ -170,7 +173,7 @@ _swapin_per_step = whole_run_swapin_mb_per_completed_step
 
 
 def retained(df: pd.DataFrame) -> pd.DataFrame:
-    """分析入口（deviations.md D2/D4 机械规则）：
+    """分析入口（deviations_public.md D2/D4 机械规则）：
     - 未被 supersede；
     - 同 (group, seed, state) 重复时：优先 Tier-A（paging 弱），并列取最早；
     - 全部原始行保留在 CSV，并带 `_tier` 与明确命名的 whole-run paging

@@ -1,2 +1,0 @@
-mx.metal.reset_peak_memory is deprecated and will be removed in a future version. Use mx.reset_peak_memory instead.
-mx.metal.get_peak_memory is deprecated and will be removed in a future version. Use mx.get_peak_memory instead.

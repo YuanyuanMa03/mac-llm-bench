@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-21T06:20:22+00:00",
-  "generator_commit": "f63ecff40edd095cc12687918dc5461bfb9df6cc",
+  "generated_utc": "2026-09-21T10:54:46+00:00",
+  "generator_commit": "31b53be8b514af486d3a6471c1c2b9e43ffd2a0c",
   "raw_total": 118,
-  "validation_total": 16,
+  "validation_total": 0,
   "processed_total": 118,
   "formal_total": 97,
   "probe_total": 11,

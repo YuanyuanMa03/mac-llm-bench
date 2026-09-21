@@ -377,7 +377,7 @@ def build_payload() -> dict:
                 "step_timings.jsonl absent for timeout runs; per-step "
                 "wall-clock alignment is NOT recoverable (70 steps sum to "
                 "~3407 s of a 7199 s window; ~63 min is load/eval/stall per "
-                "D8 hand notes). Panels (a)/(b) therefore use independent "
+                "the unobserved load/evaluation/stall interval). Panels (a)/(b) therefore use independent "
                 "x-axes and no per-step attribution is claimed."),
         }
 
@@ -524,7 +524,7 @@ def build_payload() -> dict:
         "schema_version": "1.0.0",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "generator_commit": _git_commit(),
-        "analysis_kind": "post-hoc exploratory (deviations.md D12)",
+        "analysis_kind": "post-hoc exploratory (D12)",
         "monitor_coverage": {
             "runs_total": int(len(df)),
             "run_dirs_with_monitor_file": monitor_dirs,
@@ -541,9 +541,9 @@ def build_payload() -> dict:
                 "interpretation": (
                     "within-run step time correlates weakly with the "
                     "concurrent system-swap LEVEL: swap is a stock metric; "
-                    "paging bursts are flow events. Supports 'residency is "
-                    "necessary but not sufficient' (paper Sec. limitations "
-                    "of state description)."),
+                    "paging bursts are flow events. Residency alone is an "
+                    "insufficient state descriptor under the stated method "
+                    "limits."),
             }},
         "boundary14b_timeout_run": boundary,
         "batch8_sigkill": batch8,

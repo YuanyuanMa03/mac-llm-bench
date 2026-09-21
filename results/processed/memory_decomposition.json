@@ -1,8 +1,8 @@
 {
  "schema_version": "1.0.0",
- "generated_utc": "2026-09-21T06:20:26.694521+00:00",
- "generator_commit": "f63ecff",
- "analysis_kind": "post-hoc exploratory (deviations.md D12)",
+ "generated_utc": "2026-09-21T10:54:50.573906+00:00",
+ "generator_commit": "31b53be",
+ "analysis_kind": "post-hoc exploratory (D12)",
  "accounting_assumptions": [
   "weights resident = safetensors bytes on disk (models/MANIFEST.md, Hub-verified; 4-bit models stay quantized in the allocator)",
   "LoRA adapters fp32 (mlx_lm LoRALinear default dtype)",

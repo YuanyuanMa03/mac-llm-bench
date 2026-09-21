@@ -117,7 +117,7 @@ def audit_h2(df: pd.DataFrame, kn: dict) -> dict:
         supporting.append(f"formal-axis1-4b-4bit-qlora s{seed} success")
     bf16_boundary = [
         "8B BF16 probe: timeout (probe-8b-bf16-ctx512)",
-        "4B BF16 formal: regime-dependent (deviations.md D1)",
+        "4B BF16 formal: regime-dependent (D1)",
         "14B BF16: declared out-of-budget (preregistration §3)",
     ]
     boundary_14b = (

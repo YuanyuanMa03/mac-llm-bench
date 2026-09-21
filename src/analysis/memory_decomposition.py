@@ -128,7 +128,7 @@ def build() -> dict:
         "schema_version": "1.0.0",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "generator_commit": _git_commit(),
-        "analysis_kind": "post-hoc exploratory (deviations.md D12)",
+        "analysis_kind": "post-hoc exploratory (D12)",
         "accounting_assumptions": [
             "weights resident = safetensors bytes on disk (models/MANIFEST.md, "
             "Hub-verified; 4-bit models stay quantized in the allocator)",

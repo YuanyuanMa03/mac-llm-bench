@@ -1,35 +1,14 @@
 cff-version: 1.2.0
-message: >-
-  If you use this benchmark, its raw experiment records, or its analysis
-  pipeline, please cite both the repository and the paper draft.
-title: mac-llm-bench
-type: dataset
-identifiers:
-  - description: >-
-      Frozen raw-experiment dataset identity (see
-      research/experiment_freeze.md)
-    type: other
-    value: freeze-04f90a840b8ea8fb
-repository-code: "https://github.com/YuanyuanMa03/mac-llm-bench"
+message: "If you use this artifact, please cite the paper and repository."
+title: "mac-llm-bench: Reproducible Apple Silicon LLM Fine-Tuning Benchmark Artifact"
 authors:
-  - name: Yuanyuan Ma
-version: 1.0.0-rc1
-date-released: "2026-09-17"
-keywords:
-  - llm
-  - fine-tuning
-  - apple-silicon
-  - unified-memory
-  - mlx
-  - qlora
-  - benchmark
-  - reproducibility
+  - family-names: "Ma"
+    given-names: "Yuanyuan"
 license: MIT
+repository-code: "https://github.com/YuanyuanMa03/mac-llm-bench"
 preferred-citation:
-  type: unpublished
-  title: >-
-    How Far Can 16 GB Go? Characterizing Memory-Efficient LLM Fine-Tuning
-    on Consumer Apple Silicon
-  year: 2026
+  type: article
+  title: "How Far Can 16 GB Go? Feasibility, Step-Time Dynamics, and Machine State in LLM Fine-Tuning on a Single Consumer Apple Silicon Mac"
   authors:
-    - name: Yuanyuan Ma
+    - family-names: "Ma"
+      given-names: "Yuanyuan"

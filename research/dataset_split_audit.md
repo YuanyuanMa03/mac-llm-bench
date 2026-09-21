@@ -1,33 +1,7 @@
-# Formal dataset split audit
+# Dataset split audit
 
-## Historical implementation
+The frozen `formal_sft_v1` dataset was created from a pinned UltraChat source revision. The builder selected 2,080 source rows, restored their source-row order, then assigned the first 2,048 rows to training and the final 32 rows to validation. Checksums are recorded in `data/formal_sft_v1/SHA256SUMS`.
 
-`scripts/build_formal_dataset.py` used seed 42 to shuffle all source-row
-indices, selected the first 2,080 indices, restored those selected examples to
-ascending `global_row`, and only then wrote the first 2,048 as training and the
-tail 32 as validation.
+The historical trainer traversed the initial training order sequentially. No formal run consumed all 2,048 training examples, so seeds changed model and adapter initialization without changing the initial sample order. Validation examples form a source-order tail rather than a randomized representative holdout. Final validation losses are therefore descriptive results for this frozen split; they do not establish converged quality equivalence.
 
-The resulting historical semantics are therefore:
-
-```text
-randomly select 2,080 source rows
-→ sort selected rows by source global_row
-→ training = sorted rows 1..2,048
-→ validation = sorted tail rows 2,049..2,080
-```
-
-A direct check of the frozen files confirmed that both splits are sorted and
-that `max(train.global_row) < min(validation.global_row)`. The validation set is
-not the next 32 examples in shuffled order; it is the 32 highest source-row
-indices among the selected 2,080 examples.
-
-## Evidence-preserving disposition
-
-- `data/formal_sft_v1/**` is not rebuilt.
-- Its historical MANIFEST wording is not silently rewritten.
-- Validation-loss results remain usable as descriptive within-run diagnostics,
-  but not as evidence from a shuffled-order random validation split.
-- Future dataset builders must split the selected shuffled sequence before any
-  presentation-order sort and must test split membership independently of file
-  order.
-
+Future collector behavior may shuffle at epoch zero under a newer protocol. That change does not describe the 118-run frozen corpus.

@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import hashlib
+import csv
 import json
 import sys
 from pathlib import Path
@@ -116,6 +117,43 @@ def main() -> int:
         check("key_numbers_traceable", spot_ok, detail)
     else:
         check("key_numbers_traceable", False, "key_numbers.json missing")
+
+    # 6. Public claim ledger: count dynamically and verify every file/ID link.
+    ledger_path = ROOT / "research" / "claim_ledger.csv"
+    ledger_rows = []
+    if ledger_path.is_file():
+        with ledger_path.open(newline="", encoding="utf-8") as f:
+            ledger_rows = list(csv.DictReader(f))
+    required = {
+        "claim_id", "claim_text", "processed_source", "raw_source_ids",
+        "analysis_status", "evidence_grade", "paper_section_label_optional",
+    }
+    fields_ok = bool(ledger_rows) and required.issubset(ledger_rows[0])
+    missing_sources: list[str] = []
+    missing_raw: list[str] = []
+    duplicate_ids: list[str] = []
+    seen_claims: set[str] = set()
+    for row in ledger_rows:
+        cid = row.get("claim_id", "")
+        if cid in seen_claims:
+            duplicate_ids.append(cid)
+        seen_claims.add(cid)
+        for source in row.get("processed_source", "").split(";"):
+            rel = source.split("#", 1)[0]
+            if rel and not (ROOT / rel).exists():
+                missing_sources.append(f"{cid}:{rel}")
+        ids = [x for x in row.get("raw_source_ids", "").split(";") if x]
+        if not ids:
+            missing_raw.append(f"{cid}:<empty>")
+        for exp_id in ids:
+            if not (ROOT / "results" / "raw" / exp_id).is_dir():
+                missing_raw.append(f"{cid}:{exp_id}")
+    check("public_claim_ledger_schema", fields_ok,
+          f"n_claims={len(ledger_rows)}")
+    check("public_claim_sources_exist",
+          not missing_sources and not missing_raw and not duplicate_ids,
+          f"processed_missing={missing_sources[:3]}; "
+          f"raw_missing={missing_raw[:3]}; duplicate_ids={duplicate_ids}")
 
     out = ROOT / "research" / "reproducibility_audit.json"
     has_fail = any(not c["ok"] for c in CHECKS)

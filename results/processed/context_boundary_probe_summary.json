@@ -73,10 +73,10 @@
     }
   ],
   "boundary_interval": {
-    "trainable_upper_bound_ctx": 2048,
+    "completed_cap": 2048,
     "first_failure_ctx": 4096,
     "inference_valid": true,
-    "statement": "在 mlx-community/Qwen3-4B-4bit QLoRA、b1-ga1、r8、seed42、20-step probe 条件下，ctx=2048 完成全部预训练步，ctx=4096 在完成任何训练步之前即失败（runtime_error）；Trainable 上界位于 [2048, 4096) 区间。该推断成立的前提是两次运行的 preflight 系统状态可比（见 confounders）。"
+    "statement": "在 mlx-community/Qwen3-4B-4bit QLoRA、b1-ga1、r8、seed42、20-step probe 条件下，ctx=2048 完成全部预训练步，ctx=4096 在完成任何训练步之前即失败（runtime_error）。这是 2048-cap 完成后首次观测到的 4096-cap 失败；上沿来自单种子 synthetic probe，不是统计或物理阈值。"
   },
   "confounders": [
     {

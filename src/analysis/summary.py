@@ -120,8 +120,8 @@ def main() -> int:
 
     # 轴 4：batch（D5 修复后同 commit 重跑，2026-09-15 batch11）
     out["batch_axis"] = {
-        "note": "all cells rerun in one window on D5-fixed trainer "
-                "(deviations.md D5); b8 = SIGKILL-consistent boundary",
+        "note": "all cells rerun in one window on the D5-fixed trainer; "
+                "b8 is a signal-and-swap boundary observation",
     }
     for b, g in ((1, "formal-axis4-b1"), (2, "formal-axis4-b2"),
                  (4, "formal-axis4-b4"), (8, "formal-axis4-b8")):

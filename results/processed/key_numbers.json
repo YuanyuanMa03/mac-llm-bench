@@ -656,7 +656,7 @@
     }
   },
   "batch_axis": {
-    "note": "all cells rerun in one window on D5-fixed trainer (deviations.md D5); b8 = SIGKILL-consistent boundary",
+    "note": "all cells rerun in one window on the D5-fixed trainer; b8 is a signal-and-swap boundary observation",
     "1": {
       "group": "formal-axis4-b1",
       "median_step_s": {

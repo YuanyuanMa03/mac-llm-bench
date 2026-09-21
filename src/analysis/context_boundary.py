@@ -97,7 +97,7 @@ def build(series: list[dict] | None = None) -> dict:
     series = collect_series() if series is None else series
 
     # 边界区间：最后一个 success 与其后第一个非 success 之间（仅当可比时才推断）
-    boundary = {"trainable_upper_bound_ctx": None,
+    boundary = {"completed_cap": None,
                 "first_failure_ctx": None,
                 "inference_valid": False,
                 "statement": None}
@@ -107,7 +107,7 @@ def build(series: list[dict] | None = None) -> dict:
             last_success = obs
         elif last_success is not None and boundary["first_failure_ctx"] is None:
             boundary["first_failure_ctx"] = obs["sequence_length"]
-            boundary["trainable_upper_bound_ctx"] = last_success["sequence_length"]
+            boundary["completed_cap"] = last_success["sequence_length"]
             boundary["inference_valid"] = True
     if boundary["inference_valid"]:
         failed = next(o for o in series
@@ -116,12 +116,10 @@ def build(series: list[dict] | None = None) -> dict:
                  if o["sequence_length"] == boundary["first_failure_ctx"]}
         boundary["statement"] = (
             f"在 {failed['model_id']} QLoRA、b1-ga1、r8、seed42、20-step probe 条件下，"
-            f"ctx={boundary['trainable_upper_bound_ctx']} 完成全部预训练步，"
+            f"ctx={boundary['completed_cap']} 完成全部预训练步，"
             f"ctx={boundary['first_failure_ctx']} 在完成任何训练步之前即失败"
-            f"（{'+'.join(sorted(kinds))}）；Trainable 上界位于 "
-            f"[{boundary['trainable_upper_bound_ctx']}, "
-            f"{boundary['first_failure_ctx']}) 区间。该推断成立的前提是两次运行的 "
-            f"preflight 系统状态可比（见 confounders）。")
+            f"（{'+'.join(sorted(kinds))}）。这是 2048-cap 完成后首次观测到的 "
+            f"4096-cap 失败；上沿来自单种子 synthetic probe，不是统计或物理阈值。")
 
     confounders = []
     for obs in series:
@@ -167,7 +165,7 @@ def main(argv: list[str]) -> int:
                    encoding="utf-8")
     b = summary["boundary_interval"]
     print(f"[ctx-boundary] n={len(summary['series'])} "
-          f"boundary={'ctx<=%s trainable, first failure ctx=%s' % (
-              b['trainable_upper_bound_ctx'], b['first_failure_ctx'])
+          f"boundary={'completed cap=%s, first observed failure cap=%s' % (
+              b['completed_cap'], b['first_failure_ctx'])
               if b['inference_valid'] else '尚无可推断区间'} → {out}")
     return 0

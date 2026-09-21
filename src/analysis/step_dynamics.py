@@ -359,7 +359,7 @@ def main() -> int:
         "schema_version": "1.0.0",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "generator_commit": _git_commit(),
-        "analysis_kind": "post-hoc exploratory (deviations.md D12)",
+        "analysis_kind": "post-hoc exploratory (D12)",
         "warmup_exclusion": "per-run runtime.excluded_warmup_steps (trainer "
                             "measured-interval convention)",
         "inputs": ["results/processed/step_timings.parquet",

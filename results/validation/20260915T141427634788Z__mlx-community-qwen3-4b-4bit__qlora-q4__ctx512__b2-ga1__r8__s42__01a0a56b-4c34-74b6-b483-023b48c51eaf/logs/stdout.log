@@ -1,7 +1,0 @@
-[val] step 0 loss=2.2935
-step 1/3 loss=1.6835 tokens=1022 step_time=11.209s
-step 2/3 loss=2.1535 tokens=851 step_time=11.317s
-[val] step 2 loss=2.1197
-step 3/3 loss=1.6945 tokens=1022 step_time=17.558s
-[val] step 3 loss=1.9827
-[train] done: 3 steps, final_loss=1.6945, tokens=2895, trainable=5.898M/634.574M

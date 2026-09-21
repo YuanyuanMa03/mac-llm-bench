@@ -107,7 +107,7 @@ def test_context_boundary_series_and_confounder(tmp_path: Path) -> None:
     assert series[2]["terminal_state"] == "runtime_error"
     assert series[2]["signal"] == "SIGKILL"
     # 边界区间：最后 success=2048，首个失败=8192
-    assert summary["boundary_interval"]["trainable_upper_bound_ctx"] == 2048
+    assert summary["boundary_interval"]["completed_cap"] == 2048
     assert summary["boundary_interval"]["first_failure_ctx"] == 8192
     assert summary["boundary_interval"]["inference_valid"] is True
     # swap 增长 confounder 被记录

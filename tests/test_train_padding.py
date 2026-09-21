@@ -1,6 +1,6 @@
 """D5 regression tests：`_pad_batch` / `default_loss` 的 padding 语义。
 
-覆盖 research/deviations.md D5 修复的四个维度：
+覆盖 research/deviations_public.md D5 修复的四个维度：
 A. 变长 validation 各 batch size 不因 non-uniform length 崩溃；
 B. padding mask 正确性——padded batch 的有效 token loss 与逐样本独立
    计算（token 加权）在数值容差内一致，且证明旧 [0,len] 语义确实泄漏
