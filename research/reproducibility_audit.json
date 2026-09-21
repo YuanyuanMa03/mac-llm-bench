@@ -1,14 +1,20 @@
 {
   "kind": "reproducibility-audit",
-  "n_checks": 8,
+  "n_checks": 9,
   "overall_status": "PASS_WITH_DECLARED_WARNINGS",
   "all_passed": true,
   "checks": [
     {
-      "check": "raw_manifests_accounted",
+      "check": "original_raw_manifests_accounted",
       "ok": true,
       "status": "WARNING",
-      "detail": "n=118; verified=112; declared_integrity_warnings=6; counts={True: np.int64(112), False: np.int64(6)}"
+      "detail": "n=118; verified=112; original_declared_integrity_warnings=6; public_privacy_sanitized_runs=118; counts={True: np.int64(112), False: np.int64(6)}"
+    },
+    {
+      "check": "public_privacy_sanitization_manifest",
+      "ok": true,
+      "status": "PASS",
+      "detail": "n_mappings=367; current_raw_checked=365; mismatches=[]"
     },
     {
       "check": "formal_groups_match_declared_disposition",

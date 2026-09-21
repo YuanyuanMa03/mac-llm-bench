@@ -16,6 +16,6 @@ Research-governance and work-process records: assistant instructions, prompts, r
 
 ## Allowlist
 
-The public root is limited to `README.md`, `README.zh-CN.md`, `LICENSE`, `CITATION.cff`, `pyproject.toml`, `uv.lock`, and the directories `src/`, `scripts/`, `tests/`, `configs/`, `data/formal_sft_v1/`, `models/MANIFEST.md`, `results/raw/`, `results/processed/`, `results/figures/`, `docs/`, and the approved records under `research/`.
+The public root is limited to `README.md`, `README.zh-CN.md`, `LICENSE`, `CITATION.cff`, `pyproject.toml`, `uv.lock`, `release_sanitization_manifest.jsonl`, and the directories `src/`, `scripts/`, `tests/`, `configs/`, `data/formal_sft_v1/`, `models/MANIFEST.md`, `results/raw/`, `results/processed/`, `results/figures/`, `docs/`, and the approved records under `research/`.
 
 New tracked paths require an inventory entry and an explicit reproducibility reason. Being present in an earlier commit is not sufficient.

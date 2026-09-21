@@ -2,7 +2,7 @@
 """Reproducibility audit（Phase 12）。
 
 检查项（全部独立重算，不信任 processed 产物）：
-1. results/raw 全部 manifest 校验；
+1. results/raw original manifest 校验，并区分公开隐私脱敏映射；
 2. formal 矩阵每个组都有可对账的 success/failure/stopped disposition；
 3. data/formal_sft_v1/SHA256SUMS 与文件一致；
 4. models/MANIFEST.md 中 revision 与 formal raw result 的 resolved_revision 一致；
@@ -42,13 +42,39 @@ def main() -> int:
     main_df, _ = build_tables(include_validation=False)
     raw_df = main_df[main_df["_raw_dir"].notna()]
 
-    # 1. manifests
+    # 1. Original experiment manifests.  A file whose original digest maps to
+    # the current public digest in release_sanitization_manifest.jsonl remains
+    # original-integrity verified; this does not erase the six historical D6
+    # warnings.
     manifest_counts = raw_df["_manifest_verified"].value_counts(dropna=False)
     manifest_bad = int((raw_df["_manifest_verified"] != True).sum())  # noqa: E712
-    check("raw_manifests_accounted", True,
+    privacy_sanitized = int(raw_df["_manifest_privacy_sanitized"].fillna(False).sum())
+    check("original_raw_manifests_accounted", True,
           f"n={len(raw_df)}; verified={len(raw_df)-manifest_bad}; "
-          f"declared_integrity_warnings={manifest_bad}; counts={dict(manifest_counts)}",
+          f"original_declared_integrity_warnings={manifest_bad}; "
+          f"public_privacy_sanitized_runs={privacy_sanitized}; "
+          f"counts={dict(manifest_counts)}",
           warning=manifest_bad > 0)
+    release_manifest = ROOT / "release_sanitization_manifest.jsonl"
+    release_rows = []
+    if release_manifest.is_file():
+        release_rows = [json.loads(line) for line in release_manifest.read_text().splitlines()
+                        if line.strip()]
+    release_mismatches = []
+    release_current_checked = 0
+    for row in release_rows:
+        if not row["path"].startswith("results/raw/"):
+            continue
+        release_current_checked += 1
+        path = ROOT / row["path"]
+        if (not path.is_file()
+                or hashlib.sha256(path.read_bytes()).hexdigest()
+                != row["sanitized_sha256"]):
+            release_mismatches.append(row["path"])
+    check("public_privacy_sanitization_manifest",
+          bool(release_rows) and not release_mismatches,
+          f"n_mappings={len(release_rows)}; current_raw_checked={release_current_checked}; "
+          f"mismatches={release_mismatches[:3]}")
 
     # 2. formal group completeness (retained successes only)
     formal = raw_df[raw_df["experiment.comparison_group_id"]

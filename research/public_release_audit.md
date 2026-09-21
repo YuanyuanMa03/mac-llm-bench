@@ -4,18 +4,21 @@ Date: 2026-09-21
 
 ## Public artifact scope
 
-The curated tree is allowlisted to project entry points, locked dependencies, source, execution and analysis scripts, tests, configurations, the frozen formal dataset, model manifest, raw evidence, processed evidence, figures, methodology documents, preregistration, freeze identity, normalized D1-D12 deviations, the generated claim ledger, and public audit records.
+The curated tree is allowlisted to project entry points, locked dependencies, source, execution and analysis scripts, tests, configurations, the frozen formal dataset, model manifest, public sanitized raw evidence, processed evidence, figures, methodology documents, preregistration, freeze identity, normalized D1-D12 deviations, the generated claim ledger, and public audit records.
 
-The public raw-to-claim chain reconciles 118 finalized runs, 27 retained failures, 46 aggregation-included runs, 6 declared manifest digest warnings, 12 deviations, and 21 generated claim-ledger rows. The valid batch-8 claim uses only the three 2026-09-15 runs.
+The public raw-to-claim chain reconciles 118 finalized runs, 27 retained failures, 46 aggregation-included runs, 6 original D6 manifest warnings, 12 deviations, and 21 generated claim-ledger rows. The valid batch-8 claim uses only the three 2026-09-15 runs.
 
-## Verification
+## Privacy-preserving evidence
 
-Raw immutability comparison passed for 1,481 files under `results/raw/`. The allowlist scan found no path outside the approved public categories. Headline consistency checks passed across both README files, citation metadata, coverage, failure taxonomy, deviation summary, claim ledger, and reproducibility audit.
+Historical environment captures were deterministically sanitized for public release. The private originals are retained separately. The 367-file original-to-public hash mapping is recorded in `release_sanitization_manifest.jsonl`; 365 tracked raw files changed only through approved identifier or path substitutions. Comparison against the private original checkout found 1,460 tracked raw files before and after, 118 unchanged experiment identities, and zero scientific semantic differences.
 
-`uv run python scripts/audit_reproducibility.py`:
+All current refs, including direct tree refs, were scanned after the local rewrite. Real persistent identifier values, personal paths, and custom volume paths each have zero findings in the current tree and all reachable objects. Historical experiment provenance SHA fields remain unchanged because they describe the repository state used when the experiments ran.
+
+## Reproducibility verification
 
 ```text
-[WARNING] raw_manifests_accounted n=118; verified=112; declared_integrity_warnings=6; counts={True: np.int64(112), False: np.int64(6)}
+[WARNING] original_raw_manifests_accounted n=118; verified=112; original_declared_integrity_warnings=6; public_privacy_sanitized_runs=118; counts={True: np.int64(112), False: np.int64(6)}
+[PASS] public_privacy_sanitization_manifest n_mappings=367; current_raw_checked=365; mismatches=[]
 [PASS] formal_groups_match_declared_disposition n_groups=19; unresolved=[]
 [PASS] raw_processed_coverage_reconciled raw=118 processed=118
 [PASS] formal_dataset_sha256 n_files=2
@@ -27,17 +30,13 @@ Raw immutability comparison passed for 1,481 files under `results/raw/`. The all
 [audit] overall_status=PASS_WITH_DECLARED_WARNINGS
 ```
 
-`uv run python -m pytest tests/ -q`:
-
 ```text
 ....................................................                     [100%]
-52 passed in 5.61s
+52 passed in 5.80s
 ```
-
-## Publication hold
-
-A separate evidence-preserving privacy remediation remains required. Current verification found the persistent identifier key in 118 raw environment captures and machine-specific storage-device paths in 236 raw text or JSON files; the identifier key is reachable from 22 commits across current refs. No identifier value is reproduced here. Scientific raw bytes were unchanged during curation, and no history rewrite was performed.
 
 ## Status
 
-`PUBLIC_RELEASE_READY_EXCEPT_PRIVACY_HISTORY`
+`PRIVACY_HISTORY_REMEDIATED_LOCAL_ONLY`
+
+No remote update was performed.

@@ -16,7 +16,7 @@ The benchmark varies model scale, maximum sequence-length cap, LoRA rank, and mi
 
 ## Data
 
-- `results/raw/`: immutable run records, successes and failures
+- `results/raw/`: evidence-preserving public run records, successes and failures
 - `results/processed/`: programmatically derived tables and analysis data
 - `results/figures/`: figures generated from processed and raw evidence
 - `data/formal_sft_v1/`: frozen training and validation splits with checksums
@@ -43,11 +43,11 @@ uv run python scripts/audit_reproducibility.py
 uv run python -m pytest tests/ -q
 ```
 
-The analysis pipeline reads `results/raw/` and rewrites `results/processed/` and `results/figures/`. Audit scope and known integrity warnings are documented in `research/reproducibility_public.md`.
+The analysis pipeline reads `results/raw/` and rewrites `results/processed/` and `results/figures/`. Historical environmental captures were privacy-sanitized for public release. These public files are not byte-identical to the retained private originals; benchmark measurements and scientific fields are unchanged, and every changed file is mapped in `release_sanitization_manifest.jsonl`. Audit scope and known integrity warnings are documented in `research/reproducibility_public.md`.
 
 ## Limitations
 
-The study uses one machine. Timing and feasibility depend on machine state, while system-wide swap counters cannot attribute paging to the training process alone. Some analyses of step-time dynamics, system-state trajectories, and memory decomposition are post-hoc. The context upper edge uses single-seed synthetic probes. Historical collection limitations and six declared manifest digest warnings are preserved in the public audit.
+The study uses one machine. Timing and feasibility depend on machine state, while system-wide swap counters cannot attribute paging to the training process alone. Some analyses of step-time dynamics, system-state trajectories, and memory decomposition are post-hoc. The context upper edge uses single-seed synthetic probes. Six original D6 manifest warnings remain distinct from public privacy sanitization.
 
 ## Paper
 

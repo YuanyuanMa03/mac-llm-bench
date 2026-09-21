@@ -14,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
@@ -39,16 +40,45 @@ def _sanitize(value):
     return value
 
 
-def verify_manifest(d: Path) -> bool | None:
+@lru_cache(maxsize=1)
+def _privacy_sanitization_map() -> dict[str, tuple[str, str]]:
+    """Map public paths to (private-original, public-sanitized) SHA-256."""
+    path = ROOT / "release_sanitization_manifest.jsonl"
+    if not path.is_file():
+        return {}
+    mapping = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        mapping[row["path"]] = (row["original_sha256"], row["sanitized_sha256"])
+    return mapping
+
+
+def verify_manifest_detail(d: Path) -> tuple[bool | None, bool]:
     mp = d / "manifest.sha256"
     if not mp.exists():
-        return None
+        return None, False
+    privacy_sanitized = False
     for line in mp.read_text(encoding="utf-8").strip().splitlines():
         digest, _, rel = line.partition("  ")
         p = d / rel
-        if not p.is_file() or hashlib.sha256(p.read_bytes()).hexdigest() != digest:
-            return False
-    return True
+        if not p.is_file():
+            return False, privacy_sanitized
+        public_digest = hashlib.sha256(p.read_bytes()).hexdigest()
+        if public_digest == digest:
+            continue
+        public_rel = p.relative_to(ROOT).as_posix()
+        mapped = _privacy_sanitization_map().get(public_rel)
+        if mapped == (digest, public_digest):
+            privacy_sanitized = True
+            continue
+        return False, privacy_sanitized
+    return True, privacy_sanitized
+
+
+def verify_manifest(d: Path) -> bool | None:
+    return verify_manifest_detail(d)[0]
 
 
 def _flatten(node, prefix: str, out: dict) -> None:
@@ -59,12 +89,14 @@ def _flatten(node, prefix: str, out: dict) -> None:
         out[prefix] = _sanitize(node)
 
 
-def flatten_result(r: dict, d: Path, manifest_ok: bool | None) -> dict:
+def flatten_result(r: dict, d: Path, manifest_ok: bool | None,
+                   manifest_privacy_sanitized: bool = False) -> dict:
     flat: dict = {}
     _flatten(r, "", flat)
     # step_timing_artifact 指针替换为实际文件路径提示（长表另存）
     flat["_raw_dir"] = d.name
     flat["_manifest_verified"] = manifest_ok
+    flat["_manifest_privacy_sanitized"] = manifest_privacy_sanitized
     return flat
 
 
@@ -90,9 +122,9 @@ def build_tables(include_validation: bool = False) -> tuple[pd.DataFrame, pd.Dat
             if not d.is_dir() or not rj.is_file():
                 continue
             r = json.loads(rj.read_text(encoding="utf-8"))
-            manifest_ok = verify_manifest(d)
+            manifest_ok, manifest_privacy_sanitized = verify_manifest_detail(d)
             tm = load_training_metrics(d)
-            flat = flatten_result(r, d, manifest_ok)
+            flat = flatten_result(r, d, manifest_ok, manifest_privacy_sanitized)
             # 训练进程级 metrics（training_metrics.json）并入同一行，前缀 tm.
             for k, v in tm.items():
                 if isinstance(v, (list, dict)):

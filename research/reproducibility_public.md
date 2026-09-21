@@ -6,7 +6,11 @@ This repository audit covers the public artifact chain:
 
 `results/raw/` → `results/processed/` → `results/figures/` → `research/claim_ledger.csv`
 
-It verifies raw manifest disposition, formal-group coverage, raw/processed reconciliation, dataset checksums, model revisions, key-number traceability, and claim-ledger source existence. Paper-source compilation was performed separately and is not part of this repository artifact audit.
+It verifies original raw-manifest disposition, the public privacy-sanitization mapping, formal-group coverage, raw/processed reconciliation, dataset checksums, model revisions, key-number traceability, and claim-ledger source existence. Paper-source compilation was performed separately and is not part of this repository artifact audit.
+
+Historical environmental captures were privacy-sanitized for public release. The sanitized files are not byte-identical to the retained private originals. Benchmark measurements and scientific fields are unchanged; original and public SHA-256 values are paired without disclosing removed values in `release_sanitization_manifest.jsonl`.
+
+Historical experiment provenance SHA values describe the repository state used when each experiment ran and may refer to pre-sanitization history. The maintainer retains a private old-to-new commit map.
 
 ## Commands
 
@@ -24,7 +28,7 @@ uv run python -m pytest tests/ -q
 - 118 raw runs
 - 27 failures retained
 - 46 aggregation-included runs
-- 6 declared manifest digest warnings
+- 6 original D6 manifest digest warnings
 - 12 normalized preregistration deviations
 
-A passing public artifact audit may report `PASS_WITH_DECLARED_WARNINGS` when the six known manifest warnings are the only integrity warnings. Privacy-history remediation is tracked separately and does not alter scientific measurements.
+A passing public artifact audit may report `PASS_WITH_DECLARED_WARNINGS` when the six original manifest warnings are the only integrity warnings. Public privacy sanitization is verified through its separate mapping and does not add 118 integrity warnings.

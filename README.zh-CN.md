@@ -16,7 +16,7 @@
 
 ## 数据
 
-- `results/raw/`：不可变的成功与失败运行记录
+- `results/raw/`：保留科研证据的公开成功与失败运行记录
 - `results/processed/`：程序生成的表格与分析数据
 - `results/figures/`：由 processed 与 raw 证据生成的图
 - `data/formal_sft_v1/`：带校验和的冻结训练集与验证集
@@ -43,11 +43,11 @@ uv run python scripts/audit_reproducibility.py
 uv run python -m pytest tests/ -q
 ```
 
-分析管线读取 `results/raw/`，重新生成 `results/processed/` 与 `results/figures/`。审计范围和已声明的完整性警告见 `research/reproducibility_public.md`。
+分析管线读取 `results/raw/`，重新生成 `results/processed/` 与 `results/figures/`。历史环境快照在公开发布前做了隐私脱敏，因此公开文件与保留的私有原件并非逐字节相同；benchmark 测量和科研字段保持不变，全部变化记录在 `release_sanitization_manifest.jsonl`。审计范围和已声明的完整性警告见 `research/reproducibility_public.md`。
 
 ## 局限
 
-研究仅使用一台机器。时间和可行性受机器状态影响，系统级 swap 计数也不能把分页活动单独归因于训练进程。逐步时间动态、系统状态轨迹和内存分解中的部分分析属于事后探索。上下文上沿依赖单种子 synthetic probes。公开审计保留了历史采集限制与 6 个已声明的 manifest digest warnings。
+研究仅使用一台机器。时间和可行性受机器状态影响，系统级 swap 计数也不能把分页活动单独归因于训练进程。逐步时间动态、系统状态轨迹和内存分解中的部分分析属于事后探索。上下文上沿依赖单种子 synthetic probes。原有 6 个 D6 manifest warnings 与公开隐私脱敏分别记录。
 
 ## 论文
 
