@@ -49,9 +49,13 @@ The analysis pipeline reads `results/raw/` and rewrites `results/processed/` and
 
 The study uses one machine. Timing and feasibility depend on machine state, while system-wide swap counters cannot attribute paging to the training process alone. Some analyses of step-time dynamics, system-state trajectories, and memory decomposition are post-hoc. The context upper edge uses single-seed synthetic probes. Six original D6 manifest warnings remain distinct from public privacy sanitization.
 
+## Governance
+
+This artifact was produced by a single researcher working with AI coding assistants, so the repository is built around boundary control: every formal task is a numbered prompt recorded in an append-only ledger before work starts and closed only with actually-executed verification evidence; assistants operate through small, single-purpose skills whose constraints (raw results are immutable, no hand-typed numbers, no invented verification) are re-enforced by scripts and tests; the scientific plan was preregistered before any formal run with all twelve deviations logged; a supervisor freezes every run — successes and failures alike — with full provenance and SHA-256 manifests; every published number is regenerated from raw records by committed scripts and tied to a 21-claim evidence-graded ledger; and the public tree is allowlisted with cross-artifact audits (paper ↔ evidence, README ↔ paper, claims ↔ evidence, reachable-history privacy) gating release. The design and how to reuse it: `docs/experiment_governance.md`.
+
 ## Paper
 
-Paper: arXiv link forthcoming.
+Paper: arXiv link forthcoming. The frozen research artifact for the paper is the `arxiv-v1` git tag.
 
 ## License and citation
 

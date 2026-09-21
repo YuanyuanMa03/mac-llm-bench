@@ -49,9 +49,13 @@ uv run python -m pytest tests/ -q
 
 研究仅使用一台机器。时间和可行性受机器状态影响，系统级 swap 计数也不能把分页活动单独归因于训练进程。逐步时间动态、系统状态轨迹和内存分解中的部分分析属于事后探索。上下文上沿依赖单种子 synthetic probes。原有 6 个 D6 manifest warnings 与公开隐私脱敏分别记录。
 
+## 治理
+
+本 artifact 由一位研究者与 AI 编程助手协作完成，因此仓库围绕边界控制构建：每条正式任务都是一个编号 prompt，在开工前登记进 append-only 台账，收尾时必须附带真实执行过的验证证据；助手通过单一职责的小型 skills 工作，其约束（raw 结果不可变、禁止手打数值、禁止编造验证）再由脚本和测试双重强制；科研计划在任何正式运行之前预注册，十二条偏离全部留痕；supervisor 把每一次运行——无论成败——连同样本来源、完整 provenance 和 SHA-256 manifest 一并冻结；论文与 README 中的每个数值都由 committed 脚本从 raw 记录重新生成，并绑定到 21 条带证据分级的 claim ledger；公开树按 allowlist 管理，发布由跨 artifact 审计（论文↔证据、README↔论文、claims↔证据、可达历史隐私）把关。设计与复用方法见 `docs/experiment_governance.md`。
+
 ## 论文
 
-论文：arXiv 链接将在上传后补充。
+论文：arXiv 链接将在上传后补充。论文对应的冻结研究 artifact 是 git tag `arxiv-v1`。
 
 ## 许可与引用
 
