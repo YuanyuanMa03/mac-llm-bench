@@ -1,5 +1,9 @@
 # mac-llm-bench
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
+
+**English** · [简体中文](README.zh-CN.md)
+
 Reproducible, failure-inclusive measurements of memory-efficient LLM fine-tuning on one consumer Apple Silicon system.
 
 ## What
@@ -13,6 +17,26 @@ All reported measurements come from a single Apple M4 Mac with 16 GiB unified me
 ## Methods
 
 The benchmark varies model scale, maximum sequence-length cap, LoRA rank, and micro-batch size. Runs are supervised and record the exact command, git commit, model revision, MLX and mlx-lm versions, configuration, environment, wall time, allocator peak, throughput, exit status, and available step and system-state traces. The preregistration and D1-D12 deviation summary are in `research/`.
+
+## Repository structure
+
+```text
+├── AGENTS.md                  # Integrity charter for AI-assisted work
+├── CITATION.cff, LICENSE      # Citation metadata and license
+├── pyproject.toml, uv.lock    # Locked Python (>= 3.13) environment
+├── configs/                   # Experiment and model configurations
+├── data/formal_sft_v1/        # Frozen train/validation splits with checksums
+├── docs/                      # Protocol, methodology, result schema, governance
+├── models/MANIFEST.md         # Model identities and pinned revisions
+├── research/                  # Preregistration, deviations, claim ledger, audits
+├── results/raw/               # Immutable run records — successes and failures
+├── results/processed/         # Tables and analysis data (script-generated)
+├── results/figures/           # Figures (script-generated)
+├── scripts/                   # Experiment, analysis, and audit pipelines
+├── src/                       # benchmark / train / monitor / analysis modules
+├── tests/                     # Test suite
+└── .agents/skills/prompt-log/ # Published governance tooling (ledger skill)
+```
 
 ## Data
 
@@ -32,6 +56,8 @@ The benchmark varies model scale, maximum sequence-length cap, LoRA rank, and mi
 - The valid 2026-09-15 batch-8 set terminated before the first completed optimizer step in all three seeds. Earlier D5 implementation-invalid rows are excluded from this boundary evidence.
 
 ## Reproduce
+
+Requirements: macOS on Apple Silicon (measurements in the paper come from one 16 GiB M4 Mac), Python ≥ 3.13, and [uv](https://docs.astral.sh/uv/).
 
 Install the locked environment and regenerate all derived artifacts:
 
@@ -53,10 +79,24 @@ The study uses one machine. Timing and feasibility depend on machine state, whil
 
 This artifact was produced by a single researcher working with AI coding assistants, so the repository is built around boundary control: every formal task is a numbered prompt recorded in an append-only ledger before work starts and closed only with actually-executed verification evidence; assistants operate through small, single-purpose skills whose constraints (raw results are immutable, no hand-typed numbers, no invented verification) are re-enforced by scripts and tests; the scientific plan was preregistered before any formal run with all twelve deviations logged; a supervisor freezes every run — successes and failures alike — with full provenance and SHA-256 manifests; every published number is regenerated from raw records by committed scripts and tied to a 21-claim evidence-graded ledger; and the public tree is allowlisted with cross-artifact audits (paper ↔ evidence, README ↔ paper, claims ↔ evidence, reachable-history privacy) gating release. The design and how to reuse it: `docs/experiment_governance.md`.
 
+The reference tooling of this protocol is published with the artifact: the assistant integrity charter ([`AGENTS.md`](AGENTS.md)), the task-ledger harness ([`scripts/prompt_log.py`](scripts/prompt_log.py)), and its skill ([`.agents/skills/prompt-log/`](.agents/skills/prompt-log/SKILL.md)). The recorded task texts themselves are internal working records and are not published.
+
 ## Paper
 
 Paper: arXiv link forthcoming. The frozen research artifact for the paper is the `arxiv-v1` git tag.
 
 ## License and citation
 
-See `LICENSE` and `CITATION.cff`.
+Code and documentation are released under the [MIT License](LICENSE) (model weights and the frozen dataset subset remain under their upstream licenses — see the supplementary notices in `LICENSE`). If you use this artifact, please cite:
+
+```bibtex
+@misc{ma2026macllmbench,
+  author       = {Ma, Yuanyuan},
+  title        = {mac-llm-bench: Reproducible Apple Silicon LLM Fine-Tuning Benchmark Artifact},
+  year         = {2026},
+  howpublished = {GitHub repository},
+  url          = {https://github.com/YuanyuanMa03/mac-llm-bench}
+}
+```
+
+The preferred citation for the accompanying paper is recorded in [`CITATION.cff`](CITATION.cff).

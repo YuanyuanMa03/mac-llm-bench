@@ -5,26 +5,24 @@ models/
 __pycache__/
 *.staging/
 
-# LaTeX build artifacts
-paper/*.aux
-paper/*.bbl
-paper/*.blg
-paper/*.log
-paper/*.out
+# local paper working tree (arXiv-only policy): never committed
+/paper/
 
 # tool droppings
 .video_agent/
-paper/submission/
-paper/*.tar.gz
 preferences/
-.agents/
 research/evidence/*.ips
 research/evidence/*.ips.sha256
 
-# local paper history archive (arXiv-only policy) + session dirs
-paper/archive/
+# session dirs
 .zcode/
 
-# Local-only research governance and assistant instructions
+# Local-only research governance records (internal prompts, reviews, notes).
+# The published governance tooling is exempted below: the integrity charter
+# (AGENTS.md), the ledger harness (scripts/prompt_log.py), and the
+# prompt-log skill (.agents/skills/prompt-log/).
 /.private/
-/AGENTS.md
+.agents/*
+!.agents/skills
+.agents/skills/*
+!.agents/skills/prompt-log

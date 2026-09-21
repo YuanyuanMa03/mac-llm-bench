@@ -1,6 +1,7 @@
 path,category,keep_public,reason,contains_stale_claim,contains_internal_process_text,contains_private_or_machine_specific_info,action
+.agents/skills/prompt-log/SKILL.md,PUBLIC_GOVERNANCE_TOOLING,true,"Published governance tooling: process rules only, no task texts; reference implementation of the boundary-control protocol.",false,false,false,ADD
 .gitignore,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,REWRITE
-AGENTS.md,PRIVATE_INTERNAL,false,Preserved in the ignored local archive; not required for the public reproducibility chain.,false,true,false,REMOVE_FROM_PUBLIC
+AGENTS.md,PUBLIC_GOVERNANCE_TOOLING,true,"Published governance tooling: process rules only, no task texts; reference implementation of the boundary-control protocol.",false,false,false,KEEP
 CITATION.cff,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",true,false,false,REWRITE
 LICENSE,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,KEEP
 PROMPT.md,PRIVATE_INTERNAL,false,Preserved in the ignored local archive; not required for the public reproducibility chain.,false,true,false,REMOVE_FROM_PUBLIC
@@ -1882,7 +1883,7 @@ scripts/build_formal_dataset.py,PUBLIC_CORE,true,"Allowlisted code, configuratio
 scripts/compare_probes.py,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,KEEP
 scripts/gen_formal_configs.py,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,KEEP
 scripts/make_long_ctx_dataset.py,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,KEEP
-scripts/prompt_log.py,PRIVATE_INTERNAL,false,Preserved in the ignored local archive; not required for the public reproducibility chain.,false,true,false,REMOVE_FROM_PUBLIC
+scripts/prompt_log.py,PUBLIC_GOVERNANCE_TOOLING,true,"Published governance tooling: process rules only, no task texts; reference implementation of the boundary-control protocol.",false,false,false,KEEP
 scripts/run_analysis.py,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,REWRITE
 scripts/run_experiment.py,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,KEEP
 scripts/run_formal_batch.py,PUBLIC_CORE,true,"Allowlisted code, configuration, data, raw evidence, generated result, or project metadata.",false,false,false,KEEP

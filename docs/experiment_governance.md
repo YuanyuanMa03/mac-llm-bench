@@ -32,11 +32,14 @@ that every change in the repository's history can be traced to a task
 that declared its scope before starting, and every declared completion
 carries runnable proof.
 
-The ledger harness and the task texts themselves are maintainer-side
+The reference implementation of this boundary is published with the
+artifact: the ledger harness `scripts/prompt_log.py`, its skill
+`.agents/skills/prompt-log/SKILL.md`, and the assistant integrity charter
+`AGENTS.md`. The recorded task texts themselves are maintainer-side
 work-process records and are intentionally **not** part of the public
-artifact (see `docs/PUBLIC_RELEASE_POLICY.md`); what is published here is
-the protocol, so the discipline is auditable without exposing internal
-working material.
+artifact (see `docs/PUBLIC_RELEASE_POLICY.md`); the protocol and its
+tooling are published, so the discipline is auditable and reusable
+without exposing internal working material.
 
 ## 2. Tool boundary: single-purpose agent skills
 
@@ -51,10 +54,14 @@ sessions and reviewable after the fact: the skill text is short enough
 to be read by a human, and the repository rules it encodes are enforced
 again by scripts and tests.
 
-The maintainer's local skill bundle is tooling, not research content,
-and stays outside the artifact; the constraints that matter to the
-science are restated where readers can check them — in this document,
-in `docs/experiment_protocol.md`, and in the test suite.
+The task-ledger skill and the integrity charter it encodes are published
+with the artifact (`AGENTS.md`,
+`.agents/skills/prompt-log/SKILL.md`) so that readers can check the
+exact rules assistants operated under; the rest of the maintainer's
+local skill bundle is tooling, not research content, and stays outside
+the artifact. The constraints that matter to the science are restated
+where readers can check them — in this document, in
+`docs/experiment_protocol.md`, and in the test suite.
 
 ## 3. Scientific boundary: preregistration and deviations
 

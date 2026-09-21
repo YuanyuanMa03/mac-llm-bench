@@ -1,5 +1,9 @@
 # mac-llm-bench
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
+
+[English](README.md) · **简体中文**
+
 本仓库提供单台消费级 Apple Silicon 设备上内存高效大语言模型微调的可复现、包含失败运行的测量工件。
 
 ## 项目内容
@@ -13,6 +17,26 @@
 ## 方法
 
 基准改变模型规模、最大序列长度上限、LoRA rank 和 micro-batch size。监督运行记录完整命令、Git commit、模型 revision、MLX 与 mlx-lm 版本、配置、环境、wall time、allocator peak、throughput、exit status，以及可用的逐步与系统状态轨迹。预注册和 D1-D12 偏离摘要位于 `research/`。
+
+## 仓库结构
+
+```text
+├── AGENTS.md                  # AI 协作研究的完整性章程
+├── CITATION.cff, LICENSE      # 引用元数据与许可证
+├── pyproject.toml, uv.lock    # 锁定的 Python (>= 3.13) 环境
+├── configs/                   # 实验与模型配置
+├── data/formal_sft_v1/        # 带校验和的冻结训练/验证集
+├── docs/                      # 协议、方法学、结果模式、治理设计
+├── models/MANIFEST.md         # 模型身份与固定 revision
+├── research/                  # 预注册、偏离、claim ledger、审计
+├── results/raw/               # 不可变的运行记录——成功与失败一律保留
+├── results/processed/         # 表格与分析数据（脚本生成）
+├── results/figures/           # 图（脚本生成）
+├── scripts/                   # 实验、分析与审计管线
+├── src/                       # benchmark / train / monitor / analysis 模块
+├── tests/                     # 测试套件
+└── .agents/skills/prompt-log/ # 已公开的治理工具（台账 skill）
+```
 
 ## 数据
 
@@ -32,6 +56,8 @@
 - 有效的 2026-09-15 batch-8 三运行集合均在首个 optimizer step 完成前终止。D5 中较早的实现无效运行不作为该边界的正面证据。
 
 ## 复现
+
+环境要求：Apple Silicon 的 macOS（论文中的测量来自一台 16 GiB M4 Mac）、Python ≥ 3.13、[uv](https://docs.astral.sh/uv/)。
 
 安装锁定环境并重新生成派生工件：
 
@@ -53,10 +79,24 @@ uv run python -m pytest tests/ -q
 
 本 artifact 由一位研究者与 AI 编程助手协作完成，因此仓库围绕边界控制构建：每条正式任务都是一个编号 prompt，在开工前登记进 append-only 台账，收尾时必须附带真实执行过的验证证据；助手通过单一职责的小型 skills 工作，其约束（raw 结果不可变、禁止手打数值、禁止编造验证）再由脚本和测试双重强制；科研计划在任何正式运行之前预注册，十二条偏离全部留痕；supervisor 把每一次运行——无论成败——连同样本来源、完整 provenance 和 SHA-256 manifest 一并冻结；论文与 README 中的每个数值都由 committed 脚本从 raw 记录重新生成，并绑定到 21 条带证据分级的 claim ledger；公开树按 allowlist 管理，发布由跨 artifact 审计（论文↔证据、README↔论文、claims↔证据、可达历史隐私）把关。设计与复用方法见 `docs/experiment_governance.md`。
 
+该协议的参考工具随工件一同公开：助手完整性章程（[`AGENTS.md`](AGENTS.md)）、任务台账 harness（[`scripts/prompt_log.py`](scripts/prompt_log.py)）及其 skill（[`.agents/skills/prompt-log/`](.agents/skills/prompt-log/SKILL.md)）。任务文本本身属于内部工作记录，不对外发布。
+
 ## 论文
 
 论文：arXiv 链接将在上传后补充。论文对应的冻结研究 artifact 是 git tag `arxiv-v1`。
 
 ## 许可与引用
 
-见 `LICENSE` 与 `CITATION.cff`。
+代码与文档以 [MIT License](LICENSE) 发布（模型权重与冻结数据集子集遵循其上游许可证，见 `LICENSE` 补充说明）。如使用本工件，请引用：
+
+```bibtex
+@misc{ma2026macllmbench,
+  author       = {Ma, Yuanyuan},
+  title        = {mac-llm-bench: Reproducible Apple Silicon LLM Fine-Tuning Benchmark Artifact},
+  year         = {2026},
+  howpublished = {GitHub repository},
+  url          = {https://github.com/YuanyuanMa03/mac-llm-bench}
+}
+```
+
+论文的推荐引用格式记录于 [`CITATION.cff`](CITATION.cff)。
