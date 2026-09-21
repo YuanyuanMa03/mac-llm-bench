@@ -158,7 +158,7 @@ results/figures/      从原始结果程序化生成
 | [prompt16](PROMPT.md#prompt16) | 2026-09-12→16 | ✅ 已完成 | `877db81`→`b398076` |
 | [prompt17](PROMPT.md#prompt17) | 2026-09-16 | ✅ 已完成 | `5c8675d`→ |
 | [prompt18](PROMPT.md#prompt18) | 2026-09-21 | ✅ 已完成 | `044566c` |
-| [prompt19](PROMPT.md#prompt19) | 2026-09-21 | 🔄 进行中 | （进行中） |
+| [prompt19](PROMPT.md#prompt19) | 2026-09-21 | ✅ 已完成 | （见下一提交） |
 <!-- prompt-log:end -->
 
 ## 文档
