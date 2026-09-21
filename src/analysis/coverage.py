@@ -111,6 +111,12 @@ def build_coverage(df: pd.DataFrame | None = None, *,
     if "experiment.comparison_group_id" in df.columns:
         formal = df[df["experiment.comparison_group_id"].astype(str)
                     .str.startswith("formal-")]
+        # D5 implementation-invalid rows are ineligible before duplicate
+        # selection. Otherwise an earlier D5 failure can hide the later valid
+        # failure-inclusive rerun of the same (group, seed, state), as happened
+        # for all three batch-8 seeds.
+        errors = formal["status.error_message"].astype(str)
+        formal = formal[~errors.str.contains(D5_ERROR_SIGNATURE, regex=False)]
         if not formal.empty:
             retained_ids = set(retained(formal)["experiment.id"])
 

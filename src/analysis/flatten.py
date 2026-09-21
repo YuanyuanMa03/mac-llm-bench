@@ -127,8 +127,8 @@ def _mark_superseded(df: pd.DataFrame) -> None:
 TIER_A_SWAPIN_MB_PER_STEP = 50.0  # deviations.md D4（预先冻结）
 
 
-def _swapin_per_step(row) -> float:
-    """vm_stat swap-in 增量 × 页大小 / 完成步数（MB/步）。
+def whole_run_swapin_mb_per_completed_step(row) -> float:
+    """Whole-run vm_stat swap-in delta normalized by completed steps.
 
     兼容两种行形态：flatten 内部（JSON 字符串字段）与展平后的
     experiments.csv（嵌套字段展开为点分列名）。2026-09-16 修复：此前
@@ -161,19 +161,28 @@ def _swapin_per_step(row) -> float:
 
 
 def _tier(row) -> str:
-    return "A" if _swapin_per_step(row) < TIER_A_SWAPIN_MB_PER_STEP else "B"
+    return ("A" if whole_run_swapin_mb_per_completed_step(row)
+            < TIER_A_SWAPIN_MB_PER_STEP else "B")
+
+
+# Compatibility for older downstream code; new outputs use the explicit name.
+_swapin_per_step = whole_run_swapin_mb_per_completed_step
 
 
 def retained(df: pd.DataFrame) -> pd.DataFrame:
     """分析入口（deviations.md D2/D4 机械规则）：
     - 未被 supersede；
     - 同 (group, seed, state) 重复时：优先 Tier-A（paging 弱），并列取最早；
-    - 全部原始行保留在 CSV 并带 _tier / _swapin_per_step 列。"""
+    - 全部原始行保留在 CSV，并带 `_tier` 与明确命名的 whole-run paging
+      proxy。旧 `_swapin_per_step` 仅保留兼容别名。"""
     out = df[df["_superseded_by"].isna()] if "_superseded_by" in df.columns else df
     if out.empty or "experiment.comparison_group_id" not in out.columns:
         return out
     out = out.copy()
-    out["_swapin_per_step"] = out.apply(_swapin_per_step, axis=1)
+    out["whole_run_swapin_mb_per_completed_step"] = out.apply(
+        whole_run_swapin_mb_per_completed_step, axis=1)
+    out["_swapin_per_step"] = out[
+        "whole_run_swapin_mb_per_completed_step"]
     out["_tier"] = out.apply(_tier, axis=1)
     keep = []
     seen = set()

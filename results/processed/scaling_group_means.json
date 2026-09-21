@@ -1,0 +1,98 @@
+{
+  "bf16_lora": {
+    "memory": [
+      {
+        "group": "formal-axis1-0.6b-bf16-lora",
+        "params_B": 0.59604992,
+        "group_mean": 2.923063911497593,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-1.7b-bf16-lora",
+        "params_B": 1.720574976,
+        "group_mean": 5.546061875298619,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-4b-bf16-lora",
+        "params_B": 4.022468096,
+        "group_mean": 11.540849279612303,
+        "n_runs": 1
+      }
+    ],
+    "step_time": [
+      {
+        "group": "formal-axis1-0.6b-bf16-lora",
+        "params_B": 0.59604992,
+        "group_mean": 0.6191468751057982,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-1.7b-bf16-lora",
+        "params_B": 1.720574976,
+        "group_mean": 1.395641541884591,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-4b-bf16-lora",
+        "params_B": 4.022468096,
+        "group_mean": 3.0282350419993236,
+        "n_runs": 1
+      }
+    ]
+  },
+  "4bit_qlora": {
+    "memory": [
+      {
+        "group": "formal-axis1-0.6b-4bit-qlora",
+        "params_B": 0.59604992,
+        "group_mean": 2.125242866575718,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-1.7b-4bit-qlora",
+        "params_B": 1.720574976,
+        "group_mean": 3.2956701889634132,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-4b-4bit-qlora",
+        "params_B": 4.022468096,
+        "group_mean": 6.190298218280077,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-8b-4bit-qlora",
+        "params_B": 8.19073536,
+        "group_mean": 9.187575977295637,
+        "n_runs": 3
+      }
+    ],
+    "step_time": [
+      {
+        "group": "formal-axis1-0.6b-4bit-qlora",
+        "params_B": 0.59604992,
+        "group_mean": 0.6970812357806911,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-1.7b-4bit-qlora",
+        "params_B": 1.720574976,
+        "group_mean": 1.6973454720185448,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-4b-4bit-qlora",
+        "params_B": 4.022468096,
+        "group_mean": 3.6646139027240374,
+        "n_runs": 3
+      },
+      {
+        "group": "formal-axis1-8b-4bit-qlora",
+        "params_B": 8.19073536,
+        "group_mean": 10.039399485996304,
+        "n_runs": 3
+      }
+    ]
+  }
+}

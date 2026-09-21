@@ -91,13 +91,15 @@ def test_paired_comparison_flags_uncontrolled(tmp_path: Path) -> None:
 
 
 def test_context_boundary_series_and_confounder(tmp_path: Path) -> None:
-    _make_raw_result(tmp_path, "probe-4b-4bit-ctx512-qlora20-seed42", 512)
-    _make_raw_result(tmp_path, "probe-4b-4bit-ctx2048-qlora20-seed42", 2048)
-    _make_raw_result(tmp_path, "probe-4b-4bit-ctx8192-qlora20-seed42", 8192,
-                     state="runtime_error", steps=None, peak_gpu=None)
+    d512 = _make_raw_result(tmp_path, "probe-4b-4bit-ctx512-qlora20-seed42", 512)
+    d2048 = _make_raw_result(tmp_path, "probe-4b-4bit-ctx2048-qlora20-seed42", 2048)
+    d8192 = _make_raw_result(tmp_path, "probe-4b-4bit-ctx8192-qlora20-seed42", 8192,
+                            state="runtime_error", steps=None, peak_gpu=None)
     monkey = pytest.MonkeyPatch()
     monkey.setattr(context_boundary, "RAW",
                    tmp_path / "results" / "raw")
+    monkey.setattr(context_boundary, "SELECTED_EXPERIMENT_IDS",
+                   {512: d512.name, 2048: d2048.name, 8192: d8192.name})
     summary = context_boundary.build()
     monkey.undo()
     series = summary["series"]
@@ -114,10 +116,11 @@ def test_context_boundary_series_and_confounder(tmp_path: Path) -> None:
 
 
 def test_context_boundary_no_failure_keeps_boundary_open(tmp_path: Path) -> None:
-    _make_raw_result(tmp_path, "probe-4b-4bit-ctx512-qlora20-seed42", 512)
+    d512 = _make_raw_result(tmp_path, "probe-4b-4bit-ctx512-qlora20-seed42", 512)
     monkey = pytest.MonkeyPatch()
     monkey.setattr(context_boundary, "RAW",
                    tmp_path / "results" / "raw")
+    monkey.setattr(context_boundary, "SELECTED_EXPERIMENT_IDS", {512: d512.name})
     summary = context_boundary.build()
     monkey.undo()
     assert summary["boundary_interval"]["inference_valid"] is False

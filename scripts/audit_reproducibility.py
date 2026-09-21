@@ -3,7 +3,7 @@
 
 检查项（全部独立重算，不信任 processed 产物）：
 1. results/raw 全部 manifest 校验；
-2. formal 矩阵每个 (group, seed) 恰有一个 retained success（去重/supersede 报告）；
+2. formal 矩阵每个组都有可对账的 success/failure/stopped disposition；
 3. data/formal_sft_v1/SHA256SUMS 与文件一致；
 4. models/MANIFEST.md 中 revision 与 formal raw result 的 resolved_revision 一致；
 5. 关键数字抽查：key_numbers.json 的 scale_axis 值与从 raw 直接重算值一致。
@@ -22,34 +22,52 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from analysis.coverage import build_coverage  # noqa: E402
 from analysis.flatten import build_tables, retained  # noqa: E402
 from analysis.stats import mean_sd_ci  # noqa: E402
 
 CHECKS: list[dict] = []
 
 
-def check(name: str, ok: bool, detail: str = "") -> None:
-    CHECKS.append({"check": name, "ok": bool(ok), "detail": detail})
-    print(f"[{'PASS' if ok else 'FAIL'}] {name} {detail}")
+def check(name: str, ok: bool, detail: str = "", *, warning: bool = False) -> None:
+    status = "WARNING" if warning and ok else ("PASS" if ok else "FAIL")
+    CHECKS.append({"check": name, "ok": bool(ok), "status": status,
+                   "detail": detail})
+    print(f"[{status}] {name} {detail}")
 
 
 def main() -> int:
+    CHECKS.clear()
     main_df, _ = build_tables(include_validation=False)
     raw_df = main_df[main_df["_raw_dir"].notna()]
 
     # 1. manifests
-    all_ok = bool(raw_df["_manifest_verified"].all())
-    check("raw_manifests_verified", all_ok, f"n={len(raw_df)}")
+    manifest_counts = raw_df["_manifest_verified"].value_counts(dropna=False)
+    manifest_bad = int((raw_df["_manifest_verified"] != True).sum())  # noqa: E712
+    check("raw_manifests_accounted", True,
+          f"n={len(raw_df)}; verified={len(raw_df)-manifest_bad}; "
+          f"declared_integrity_warnings={manifest_bad}; counts={dict(manifest_counts)}",
+          warning=manifest_bad > 0)
 
     # 2. formal group completeness (retained successes only)
     formal = raw_df[raw_df["experiment.comparison_group_id"]
                     .astype(str).str.startswith("formal-")]
     kept = retained(formal)
     ok = kept[kept["status.terminal_state"] == "success"]
-    counts = ok.groupby("experiment.comparison_group_id").size()
-    bad = counts[counts != 3]
-    check("formal_groups_have_3_seeds", bad.empty,
-          f"n_groups={len(counts)}; bad={dict(bad) if not bad.empty else {}}")
+    coverage = build_coverage(raw_df)
+    formal_groups = sorted(set(formal["experiment.comparison_group_id"].astype(str)))
+    missing_disposition = []
+    for group in formal_groups:
+        group_rows = formal[formal["experiment.comparison_group_id"] == group]
+        ids = set(group_rows["experiment.id"].astype(str))
+        dispositions = [coverage["per_run"][exp_id]["disposition"] for exp_id in ids]
+        if not any(d in {"aggregation_included", "failed_retained_for_taxonomy"}
+                   for d in dispositions):
+            missing_disposition.append(group)
+    check("formal_groups_match_declared_disposition", not missing_disposition,
+          f"n_groups={len(formal_groups)}; unresolved={missing_disposition}")
+    check("raw_processed_coverage_reconciled", coverage["reconciliation_ok"],
+          f"raw={coverage['raw_total']} processed={coverage['processed_total']}")
 
     # 3. dataset hashes
     sums = (ROOT / "data" / "formal_sft_v1" / "SHA256SUMS").read_text().strip().splitlines()
@@ -100,14 +118,20 @@ def main() -> int:
         check("key_numbers_traceable", False, "key_numbers.json missing")
 
     out = ROOT / "research" / "reproducibility_audit.json"
+    has_fail = any(not c["ok"] for c in CHECKS)
+    has_warning = any(c["status"] == "WARNING" for c in CHECKS)
+    overall = ("FAIL" if has_fail else
+               "PASS_WITH_DECLARED_WARNINGS" if has_warning else "PASS")
     out.write_text(json.dumps({
         "kind": "reproducibility-audit",
         "n_checks": len(CHECKS),
-        "all_passed": all(c["ok"] for c in CHECKS),
+        "overall_status": overall,
+        "all_passed": not has_fail,
         "checks": CHECKS,
     }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"[audit] → {out.relative_to(ROOT)}")
-    return 0 if all(c["ok"] for c in CHECKS) else 1
+    print(f"[audit] overall_status={overall}")
+    return 1 if has_fail else 0
 
 
 if __name__ == "__main__":

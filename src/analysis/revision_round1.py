@@ -56,19 +56,20 @@ def _num(series: pd.Series) -> float:
 
 
 def tier_table() -> dict:
-    """使用 flatten.retained() 输出的 _swapin_per_step/_tier 列（D4 权威口径）。
+    """使用 retained() 的 whole-run normalized swap-in proxy 与 Tier。
 
     retained()（flatten.py）已按 D2/D4 去重：未 supersede + 同
     (group, seed, state) 优先 Tier-A、并列取最早。
     """
     df = _load_aggregated()
-    if "_swapin_per_step" not in df.columns:
-        raise SystemExit("retained() output missing _swapin_per_step column")
+    proxy = "whole_run_swapin_mb_per_completed_step"
+    if proxy not in df.columns:
+        raise SystemExit(f"retained() output missing {proxy} column")
     rows = []
     for _, r in df.iterrows():
         group = str(r.get("experiment.comparison_group_id", ""))
         state = str(r.get("status.terminal_state", ""))
-        mb_step = pd.to_numeric(pd.Series([r.get("_swapin_per_step")]),
+        mb_step = pd.to_numeric(pd.Series([r.get(proxy)]),
                                  errors="coerce").iloc[0]
         steps = pd.to_numeric(pd.Series([r.get(STEPS)]), errors="coerce").iloc[0]
         if (not group.startswith("formal-")

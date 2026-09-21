@@ -1,0 +1,178 @@
+{
+  "protocol": "historical protocol 0.1.0",
+  "finding": "shuffle was applied only after epoch wrap; no formal run could traverse all 2,048 training examples",
+  "seed_effective_role": "MLX/LoRA initialization, not initial sample order",
+  "groups": [
+    {
+      "comparison_group_id": "formal-axis1-0.6b-4bit-qlora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-0.6b-bf16-full",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-0.6b-bf16-lora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-1.7b-4bit-qlora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-1.7b-bf16-lora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-14b-4bit-qlora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-4b-4bit-qlora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-4b-bf16-lora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1-8b-4bit-qlora",
+      "requested_steps": 100,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 100,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1b-4b-4bit-qlora",
+      "requested_steps": 300,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 300,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis1b-4b-bf16-lora",
+      "requested_steps": 300,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 300,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis2-ctx1024",
+      "requested_steps": 20,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 20,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis2-ctx2048",
+      "requested_steps": 20,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 20,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis3-r32",
+      "requested_steps": 20,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 20,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis3-r4",
+      "requested_steps": 20,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 20,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis4-b1",
+      "requested_steps": 20,
+      "micro_batch_size": 1,
+      "maximum_examples_consumed_per_run": 20,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis4-b2",
+      "requested_steps": 20,
+      "micro_batch_size": 2,
+      "maximum_examples_consumed_per_run": 40,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis4-b4",
+      "requested_steps": 20,
+      "micro_batch_size": 4,
+      "maximum_examples_consumed_per_run": 80,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    },
+    {
+      "comparison_group_id": "formal-axis4-b8",
+      "requested_steps": 20,
+      "micro_batch_size": 8,
+      "maximum_examples_consumed_per_run": 160,
+      "train_examples": 2048,
+      "epoch_wrap_possible": false,
+      "historical_initial_order": "fixed source-file order"
+    }
+  ]
+}

@@ -1,7 +1,8 @@
-"""Hypothesis audit（H1–H6）：论文前的决策闸门，全部从 processed 数据派生。
+"""Hypothesis audit（H1–H6）：全部从 processed 数据派生。
 
-判定规则于 2026-09-15 冻结（在 8B/14B formal 结果落地之前，防止事后
-挑选）；每条输出 supporting/contradictory experiments、样本量、不确定度
+H2/H6 的 v2 规则属于 D9 所披露的结果后修订，不能冒充冻结规则；另一个
+machine-readable overlay 并排报告 frozen 与 post-hoc verdict。每条输出
+supporting/contradictory experiments、样本量、不确定度
 与 conclusion_status ∈ {supported, partially_supported, unsupported,
 insufficient_evidence}。不修改 hypothesis 迎合数据：规则超出的情形如实
 标 insufficient_evidence / partially_supported。
@@ -298,7 +299,26 @@ def audit_h6(df: pd.DataFrame, kn: dict) -> dict:
             "conclusion_status": "insufficient_evidence",
         }
     time_factor = s2048 / s512
-    token_factor = 4.0
+    # configured cap changed 4x, but actual input work did not. Recompute the
+    # token factor from retained step records (input = loss-bearing + 1).
+    from .flatten import retained
+    formal = df[df["experiment.comparison_group_id"].astype(str)
+                .str.startswith("formal-")]
+    kept = retained(formal)
+    step_df = pd.read_parquet(PROCESSED / "step_timings.parquet")
+
+    def actual_mean(group: str) -> float:
+        ids = set(kept.loc[
+            (kept["experiment.comparison_group_id"] == group)
+            & (kept["status.terminal_state"] == "success"),
+            "experiment.id"].astype(str))
+        vals = pd.to_numeric(step_df.loc[
+            step_df["experiment_id"].astype(str).isin(ids),
+            "loss_bearing_tokens"], errors="coerce").dropna() + 1
+        return float(vals.mean())
+
+    token_factor = (actual_mean("formal-axis2-ctx2048") /
+                    actual_mean("formal-axis1-4b-4bit-qlora"))
     cliff_ratio = time_factor / token_factor
     has_time_cliff = cliff_ratio >= H6_CLIFF_MIN_FACTOR
     has_hard_boundary = True  # ctx4096/8192 SIGKILL probes + ctx2048 Trainable
@@ -313,14 +333,15 @@ def audit_h6(df: pd.DataFrame, kn: dict) -> dict:
         "rule": "v2 dual evidence: (a) Tier-B-comparable step-time "
                 f"amplification at least {H6_CLIFF_MIN_FACTOR:.0f} times the "
                 "token-count amplification; "
-                "(b) SIGKILL boundary in [2048,4096); both -> supported, "
+                "(b) first observed failure at the 4096-cap probe after the "
+                "2048-cap workload completed; both -> supported, "
                 "boundary-only -> partially",
         "supporting_experiments": supporting,
         "contradictory_experiments": [],
         "sample_size": 8,
         "uncertainty": {
             "step_time_factor_2048_vs_512_tierB": round(time_factor, 1),
-            "token_factor": token_factor,
+            "actual_mean_input_token_factor": round(token_factor, 3),
             "cliff_ratio_tierB": round(cliff_ratio, 1),
             "note": "time amplification computed among Tier-B formal runs "
                     "(paging-comparable); the 243x probe-era amplification "
@@ -338,7 +359,8 @@ def build_audit() -> dict:
         "schema_version": SCHEMA_VERSION,
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "generator_commit": _git_commit(),
-        "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
+        "rule_status": ("H1/H3/H4/H5 frozen 2026-09-15; H2/H6 v2 are "
+                        "post-hoc revisions disclosed under D9"),
         "hypotheses": {
             "H1": audit_h1(df, kn),
             "H2": audit_h2(df, kn),

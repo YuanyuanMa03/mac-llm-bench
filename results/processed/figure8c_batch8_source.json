@@ -1,0 +1,17 @@
+{
+  "n_trajectories": 3,
+  "experiment_ids": [
+    "20260915T164129648692Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s42__01a0a5f1-e930-7242-9ebd-bfb9f735cb03",
+    "20260915T164414079542Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s123__01a0a5f4-6b7f-75ff-b238-30a384c43889",
+    "20260915T164550471089Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s2026__01a0a5f5-e407-7904-9c86-f6a77dac3a89"
+  ],
+  "swap_peak_gib_min": 19.515927734784782,
+  "swap_peak_gib_max": 20.38269531261176,
+  "duration_seconds_min": 94.18644094467163,
+  "duration_seconds_max": 234.37921595573425,
+  "time_to_peak_seconds_min": 45.73483109474182,
+  "time_to_peak_seconds_max": 105.42805981636047,
+  "swap_ramp_gib_min": 16.298593750223517,
+  "swap_ramp_gib_max": 17.137333983555436,
+  "plotted_swap_gib_max": 20.38269531261176
+}

@@ -20,6 +20,15 @@ RAW = ROOT / "results" / "raw"
 # probe 系列的 comparison group 前缀（prompt14 ctx 边界系列）
 GROUP_PREFIX = "probe-4b-4bit-ctx"
 
+# Evidence selection is explicit rather than "latest directory wins". These IDs
+# are the frozen probe series used by the manuscript; adding a same-cap rerun
+# must update this reviewed map instead of silently changing the boundary.
+SELECTED_EXPERIMENT_IDS = {
+    2048: "20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61",
+    4096: "20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467",
+    8192: "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
+}
+
 
 def _swap_after_bytes(d: Path) -> int | None:
     env_txt = d / "environment" / "raw_environment.txt"
@@ -73,13 +82,14 @@ def collect_series() -> list[dict]:
             "git_commit_sha": r["software"].get("git_commit_sha"),
             "raw_result_path": f"results/raw/{d.name}",
         }
-        prev = entries.get(ctx)
-        # 同一 ctx 多次运行：保留目录名排序最后（=最新）的一次，并记录重复
-        if prev is None:
-            entries[ctx] = obs
-        else:
-            prev.setdefault("superseded_run_ids", []).append(prev["experiment_id"])
-            entries[ctx] = obs
+        selected = SELECTED_EXPERIMENT_IDS.get(ctx)
+        if selected is None or obs["experiment_id"] != selected:
+            continue
+        obs["selection_rule"] = "explicit reviewed experiment ID"
+        entries[ctx] = obs
+    missing = sorted(set(SELECTED_EXPERIMENT_IDS) - set(entries))
+    if missing:
+        raise RuntimeError(f"missing selected context-probe evidence: {missing}")
     return [entries[ctx] for ctx in sorted(entries)]
 
 

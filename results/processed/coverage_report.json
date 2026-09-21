@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-21T02:15:52+00:00",
-  "generator_commit": "fedf6b4cbac1bae44d1310abdfe750fbca623ad3",
+  "generated_utc": "2026-09-21T05:57:56+00:00",
+  "generator_commit": "2972dfc2a022d7975bc94f0166fdc0a44c483592",
   "raw_total": 118,
   "validation_total": 16,
   "processed_total": 118,
@@ -15,10 +15,10 @@
   },
   "dispositions": {
     "aggregation_included": 46,
-    "excluded:duplicate": 14,
+    "excluded:duplicate": 11,
     "excluded:implementation-invalid-d5": 9,
     "excluded:superseded": 19,
-    "failed_retained_for_taxonomy": 9,
+    "failed_retained_for_taxonomy": 12,
     "non-formal:calibration": 6,
     "non-formal:exp0-smoke": 4,
     "non-formal:probe": 11
@@ -694,19 +694,19 @@
       "kind": "formal",
       "group": "formal-axis4-b8",
       "state": "runtime_error",
-      "disposition": "excluded:duplicate"
+      "disposition": "failed_retained_for_taxonomy"
     },
     "20260915T164414079542Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s123__01a0a5f4-6b7f-75ff-b238-30a384c43889": {
       "kind": "formal",
       "group": "formal-axis4-b8",
       "state": "runtime_error",
-      "disposition": "excluded:duplicate"
+      "disposition": "failed_retained_for_taxonomy"
     },
     "20260915T164550471089Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b8-ga1__r8__s2026__01a0a5f5-e407-7904-9c86-f6a77dac3a89": {
       "kind": "formal",
       "group": "formal-axis4-b8",
       "state": "runtime_error",
-      "disposition": "excluded:duplicate"
+      "disposition": "failed_retained_for_taxonomy"
     },
     "20260915T165524052283Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s123__01a0a5fe-a494-71f6-b0f1-6c0b4820439c": {
       "kind": "formal",

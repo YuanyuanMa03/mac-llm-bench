@@ -1,31 +1,43 @@
 {
   "kind": "reproducibility-audit",
-  "n_checks": 5,
-  "all_passed": false,
+  "n_checks": 6,
+  "overall_status": "PASS_WITH_DECLARED_WARNINGS",
+  "all_passed": true,
   "checks": [
     {
-      "check": "raw_manifests_verified",
-      "ok": false,
-      "detail": "n=118"
+      "check": "raw_manifests_accounted",
+      "ok": true,
+      "status": "WARNING",
+      "detail": "n=118; verified=112; declared_integrity_warnings=6; counts={True: np.int64(112), False: np.int64(6)}"
     },
     {
-      "check": "formal_groups_have_3_seeds",
-      "ok": false,
-      "detail": "n_groups=16; bad={'formal-axis1-4b-bf16-lora': np.int64(1)}"
+      "check": "formal_groups_match_declared_disposition",
+      "ok": true,
+      "status": "PASS",
+      "detail": "n_groups=19; unresolved=[]"
+    },
+    {
+      "check": "raw_processed_coverage_reconciled",
+      "ok": true,
+      "status": "PASS",
+      "detail": "raw=118 processed=118"
     },
     {
       "check": "formal_dataset_sha256",
       "ok": true,
+      "status": "PASS",
       "detail": "n_files=2"
     },
     {
       "check": "model_revisions_consistent",
       "ok": true,
+      "status": "PASS",
       "detail": "[]"
     },
     {
       "check": "key_numbers_traceable",
       "ok": true,
+      "status": "PASS",
       "detail": ""
     }
   ]

@@ -11,7 +11,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .stats import loglog_fit, mean_sd_ci, paired_ratio
+from .scaling import SERIES_GROUPS, fit_scaling_from_group_means
+from .stats import mean_sd_ci, paired_ratio
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -168,26 +169,12 @@ def main() -> int:
         out["paired"][model] = entry
 
     # scaling fits
-    for label, gnames in (
-        ("bf16_lora", ["formal-axis1-0.6b-bf16-lora", "formal-axis1-1.7b-bf16-lora",
-                       "formal-axis1-4b-bf16-lora"]),
-        ("4bit_qlora", ["formal-axis1-0.6b-4bit-qlora", "formal-axis1-1.7b-4bit-qlora",
-                        "formal-axis1-4b-4bit-qlora", "formal-axis1-8b-4bit-qlora",
-                        "formal-axis1-14b-4bit-qlora"]),
-    ):
-        xs, ys_mem, ys_time = [], [], []
-        for g in gnames:
-            sub = ok[ok["experiment.comparison_group_id"] == g]
-            if sub.empty:
-                continue
-            xs.append(float(sub["tm.logical_parameter_count"].iloc[0]) / 1e9)
-            # 用组内 seed 均值而非 iloc[0]（首 seed），与 figures.py 的拟合口径一致；
-            # 否则 step-time 斜率与 *_scaling_fits.json（图所画的那套）漂移
-            ys_mem.append(_agg(sub, "tm.peak_metal_gpu_memory_bytes")["mean"] / 2**30)
-            ys_time.append(_agg(sub, "tm.median_step_time_seconds")["mean"])
+    for label in SERIES_GROUPS:
         out.setdefault("fits", {})[label] = {
-            "memory": loglog_fit(xs, ys_mem),
-            "step_time": loglog_fit(xs, ys_time),
+            "memory": fit_scaling_from_group_means(
+                ok, label, "tm.peak_metal_gpu_memory_bytes", 2**30),
+            "step_time": fit_scaling_from_group_means(
+                ok, label, "tm.median_step_time_seconds"),
         }
 
     path = ROOT / "results" / "processed" / "key_numbers.json"

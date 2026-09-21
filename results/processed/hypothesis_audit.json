@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-21T02:15:57+00:00",
-  "generator_commit": "fedf6b4cbac1bae44d1310abdfe750fbca623ad3",
-  "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
+  "generated_utc": "2026-09-21T05:58:00+00:00",
+  "generator_commit": "2972dfc2a022d7975bc94f0166fdc0a44c483592",
+  "rule_status": "H1/H3/H4/H5 frozen 2026-09-15; H2/H6 v2 are post-hoc revisions disclosed under D9",
   "hypotheses": {
     "H1": {
       "hypothesis": "H1: 4bit substantially reduces training memory",
@@ -104,7 +104,7 @@
     },
     "H6": {
       "hypothesis": "H6: context scaling shows a clear cliff/boundary",
-      "rule": "v2 dual evidence: (a) Tier-B-comparable step-time amplification at least 10 times the token-count amplification; (b) SIGKILL boundary in [2048,4096); both -> supported, boundary-only -> partially",
+      "rule": "v2 dual evidence: (a) Tier-B-comparable step-time amplification at least 10 times the token-count amplification; (b) first observed failure at the 4096-cap probe after the 2048-cap workload completed; both -> supported, boundary-only -> partially",
       "supporting_experiments": [
         "probe ctx4096: SIGKILL before any step (boundary evidence)",
         "probe ctx8192: SIGKILL before any step (boundary evidence)",
@@ -114,8 +114,8 @@
       "sample_size": 8,
       "uncertainty": {
         "step_time_factor_2048_vs_512_tierB": 5.6,
-        "token_factor": 4.0,
-        "cliff_ratio_tierB": 1.4,
+        "actual_mean_input_token_factor": 2.43,
+        "cliff_ratio_tierB": 2.3,
         "note": "time amplification computed among Tier-B formal runs (paging-comparable); the 243x probe-era amplification used a different-era Tier-A baseline and is not directly comparable (D4)"
       },
       "conclusion_status": "partially_supported"

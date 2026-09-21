@@ -33,7 +33,8 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import NullLocator
 
-from .stats import loglog_fit, mean_sd_ci
+from .scaling import fit_scaling_from_group_means, write_scaling_source
+from .stats import mean_sd_ci
 
 ROOT = Path(__file__).resolve().parents[2]
 FIG = ROOT / "results" / "figures"
@@ -318,7 +319,9 @@ def fig3_memory_scaling(df: pd.DataFrame) -> None:
                                   ec="none", alpha=0.8))
             ax.plot(xs[n_formal - 1:], ys[n_formal - 1:], lw=1.0,
                     color=color, alpha=0.5)
-        fit = loglog_fit(xs, ys)
+        series_key = "bf16_lora" if label == "BF16 LoRA" else "4bit_qlora"
+        fit = fit_scaling_from_group_means(
+            df, series_key, "tm.peak_metal_gpu_memory_bytes", 2**30)
         if fit:
             fits[label] = fit
             xx = np.logspace(np.log10(min(xs)), np.log10(max(xs)), 50)
@@ -390,7 +393,9 @@ def fig4_time_scaling(df: pd.DataFrame) -> None:
                                  color=color, xytext=(6, -7),
                                  textcoords="offset points", ha="left",
                                  va="top", fontweight="bold")
-        fit = loglog_fit(xs, st)
+        series_key = "bf16_lora" if label == "BF16 LoRA" else "4bit_qlora"
+        fit = fit_scaling_from_group_means(
+            df, series_key, "tm.median_step_time_seconds")
         if fit:
             fits[label] = fit
             xx = np.logspace(np.log10(min(xs)), np.log10(max(xs)), 50)
@@ -571,7 +576,7 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
 
 
 def fig8_rank_axis(df: pd.DataFrame) -> None:
-    """轴 3 rank（4B-4bit；r8 复用轴 1 同配置点）。单栏上下两面板。"""
+    """轴 3 rank：相对 r8 的百分比，避免窄绝对轴夸大微小差异。"""
     fig, axes = plt.subplots(2, 1, figsize=(3.35, 4.55), layout="constrained")
     fig.get_layout_engine().set(h_pad=0.14, hspace=0.06)
     pts = {}
@@ -583,24 +588,37 @@ def fig8_rank_axis(df: pd.DataFrame) -> None:
         pts[r] = {"step": _agg(sub["tm.median_step_time_seconds"]),
                   "mem": _agg(sub["tm.peak_metal_gpu_memory_bytes"])}
     xs = sorted(pts)
+    source_rows = []
     for ax, key, ylab, title in (
-            (axes[0], "step", "median step time (s)", "Step time vs LoRA rank"),
-            (axes[1], "mem", "MLX peak memory (GiB)", "Peak memory vs LoRA rank")):
+            (axes[0], "step", "change from rank 8 (%)", "Step-time change vs rank 8"),
+            (axes[1], "mem", "change from rank 8 (%)", "Peak-memory change vs rank 8")):
         scale = (lambda v: v) if key == "step" else (lambda v: v / 2**30)
-        ax.errorbar(xs, [scale(pts[x][key]["mean"]) for x in xs],
-                    yerr=[(scale(pts[x][key]["sd"] or 0)) for x in xs],
+        baseline = scale(pts[8][key]["mean"])
+        means = [100 * (scale(pts[x][key]["mean"]) / baseline - 1) for x in xs]
+        errors = [100 * scale(pts[x][key]["sd"] or 0) / baseline for x in xs]
+        ax.errorbar(xs, means, yerr=errors,
                     marker="o", ms=4, lw=1.4, color=Q4_COLOR, capsize=2)
+        ax.axhline(0, color="#555555", lw=0.8, ls="--")
+        extent = max([abs(v) + e for v, e in zip(means, errors)] + [5.0])
+        ax.set_ylim(-extent * 1.15, extent * 1.15)
         _logx_ticks(ax, xs, base=2)
         ax.set_ylabel(ylab)
         ax.set_title(title, fontsize=9.5)
+        for rank, value, error in zip(xs, means, errors):
+            source_rows.append({"rank": rank, "metric": key,
+                                "relative_change_percent": value,
+                                "relative_sd_percent": error})
         if ax is axes[1]:
             ax.set_xlabel("LoRA rank")
+    pd.DataFrame(source_rows).to_csv(
+        ROOT / "results" / "processed" / "rank_relative_effects.csv", index=False)
     _legend_out(fig, [(Q4_COLOR, "mean±SD (3 seeds)")], ncol=1)
     _save(fig, "fig8_rank_axis")
 
 
 def main() -> int:
     df = _load()
+    write_scaling_source(df)
     fig1_architecture()
     fig2_feasibility(df)
     fig3_memory_scaling(df)

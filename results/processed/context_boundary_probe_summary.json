@@ -22,7 +22,8 @@
       "model_id": "mlx-community/Qwen3-4B-4bit",
       "model_resolved_revision": "4dcb3d101c2a062e5c1d4bb173588c54ea6c4d25",
       "git_commit_sha": "9405f98760444ef3e240c6a1c1b51c5ec43c2245",
-      "raw_result_path": "results/raw/20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61"
+      "raw_result_path": "results/raw/20260907T110003248768Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a07b86-7030-7992-b5e9-e44c9960eb61",
+      "selection_rule": "explicit reviewed experiment ID"
     },
     {
       "experiment_id": "20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467",
@@ -44,7 +45,8 @@
       "model_id": "mlx-community/Qwen3-4B-4bit",
       "model_resolved_revision": null,
       "git_commit_sha": "f0ba44d8aa811ed61eb799d9fec1782923edbd97",
-      "raw_result_path": "results/raw/20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467"
+      "raw_result_path": "results/raw/20260911T164322546359Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx4096__b1-ga1__r8__s42__01a0915a-3232-7ce9-b2d0-3d9d674f7467",
+      "selection_rule": "explicit reviewed experiment ID"
     },
     {
       "experiment_id": "20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
@@ -66,7 +68,8 @@
       "model_id": "mlx-community/Qwen3-4B-4bit",
       "model_resolved_revision": null,
       "git_commit_sha": "9405f98760444ef3e240c6a1c1b51c5ec43c2245",
-      "raw_result_path": "results/raw/20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0"
+      "raw_result_path": "results/raw/20260907T111824441175Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx8192__b1-ga1__r8__s42__01a07b97-3db9-7873-b5b6-49cb74b618a0",
+      "selection_rule": "explicit reviewed experiment ID"
     }
   ],
   "boundary_interval": {

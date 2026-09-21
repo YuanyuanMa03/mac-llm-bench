@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0.0",
- "generated_utc": "2026-09-21T02:15:55.493045+00:00",
- "generator_commit": "fedf6b4",
+ "generated_utc": "2026-09-21T05:57:59.177782+00:00",
+ "generator_commit": "2972dfc",
  "analysis_kind": "post-hoc exploratory (deviations.md D12)",
  "warmup_exclusion": "per-run runtime.excluded_warmup_steps (trainer measured-interval convention)",
  "inputs": [

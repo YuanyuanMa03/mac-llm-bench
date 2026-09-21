@@ -175,7 +175,7 @@ def align_steps(step_df: pd.DataFrame, runs: pd.DataFrame,
 # ------------------------------------------------------------------ 图 11
 def fig11_state_dynamics(payload: dict, batch8: list[dict],
                           aligned: list[dict]) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(7.0, 4.7), layout="constrained")
+    fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.0), layout="constrained")
     fig.get_layout_engine().set(w_pad=0.18, h_pad=0.10, wspace=0.05,
                                 hspace=0.07)
 
@@ -245,7 +245,11 @@ def fig11_state_dynamics(payload: dict, batch8: list[dict],
     ax.legend(fontsize=6.6, loc="upper left")
     ax.set_xlabel("wall clock from run start (min)")
     ax.set_ylabel("system swap in use (GiB)")
-    ax.set_title("(c) batch-8 runs: swap ramp to SIGKILL (0 steps)", fontsize=9)
+    if batch8:
+        plotted_max = max(max(r["swap_gib"]) for r in batch8)
+        lo, hi = ax.get_ylim()
+        ax.set_ylim(lo, max(hi, plotted_max * 1.04))
+    ax.set_title("(c) batch-8 swap ramp (0 completed steps)", fontsize=8.5)
 
     # (d) 逐 step：步时 vs 并发 swap（对齐 run）
     ax = axes[1][1]
@@ -272,8 +276,8 @@ def fig11_state_dynamics(payload: dict, batch8: list[dict],
     ax.set_yscale("log")
     ax.set_xlabel("concurrent system swap (GiB, interpolated at step time)")
     ax.set_ylabel("step time (s)")
-    ax.set_title(f"(d) step time vs concurrent swap ({len(aligned)} aligned "
-                 "runs)", fontsize=9)
+    ax.set_title(f"(d) step time vs swap ({len(aligned)} aligned runs)",
+                 fontsize=8.5)
     ax.legend(fontsize=7, loc="lower right", markerscale=3.0)
     _save(fig, "fig11_state_dynamics")
 
@@ -378,8 +382,9 @@ def build_payload() -> dict:
         }
 
     # ---- batch-8 SIGKILL 三连（2026-09-15；09-12 为 D5 exit-1 无效）
+    exit_codes = pd.to_numeric(df["status.exit_code"], errors="coerce")
     b8 = df[(df["experiment.comparison_group_id"] == "formal-axis4-b8")
-            & (df["status.exit_code"].astype(str) == "137")]
+            & (exit_codes == 137)]
     batch8 = []
     for _, r in b8.iterrows():
         mon = monitors.get(str(r["experiment.id"]))
@@ -398,7 +403,7 @@ def build_payload() -> dict:
             if pd.notna(r["runtime.successful_steps"]) else 0,
         })
     b8_invalid = df[(df["experiment.comparison_group_id"] == "formal-axis4-b8")
-                    & (df["status.exit_code"].astype(str) != "137")]
+                    & (exit_codes != 137)]
     b8_invalid_note = (
         f"{len(b8_invalid)} additional b8 rows are D5 implementation-invalid "
         "(exit 1, variable-length validation bug, 2026-09-12) and are "
@@ -574,6 +579,48 @@ def main() -> int:
         ctrl.update({"t_rel": m["t_rel"], "swap_gib": m["swap_gib"],
                      "duration_s": m["duration_s"]})
     fig11_state_dynamics(payload, payload["batch8_sigkill"], aligned_full)
+    batch8 = payload["batch8_sigkill"]
+    if len(batch8) != 3:
+        raise RuntimeError(f"expected 3 retained batch-8 exit-137 trajectories, got {len(batch8)}")
+    source_rows = []
+    for run in batch8:
+        source_rows.extend({
+            "experiment_id": run["experiment_id"],
+            "seed": run["seed"],
+            "t_rel_seconds": float(t),
+            "swap_gib": float(s),
+        } for t, s in zip(run["t_rel"], run["swap_gib"], strict=True))
+    source_df = pd.DataFrame(source_rows)
+    source_df.to_csv(PROCESSED / "figure8c_batch8_source.csv", index=False)
+    peaks = [run["swap_peak_gib"] for run in batch8]
+    durations = [run["duration_s"] for run in batch8]
+    ramp_times = [run["time_to_peak_s"] for run in batch8]
+    ramp_magnitudes = [run["swap_peak_gib"] - run["swap_start_gib"]
+                       for run in batch8]
+    source_summary = {
+        "n_trajectories": len(batch8),
+        "experiment_ids": [run["experiment_id"] for run in batch8],
+        "swap_peak_gib_min": min(peaks),
+        "swap_peak_gib_max": max(peaks),
+        "duration_seconds_min": min(durations),
+        "duration_seconds_max": max(durations),
+        "time_to_peak_seconds_min": min(ramp_times),
+        "time_to_peak_seconds_max": max(ramp_times),
+        "swap_ramp_gib_min": min(ramp_magnitudes),
+        "swap_ramp_gib_max": max(ramp_magnitudes),
+        "plotted_swap_gib_max": float(source_df["swap_gib"].max()),
+    }
+    (PROCESSED / "figure8c_batch8_source.json").write_text(
+        json.dumps(source_summary, indent=2) + "\n", encoding="utf-8")
+    TABLES.mkdir(parents=True, exist_ok=True)
+    (TABLES / "figure8c_batch8_numbers.tex").write_text(
+        "\\newcommand{\\batchEightRampTimeRange}{"
+        f"{min(ramp_times):.0f}--{max(ramp_times):.0f}" + "}\n"
+        "\\newcommand{\\batchEightRampMagnitudeRange}{"
+        f"{min(ramp_magnitudes):.1f}--{max(ramp_magnitudes):.1f}" + "}\n"
+        "\\newcommand{\\batchEightPeakRange}{"
+        f"{min(peaks):.1f}--{max(peaks):.1f}" + "}\n",
+        encoding="utf-8")
     # JSON 存抽稀版
     mon14 = payload["boundary14b_timeout_run"].get("monitor")
     if mon14 and isinstance(mon14.get("t_rel"), np.ndarray):

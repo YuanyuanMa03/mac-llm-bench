@@ -1,0 +1,27 @@
+{
+  "rule_comparison": [
+    {
+      "hypothesis": "H2",
+      "frozen_rule": "14B 4-bit QLoRA completes all three formal seeds",
+      "frozen_verdict": "not_supported",
+      "posthoc_rule": "v2 tiered: 8B-4bit >=3 seeds -> supported (BF16 formal boundary 1.7B/4B-regime-dependent); 4B-only -> partial; 14B reported as system-state boundary (D8), not a contradiction of extension",
+      "posthoc_verdict": "supported",
+      "reason_for_revision": "v1 (2026-09-15) anchored on 14B 3/3; revised 2026-09-16 after 8B 3/3 + 14B D7 timeout, motivation declared",
+      "revision_date": "2026-09-16"
+    },
+    {
+      "hypothesis": "H6",
+      "frozen_rule": "step-time amplification divided by token-count amplification is at least 10",
+      "frozen_verdict": "not_supported",
+      "posthoc_rule": "v2 dual evidence: (a) Tier-B-comparable step-time amplification at least 10 times the token-count amplification; (b) first observed failure at the 4096-cap probe after the 2048-cap workload completed; both -> supported, boundary-only -> partially",
+      "posthoc_verdict": "partially_supported",
+      "reason_for_revision": "D9 post-result revision",
+      "revision_date": "2026-09-16"
+    }
+  ],
+  "practical_comparison": {
+    "frozen_practical": "Trainable AND P1 AND P2",
+    "revised_operational_practical": "Trainable AND P2",
+    "status": "post-hoc sensitivity interpretation (D11)"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "definition": "input tokens per step = loss_bearing_tokens + 1",
+  "interpretation": "configured sequence length is a maximum cap, not fixed work",
+  "cells": [
+    {
+      "maximum_sequence_length_cap": 512,
+      "comparison_group_id": "formal-axis1-4b-4bit-qlora",
+      "experiment_ids": [
+        "20260911T230323003522Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s42__01a092b6-1a7b-76ea-bf96-a460fbae8087",
+        "20260911T233730664754Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s123__01a092d5-5928-7ce3-a6f9-9f519cf2685e",
+        "20260912T001156818610Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx512__b1-ga1__r8__s2026__01a092f4-e012-7a36-bb7c-891bb24e407b"
+      ],
+      "n_steps": 300,
+      "min_input_tokens": 199,
+      "max_input_tokens": 512,
+      "mean_input_tokens": 500.1,
+      "median_input_tokens": 512.0,
+      "p10_input_tokens": 512.0,
+      "p90_input_tokens": 512.0,
+      "fraction_hitting_cap": 0.93
+    },
+    {
+      "maximum_sequence_length_cap": 1024,
+      "comparison_group_id": "formal-axis2-ctx1024",
+      "experiment_ids": [
+        "20260912T010303078430Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx1024__b1-ga1__r8__s42__01a09323-a9a6-748f-a030-bab82bc1ccb3",
+        "20260912T012504760374Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx1024__b1-ga1__r8__s123__01a09337-d478-73f2-b8ba-f06c31d275c2",
+        "20260912T014748248831Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx1024__b1-ga1__r8__s2026__01a0934c-a299-7785-a8ed-9037c924a6a4"
+      ],
+      "n_steps": 60,
+      "min_input_tokens": 283,
+      "max_input_tokens": 1024,
+      "mean_input_tokens": 916.05,
+      "median_input_tokens": 1024.0,
+      "p10_input_tokens": 758.6000000000001,
+      "p90_input_tokens": 1024.0,
+      "fraction_hitting_cap": 0.6
+    },
+    {
+      "maximum_sequence_length_cap": 2048,
+      "comparison_group_id": "formal-axis2-ctx2048",
+      "experiment_ids": [
+        "20260912T020930772906Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s42__01a09360-8295-745d-a8ac-c648df627edd",
+        "20260912T030114247664Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s2026__01a0938f-dd87-7c0f-a464-eee1ecd9e307",
+        "20260915T165524052283Z__mlx-community-qwen3-4b-4bit__qlora-q4__ctx2048__b1-ga1__r8__s123__01a0a5fe-a494-71f6-b0f1-6c0b4820439c"
+      ],
+      "n_steps": 60,
+      "min_input_tokens": 283,
+      "max_input_tokens": 2048,
+      "mean_input_tokens": 1215.1,
+      "median_input_tokens": 1169.0,
+      "p10_input_tokens": 758.6000000000001,
+      "p90_input_tokens": 1801.0,
+      "fraction_hitting_cap": 0.05
+    }
+  ]
+}
