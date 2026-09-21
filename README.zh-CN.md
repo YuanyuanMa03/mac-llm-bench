@@ -160,7 +160,7 @@ results/figures/      从原始结果程序化生成
 | [prompt18](PROMPT.md#prompt18) | 2026-09-21 | ✅ 已完成 | `044566c` |
 | [prompt19](PROMPT.md#prompt19) | 2026-09-21 | ✅ 已完成 | `b0cfa33` |
 | [prompt20](PROMPT.md#prompt20) | 2026-09-21 | ✅ 已完成 | `510e69d` |
-| [prompt21](PROMPT.md#prompt21) | 2026-09-21 | ✅ 已完成 | （见下一提交） |
+| [prompt21](PROMPT.md#prompt21) | 2026-09-21 | ✅ 已完成 | `6b5c10c` |
 <!-- prompt-log:end -->
 
 ## 文档

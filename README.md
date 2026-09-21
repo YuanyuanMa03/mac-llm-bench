@@ -180,7 +180,7 @@ Auto-generated mirror of [PROMPT.md](PROMPT.md) — do not edit inside the marke
 | [prompt18](PROMPT.md#prompt18) | 2026-09-21 | ✅ done | `044566c` |
 | [prompt19](PROMPT.md#prompt19) | 2026-09-21 | ✅ done | `b0cfa33` |
 | [prompt20](PROMPT.md#prompt20) | 2026-09-21 | ✅ done | `510e69d` |
-| [prompt21](PROMPT.md#prompt21) | 2026-09-21 | ✅ done | （见下一提交） |
+| [prompt21](PROMPT.md#prompt21) | 2026-09-21 | ✅ done | `6b5c10c` |
 <!-- prompt-log:end -->
 
 ## Documentation
