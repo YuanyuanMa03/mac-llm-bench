@@ -22,6 +22,7 @@
 | [prompt18](#prompt18) | 2026-09-21 | 已完成 | `044566c` | [research/final_source_audit_20260921.md](research/final_source_audit_20260921.md)<br>[research/privacy_remediation_plan_20260921.md](research/privacy_remediation_plan_20260921.md)<br>[research/dataset_split_audit.md](research/dataset_split_audit.md)<br>[research/final_release_audit_20260921.md](research/final_release_audit_20260921.md)<br>[results/processed/context_actual_lengths.json](results/processed/context_actual_lengths.json)<br>[results/processed/data_order_audit.json](results/processed/data_order_audit.json)<br>[results/processed/effective_runtime_config.json](results/processed/effective_runtime_config.json)<br>[results/processed/final_validity_audit.csv](results/processed/final_validity_audit.csv)<br>[results/processed/git_provenance_audit.csv](results/processed/git_provenance_audit.csv)<br>[results/processed/failure_progress.json](results/processed/failure_progress.json)<br>[results/processed/hypothesis_rule_comparison.json](results/processed/hypothesis_rule_comparison.json)<br>[results/processed/figure8c_batch8_source.json](results/processed/figure8c_batch8_source.json)<br>[src/benchmark/environment.py](src/benchmark/environment.py)<br>[src/benchmark/supervisor.py](src/benchmark/supervisor.py)<br>[src/train/lora_smoke.py](src/train/lora_smoke.py)<br>[src/analysis/final_corrections.py](src/analysis/final_corrections.py)<br>[tests/test_final_corrections.py](tests/test_final_corrections.py)<br>[scripts/run_analysis.py](scripts/run_analysis.py)<br>[scripts/audit_reproducibility.py](scripts/audit_reproducibility.py) |
 | [prompt19](#prompt19) | 2026-09-21 | 已完成 | `b0cfa33` | [scripts/sanitize_release_history.py](scripts/sanitize_release_history.py)<br>[tests/test_sanitize_release_history.py](tests/test_sanitize_release_history.py)<br>[research/privacy_remediation_execution_20260921.md](research/privacy_remediation_execution_20260921.md) |
 | [prompt20](#prompt20) | 2026-09-21 | 已完成 | `510e69d` | [research/privacy_remediation_execution_20260921.md](research/privacy_remediation_execution_20260921.md) |
+| [prompt21](#prompt21) | 2026-09-21 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -1764,3 +1765,9 @@ research/final_release_audit_20260921.md
 # prompt20:
 
 删除，重建仓库。
+
+---
+
+# prompt21:
+
+我听你的。
