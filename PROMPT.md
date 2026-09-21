@@ -19,6 +19,7 @@
 | [prompt15](#prompt15) | 2026-09-11 | 已完成 | `8db9c13` 等 | Phase 0 审计 / preregistration / dataset freeze / measurement validation / literature（见 [research/](research/)） |
 | [prompt16](#prompt16) | 2026-09-12→16 | 已完成 | `877db81`→`b398076` | formal 矩阵战役 + D5 trainer 修复（axis4 闭环）+ D6/D7 + coverage 模块 + 8B/ctx2048 补齐 |
 | [prompt17](#prompt17) | 2026-09-16 | 已完成 | `5c8675d`→ | D8 停止决策 + experiment freeze（`freeze-04f90a840b8ea8fb`）+ 全量重建 + H1-H6 audit + 论文终稿 + claim ledger + reproducibility audit |
+| [prompt18](#prompt18) | 2026-09-21 | 进行中 | （进行中） | 待补 |
 
 状态含义：
 
@@ -951,3 +952,801 @@ vs
 # prompt14:
 
 按照你的计划继续。
+
+---
+
+# prompt18:
+
+从当前公开 `master` 的训练器、Supervisor、分析代码、raw evidence、preregistration 和你最新论文里已经出现的结论一起看，问题已经可以分得比较清楚了。**核心实验不需要推倒重跑，但现在不能只润色论文。代码、分析链和论文表述要同步修一次。**
+
+先处理一个与论文无关但优先级最高的问题：**公开仓库的 `raw_environment.txt` 里仍然包含未脱敏的设备 `provisioning_UDID`**。`src/benchmark/environment.py` 当前只脱敏 `serial_number`、`serial_number_system`、`platform_UUID`，没有覆盖 `provisioning_UDID`。建议先临时把仓库设为 private，处理完历史再重新公开。不要在公开 issue/commit message 里复制那个值。
+
+## 一、我目前能确认的完整问题清单
+
+下面“事实”都是我从当前公开 `master@aef0276f6cdbab1aac1bff754caeead7896621df` 源码或 raw evidence 直接确认的；“影响”是我的判断。
+
+| ID  | 级别        | 问题                                                                             | 源码证据                                                                                                         | 对现有实验影响                                                                        | 是否重跑                                            |
+| --- | --------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------- |
+| S01 | **P0**    | 公开仓库泄露 `provisioning_UDID`                                                     | `src/benchmark/environment.py` 的 `_REDACTED_HARDWARE_KEYS` 未包含它；公开 `raw_environment.txt` 可见                  | 隐私问题，不是科研问题                                                                    | 否                                               |
+| S02 | **P0**    | `shuffle: true` 实际没有在正式实验开始时 shuffle                                           | `lora_smoke.py:200-218`，只有遍历完 2048 samples 才 `rng.shuffle(order)`                                            | 论文不能说 seed 改变 data order                                                       | 否                                               |
+| S03 | **P0**    | “3 seeds = 独立数据顺序重复”不成立                                                        | prereg `:69-70` 与训练器行为矛盾；三个 ctx2048 seed 的 token 序列完全相同                                                      | seed 主要改变 LoRA/MLX 初始化；统计解释需降级                                                 | 否                                               |
+| S04 | **P0**    | formal dataset 的 train/val split 实现与 MANIFEST 描述不同                             | `build_formal_dataset.py` 先随机选 2080，随后按 `global_row` 排序，**再**取前2048/后32                                      | validation 是所选样本中 row index 最大的32条，不是 shuffled-order random validation         | 否，披露                                            |
+| S05 | **P0**    | ctx512/1024/2048 不是固定长度 workload，而是 maximum truncation cap                     | `lora_smoke.py` 为 `ids[:seq_len]`；b1 不 pad 到 cap                                                             | “2048 context”不能解释成每步2048 tokens                                               | 否                                               |
+| S06 | **P0**    | “512→2048 = 4× token count”不成立                                                 | raw 前20步平均实际 input ≈492 / 916 / 1215 tokens                                                                  | context scaling 的机制解释需要修改                                                      | 否                                               |
+| S07 | **P0**    | `[2048,4096)` 容易被读成精确训练阈值                                                      | 4096/8192 是单 seed synthetic probe；2048 evidence又有 formal/probe 两种                                            | 只能叫 observed bracket / first observed failure                                  | 否                                               |
+| S08 | **P0**    | batch=8 的失败阶段无法证明发生在训练 step                                                    | `lora_smoke.py:195-198` 在训练前先执行 validation；validation 使用同一 batch size；三个 b8 stdout 都是空文件                     | 只能证明 benchmark workload 在 first optimizer step 前失败，不能确定是 optimizer training 导致 | 可不重跑；若要强结论只需定向重跑 b8                             |
+| S09 | **P0**    | `run_analysis.py` 并不能生成论文全部结果                                                  | 它没有调用 `revision_round1.main()`；但论文 `main.tex:794-796` 输入 table7/8/9，这三表由 `revision_round1.py` 生成             | “one command regenerates every figure/table”当前为假                               | 否                                               |
+| S10 | **P0**    | scaling fit 存在两套实现、输入口径不一致                                                     | `summary.py` fit 使用每 cell `iloc[0]`；`figures.py:274/339` 使用 cell mean                                        | `key_numbers` 的 slope 与图的 slope 可不同；已有审计也承认 0.9986 vs 0.9966                   | 否                                               |
+| S11 | **P0/P1** | H2/H6 判定规则结果后修改                                                                | `hypothesis_audit.py` + D9                                                                                   | 不能把 v2 当 preregistered confirmatory result                                     | 否                                               |
+| S12 | **P0/P1** | Practical 从冻结的 `P1 ∧ P2` 改成最终 P2-only                                          | 你最新论文 D11                                                                                                    | final verdict 与 prereg definition 不一致                                          | 否，但必须并排报告 frozen 与 revised                      |
+| S13 | **P1**    | config 写 AdamW，实际训练是 Adam                                                      | config `optimizer.name=adamw`；`lora_smoke.py:189 optimizer = Adam(...)`                                      | 方法描述必须写 effective Adam                                                         | 否                                               |
+| S14 | **P1**    | `effective_config.json` 并不是 effective config                                   | `supervisor.py:206-207` 只是把输入 config dump 一份                                                                 | machine-readable provenance 会继续声称 AdamW/shuffle                                | 否                                               |
+| S15 | **P1**    | raw `training.optimizer` 同样来自声明配置而非实际运行                                        | `schema.py:89`                                                                                               | raw 元数据错误表示 effective optimizer                                                | 否                                               |
+| S16 | **P1**    | 所有 raw result 的 validity 默认被写成 false                                           | `supervisor.py:588` hardcode `protocol_valid=False, performance_valid=False`                                 | reviewer 打开正式 run 会看到“invalid”                                                 | 否                                               |
+| S17 | **P1**    | `monitoring_overhead_validated` raw 中仍硬编码 false                                | Supervisor 与 `measurement_validation.md` 的验证结论不一致                                                            | machine-readable metadata stale                                                | 否                                               |
+| S18 | **P1**    | 部分 formal run 在 dirty tree 上运行且没有保存 patch                                      | 一个 4B formal run明确显示 `pyproject.toml`、`uv.lock` modified；`git_patch=null`                                    | commit SHA 无法完全重建当时环境                                                          | 无法补造；披露                                         |
+| S19 | **P1**    | `uv.lock` artifact 没保存 sha256/size，且无 package snapshot                         | `supervisor.py` 中 lockfile ref 的 hash/size 为 null                                                            | 加剧 S18 的 provenance 缺口                                                         | 历史无法补；未来修                                       |
+| S20 | **P1**    | 当前 `reproducibility_audit.json` 自己是 `all_passed:false`                         | raw manifests / formal 3-seed check fail                                                                     | 公开 release 不应留下一个看起来“最终审计失败”的文件                                                | 否                                               |
+| S21 | **P1**    | reproducibility audit 的“三 seed 都必须 success”规则本身不适合 failure-inclusive benchmark | `audit_reproducibility.py` 对所有成功 group 要求 count=3                                                            | 4B BF16 boundary 本来就允许 failure，却被脚本判 FAIL                                      | 否                                               |
+| S22 | **P1**    | manifest 文档存在 stale/inconsistent 描述                                            | 较早 audit 写“5个缺 manifest”；后续 final-integrity 已改为 digest/finalize 机制                                           | 文档间有自相矛盾                                                                       | 否                                               |
+| S23 | **P1**    | failed runs 的 step timing 不是流式保存                                               | `step_timings.jsonl` 在训练循环全部结束后一次性写文件                                                                        | SIGKILL/timeout 时结构化 step data 丢失；14B 才会靠 stdout 人工恢复70步                       | 历史无法补；未来修                                       |
+| S24 | **P1**    | `successful_steps` 对 killed run 往往是 null，即使 stdout 已有 step                     | `training_metrics.json` 也是最后才写                                                                               | failure-inclusive 数据结构不完整                                                      | 用 processed parser补“observed_steps_from_stdout” |
+| S25 | **P1**    | `_swapin_per_step` 不是训练 step 的 paging rate                                     | `flatten.py:130-158` = whole-run `vm_stat after-before / successful_steps`                                   | 包含 load/validation/background 等                                                | 否，重命名                                           |
+| S26 | **P1**    | step timestamp 只有秒级                                                            | `lora_smoke.py:240`                                                                                          | D12 与 1Hz swap 对齐时，尤其 sub-second runs 有量化误差                                    | 不可回补；论文加 caveat                                 |
+| S27 | **P1**    | monitor timestamp 却是微秒级                                                        | `monitor.py:36`                                                                                              | 与 S26 的时间分辨率不对称                                                                | 未来改 monotonic_ns                                |
+| S28 | **P1**    | peak memory 的 scope 包含训练循环中的 periodic validation                               | reset peak 后进入循环，而 validation 在 step 50/100 等循环内部                                                            | `peak training memory` 严格说是 training-loop workload peak                        | 否，改定义                                           |
+| S29 | **P1/P2** | validation 标为 forward-only，却调用 `value_and_grad`                                | `lora_smoke.py:173-183`                                                                                      | MLX lazy 下不能直接断言一定算 backward，但源码语义不干净                                          | 代码修，历史加限制                                       |
+| S30 | **P1/P2** | batch8 pre-validation 也调用上述 `value_and_grad`                                   | 同 S08/S29                                                                                                    | 进一步使 b8 failure phase ambiguous                                                | 定向实验可解决                                         |
+| S31 | **P2**    | `unified_memory_bytes` collector 实际经常为 null                                    | environment.py 查 `physicalMemory`，raw 实际键是 `physical_memory`；也没实现 docstring 所说的 `sysctl hw.memsize` fallback | 论文16GiB没错，但不是 result.json 直接支持的字段                                              | 未来修                                             |
+| S32 | **P2**    | 若干 config 字段只是 schema 声明，没有真正被 trainer 执行                                      | gradient accumulation、scheduler、precision、checkpointing 等                                                    | 当前 ga=1、constant、false/null，所以当前实验影响极小；但“effective config”说法不准确                | 否                                               |
+| S33 | **P2**    | context helper 同 ctx 多 run 时机械取“最新一次”                                          | `context_boundary.py:77`                                                                                     | 当前数据未必改变结论，但规则不是 prereg selection rule                                         | 修代码                                             |
+| S34 | **P2**    | empirical p99 样本太小                                                             | 100步或20步里 p99 接近 max                                                                                         | 不能当稳定 tail percentile                                                          | 否                                               |
+| S35 | **P2**    | memory decomposition 的 weight component 是 stored/on-disk proxy                 | 最新论文的分解逻辑                                                                                                    | 不能把 residual 精确解释成 activation/allocator 等                                      | 否                                               |
+| S36 | **P2**    | `context → batch → scale` 被写得像普遍 binding order                                 | 三个轴不是统一 factorial experiment，且窗口不同                                                                           | 只能说 separate one-factor probes on tested bases                                 | 否                                               |
+| S37 | **P2**    | “4-bit QLoRA is the default answer”范围过大                                        | 实际只比较 full/LoRA/4-bit QLoRA                                                                                  | 没比较其他低内存策略                                                                     | 否                                               |
+| S38 | **P2**    | “first measurements/reference numbers” novelty 太宽                              | related-work wording                                                                                         | 容易被已有 Apple Silicon training 工作反驳                                              | 否                                               |
+| S39 | **P2**    | Figure 8(c) 最新 PDF 的可视内容与 caption/body 描述不一致                                   | caption 说三条 b8 swap ramp 至约20GiB，PDF panel visually 没显示完整轨迹                                                  | 这是当前最明显的图证据 bug                                                                | 必须重新生成图                                         |
+| S40 | **P2**    | Figure 11 narrow y-axis 放大 rank<2%的视觉差异                                        | 最新 PDF                                                                                                       | 视觉表达偏强                                                                         | 否                                               |
+| S41 | **P2**    | PDF metadata 与正文 title/author 版本曾不一致                                           | 最新 PDF metadata Author 为空                                                                                    | arXiv 元数据质量问题                                                                  | 否                                               |
+| S42 | **P2**    | 当前远程 `master` 不是最终 paper branch                                                | 远程只有 master，最新 paper 在你本地                                                                                    | arXiv code↔paper 无固定 revision                                                  | 提交前解决                                           |
+
+其中我最担心的不是 Adam，而是 **S02/S03、S05/S06、S08、S09/S10 和 S01**。Adam 已经很容易披露；前面这些如果 reviewer 真正 clone 代码，是可以自己算出来的。
+
+---
+
+# 二、哪些东西不需要重跑
+
+目前没有证据要求你重跑 118 个 experiments。
+
+核心 model-scale 结果、4-bit/BF16 allocator peak、8B 三次完成、4B BF16 machine-state contrast、14B boundary case 都可以保留。
+
+真正值得考虑的额外实验只有一个：
+
+> **batch8 的 3 次 instrumented post-hoc rerun。**
+
+目的不是改变结论，而是明确：
+
+```text
+model loading
+↓
+initial validation start
+↓
+initial validation end
+↓
+training step 1 start
+```
+
+究竟死在哪个 phase。
+
+如果你不想再跑，论文直接改成：
+
+> At micro-batch 8, all three benchmark runs terminated before completing the first optimizer step.
+
+不要写：
+
+> training at batch 8 caused...
+
+这样就合法。
+
+context 也不用重跑。直接从 raw 计算 actual token lengths，并把 `context length` 改成：
+
+> maximum sequence-length cap
+
+即可。
+
+---
+
+# 三、最重要的是让 Codex 不要“修旧数据”
+
+你的项目最容易被 Coding Agent 搞坏的地方，是它看到不一致之后自动去“修复” `results/raw`、preregistration、deviation history。
+
+**绝对不要允许。**
+
+下面这份 prompt 可以直接交给你本地 Codex。建议在你**最新论文所在本地分支**上执行，不要在远程旧 master 上做。
+
+```text id="0mjjyv"
+你正在维护仓库 mac-llm-bench。
+
+目标：
+对当前“最新论文分支”执行一次 evidence-preserving final correction，
+修复源码、分析链、论文表述和公开复现链中的已确认问题，
+但绝不能篡改历史实验事实。
+
+====================
+0. NON-NEGOTIABLE RULES
+====================
+
+1. 禁止修改任何历史实验原始证据：
+   - results/raw/** 中的研究数值、stdout/stderr、result.json、step timing、
+     system monitor 不得为了让结果更好看而修改。
+   - research/preregistration.md 作为冻结 preregistration，不得回改定义。
+   - 已登记 deviation 的历史正文不得静默重写。
+   - 禁止生成 fake/mock/placeholder benchmark data。
+   - 不得重新分类 SIGKILL 为 OOM，除非有直接 kernel evidence。
+
+2. 若因隐私泄漏必须制作公开脱敏版本：
+   - 不得声称脱敏版本是 byte-identical immutable raw；
+   - 原始 raw 应保存在 git 外的私有 archive；
+   - 创建 machine-readable release_sanitization_manifest，
+     记录 original_sha256、sanitized_sha256、被脱敏字段名，
+     但绝不记录敏感字段原值。
+   - 所有隐私历史重写必须单独提交/记录。
+   - 不要自动 force-push，先给我报告。
+
+3. 所有历史数据缺陷用以下方式处理：
+   historical raw truth
+       -> processed correction/overlay
+       -> deviation/limitation disclosure
+       -> paper wording
+   绝不能反向修改 raw 来匹配论文。
+
+4. 每完成一项修改必须：
+   - 给出文件路径与行号；
+   - 给出测试/检查命令；
+   - 粘贴真实输出；
+   - 若未执行，不得写“verified/passed”。
+
+5. 不要大规模重构。
+   采用最小修改原则。
+   不进行新的正式 benchmark，除非最后单独提出建议。
+
+====================
+1. FIRST: AUDIT BEFORE EDIT
+====================
+
+先不要改文件。
+
+检查当前分支、HEAD、git status，并确认它确实包含最新 paper/main.tex
+和最新 D12 analysis。
+
+建立：
+research/final_source_audit_20260921.md
+
+逐项核实下面 S01-S42。
+每项写：
+- status: confirmed / already_fixed / not_applicable / needs_evidence
+- exact evidence
+- affected files
+- affects existing numerical results? yes/no
+- requires rerun? yes/no
+- proposed minimal fix
+
+不得仅根据本 prompt 相信问题存在，必须从本地源码/raw 独立验证。
+
+====================
+2. P0 PRIVACY
+====================
+
+检查全仓库和 git 全历史是否存在：
+- provisioning_UDID
+- serial number
+- platform UUID
+- crashReporterKey
+- 用户 home path
+- 其它 device-specific persistent identifiers
+
+已知 environment.py 的 redaction allowlist/denylist 可能漏掉
+provisioning_UDID。
+
+修复 future collector：
+src/benchmark/environment.py
+
+新增 regression tests：
+- 所有 sensitive hardware keys 必须变为 [REDACTED]
+- nested dict/list 同样脱敏
+- raw fallback regex 也应覆盖
+- 不在测试 fixture 中写任何真实 identifier
+
+对于已经公开的历史：
+只生成 privacy remediation plan 和待执行命令。
+不要自动 force-push。
+
+====================
+3. TRAINER SEMANTICS
+====================
+
+检查并修复/记录：
+
+A. DATA ORDER
+当前 trainer 是否：
+order = list(range(len(samples)))
+只有 epoch wrap 时才 rng.shuffle(order)。
+
+如果是：
+- 不修改历史结果；
+- 明确历史 formal runs 使用 fixed initial sample order；
+- 计算每种 formal config 在 max_steps × batch_size 下是否曾触发 epoch wrap；
+- 输出 results/processed/data_order_audit.json；
+- 论文把 “seed affects data order” 删除；
+- 改成：
+  “Seeds vary MLX/LoRA initialization; the historical formal runs used a
+   fixed initial sample order because no run traversed the full 2,048-example
+   training set before termination/completion.”
+- future trainer 才可以按 dataset.shuffle 在 epoch 0 开始前 shuffle，
+  但必须设置 protocol version bump，不能用新 trainer 回填旧 experiments。
+
+B. DATASET SPLIT
+独立审计 scripts/build_formal_dataset.py。
+
+验证是否存在：
+randomly choose 2080 -> sort by global_row -> split first 2048/last32。
+
+如果确认：
+- 不重建 formal_sft_v1；
+- 输出 actual semantics；
+- 将 MANIFEST 的历史错误作为 deviation，而不是悄悄改成“原本就这么设计”；
+- 创建 research/dataset_split_audit.md；
+- 说明 validation set 是 selected 2080 中按 source row 排序后的 tail 32；
+- validation-loss results 只作 descriptive evidence。
+
+C. OPTIMIZER
+验证：
+config declares AdamW
+trainer instantiates mlx.optimizers.Adam
+
+历史数据：
+- effective optimizer = Adam
+- declared optimizer = adamw
+
+不要修改历史 config。
+新增 processed/effective runtime overlay，例如：
+results/processed/effective_runtime_config.csv/json
+字段：
+experiment_id
+optimizer_declared
+optimizer_effective
+shuffle_declared
+initial_shuffle_effective
+scheduler_declared
+scheduler_effective
+gradient_accumulation_effective
+source_evidence
+
+论文 Methods 必须写 actual Adam。
+deviation 表注明 schema/config mismatch。
+
+D. EFFECTIVE CONFIG
+不要继续把 input config 的 JSON copy 称为 runtime effective config。
+未来 supervisor 中：
+- declared_config.json / config.yaml
+- resolved_runtime_config.json
+语义分离。
+
+历史 run 用 processed overlay，不修改 raw。
+
+====================
+4. CONTEXT AXIS
+====================
+
+从 raw step_timings 重新计算每个 context cell 的真实：
+- input tokens per step = loss_bearing_tokens + 1
+- n
+- min
+- max
+- mean
+- median
+- p10/p90
+- fraction hitting sequence cap
+
+至少覆盖：
+ctx512
+ctx1024
+ctx2048
+
+输出：
+results/processed/context_actual_lengths.json
+paper/tables/table_context_actual_lengths.tex
+
+验证目前大致现象，但必须以本地 raw 重算为准：
+ctx512 ≈ mean 492
+ctx1024 ≈ mean 916
+ctx2048 ≈ mean 1215
+且 ctx2048 只有极少数 step 达到2048。
+
+然后全仓库搜索以下措辞：
+“4× tokens”
+“4x tokens”
+“context length 2048”
+“[2048,4096)”
+“context binds first”
+“context-length boundary”
+
+统一语义：
+
+sequence_length = maximum sequence-length cap，
+不是每个 step 的固定 token count。
+
+禁止把 ctx512→2048 解释成 actual token workload 精确4×。
+
+将 “[2048,4096)” 改成类似：
+“observed maximum-context bracket: the 2048-cap workload completed,
+whereas the first 4096-cap single-seed synthetic probe failed before
+the first optimizer step.”
+
+明确：
+- 4096/8192 为 synthetic single-seed probes；
+- 不是统计估计出的物理 threshold；
+- formal 与 probe evidence 不混写。
+
+====================
+5. BATCH-8 FAILURE PHASE
+====================
+
+核查 trainer execution order：
+
+model load
+-> LoRA setup
+-> initial validation
+-> reset peak
+-> training loop
+
+核查 formal-axis4-b8 的三个 stdout 是否为空，
+以及初始 validation 是否使用 micro_batch_size=8。
+
+如果确认：
+不得继续声称现有数据证明“training step at batch8 caused SIGKILL”。
+
+论文改成：
+“All three micro-batch-8 benchmark runs terminated before completing
+the first optimizer step.”
+
+并注明：
+“The historical instrumentation does not distinguish whether termination
+occurred during the initial validation workload or immediately before the
+training loop.”
+
+如果要保留更强的 batch-training claim：
+只提出 post-hoc instrumented rerun plan，不自动执行。
+
+future trainer:
+- 每 phase 开始前立即 flush phase marker；
+- validation_start / validation_end；
+- train_step_start；
+- structured phase field；
+- failed run 能确定 error_phase。
+
+====================
+6. FAILURE EVIDENCE STREAMING
+====================
+
+修 future trainer：
+
+当前 step_timings.jsonl 如果是 loop 完成后一次性写，
+改为每个 completed optimizer step：
+append one JSON line + flush。
+
+同时 training progress 写：
+training_progress.jsonl
+
+这样 SIGKILL/timeout 时保留 partial structured evidence。
+
+不要回填历史 raw。
+
+对历史失败 run：
+建立 parser：
+src/analysis/failure_progress.py
+
+仅从 immutable stdout 解析：
+observed_completed_steps
+observed_step_time_min/max
+last_observed_step
+source_artifact
+parse_status
+
+写：
+results/processed/failure_progress.json
+
+不得把 parsed value 写回 result.json。
+
+====================
+7. MEMORY/TIMING MEASUREMENT SEMANTICS
+====================
+
+A. PEAK MEMORY
+
+验证 reset_peak_memory 与 periodic validation 的相对位置。
+
+如果 peak counter 在训练 loop 前 reset，
+但 validation 在 loop 内执行，
+则论文统一称：
+“MLX allocator high-water mark during the measured training-loop workload,
+including scheduled validation evaluations”
+或其他精确措辞。
+
+不要无依据说 optimizer-step-only peak。
+
+B. VALIDATION
+
+当前 validation 若调用 value_and_grad：
+- future trainer 改为 default_loss forward-only path；
+- 增加 test，证明 validation 不更新参数/optimizer state；
+- 如果无法证明历史 lazy evaluation 是否 materialize gradients，
+  只写 limitation，不猜。
+
+C. SWAP-IN METRIC
+
+将：
+_swapin_per_step
+
+重命名/别名为：
+whole_run_swapin_mb_per_completed_step
+
+定义必须明确：
+(vm_stat_after.swapins - vm_stat_before.swapins)
+* page_size
+/ completed_steps
+
+论文/table 不叫 “per-step paging rate”。
+叫：
+“whole-run system swap-in normalized by completed training steps”
+或 “paging-intensity proxy”。
+
+D. TIMESTAMP
+
+future step records 同时保存：
+wall_utc with microseconds
+monotonic_ns_start
+monotonic_ns_end
+
+历史 D12 correlation：
+加入 caveat：
+historical step timestamps are second-resolution while system swap was
+sampled at ~1 Hz.
+
+重新检查 Spearman calculation：
+不得给予超过采样分辨率的时间因果解释。
+
+====================
+8. ANALYSIS PIPELINE SINGLE SOURCE OF TRUTH
+====================
+
+这是重点。
+
+目前检查：
+scripts/run_analysis.py
+src/analysis/summary.py
+src/analysis/figures.py
+src/analysis/revision_round1.py
+最新 D12 modules
+
+目标：
+ONE analysis entry point produces every:
+- processed JSON/CSV
+- figure
+- table
+- paper-generated quantitative artifact
+
+run_analysis.py 必须显式调用全部 generators。
+
+消除 duplicated scaling fit。
+
+目前检查 summary.py 是否用每 cell iloc[0] 拟合，
+figures.py 是否用 cell mean 拟合。
+
+若确认：
+建立一个唯一 helper，例如：
+build_scaling_series(...)
+fit_scaling_from_group_means(...)
+
+所有：
+key_numbers
+figures
+hypothesis audit
+tables
+CI
+都读取同一结果。
+
+严禁出现两个不同 slope 但都称同一 analysis。
+
+新增 test：
+同一 quantity 在 key_numbers / fit JSON / figure source / table source
+数值完全一致。
+
+====================
+9. PREREGISTRATION / HYPOTHESIS STATUS
+====================
+
+research/preregistration.md 不修改。
+
+H2/H6：
+保留 frozen/original v1 verdict，
+另列 revised post-hoc v2 verdict。
+
+输出 table：
+hypothesis
+frozen_rule
+frozen_verdict
+posthoc_rule
+posthoc_verdict
+reason_for_revision
+revision_date
+
+论文不能仅显示 Supported(v2) 而让人以为 preregistered rule 支持。
+
+Practical definition：
+原始 frozen：
+Trainable AND P1 AND P2
+
+后续 revised：
+Trainable AND P2
+
+论文必须并排展示：
+frozen_practical
+revised_operational_practical
+
+主 confirmatory statement 优先引用 frozen definition。
+revised definition 明确叫 post-hoc / sensitivity interpretation。
+
+====================
+10. VALIDITY / REPRODUCIBILITY AUDIT
+====================
+
+历史 raw 中 protocol_valid=false / performance_valid=false 不修改。
+
+新增：
+results/processed/final_validity_audit.csv
+
+字段至少：
+experiment_id
+raw_protocol_valid
+raw_performance_valid
+final_disposition
+included_in_aggregation
+evidence_grade
+manifest_verified
+deviation_ids
+reason
+auditor_version
+
+在 README 和 paper 说明：
+raw validity flags were supervisor-v0 placeholders;
+final analytical inclusion is represented by the immutable coverage/validity
+audit, not by rewriting historical raw.
+
+重写 scripts/audit_reproducibility.py 的语义：
+
+不要要求所有 formal groups 必须 3/3 success。
+
+根据 prereg matrix 与 deviation ledger 分为：
+- expected complete-success cells
+- boundary/failure cells
+- stopped cells
+- exploratory cells
+
+Audit success 的含义是：
+“observed evidence matches declared expected/disclosed disposition”
+而不是“训练必须成功”。
+
+最终 audit 应输出：
+overall_status = PASS / PASS_WITH_DECLARED_WARNINGS / FAIL
+
+manifest integrity warning 必须与实际机制一致。
+统一以下文档的 counts/wording：
+research/reproducibility_audit.*
+coverage_report
+deviations
+paper appendix
+README
+
+删除 stale contradiction。
+
+====================
+11. GIT PROVENANCE
+====================
+
+扫描所有 aggregation-included runs：
+- git_commit
+- git_dirty
+- git status paths
+
+生成：
+results/processed/git_provenance_audit.csv
+
+明确：
+clean
+dirty_nonexecution_artifact_only
+dirty_dependency_files
+dirty_source_code
+unknown
+
+不得把所有 dirty 简单视作同等级。
+
+对于 dirty pyproject.toml / uv.lock 且 git_patch=null：
+论文限制中说明 exact dirty lockfile state was not preserved。
+
+未来 supervisor：
+dirty=true 时自动保存：
+git_status.txt
+git_diff.patch
+git_diff_cached.patch
+uv.lock SHA256
+pyproject.toml SHA256
+
+====================
+12. HARDWARE COLLECTOR
+====================
+
+修 environment.py：
+
+- 正确解析 system_profiler 真实键；
+- 优先使用 sysctl hw.memsize 获得 bytes；
+- system_profiler 只作辅助 metadata；
+- GPU cores 如果无验证来源继续 null；
+- 增加 fixture tests。
+
+不要回填历史 raw unified_memory_bytes。
+历史论文硬件值注明来源。
+
+====================
+13. PAPER CLAIM CORRECTIONS
+====================
+
+对最新 paper/main.tex 全文做 claim audit。
+
+必须处理：
+
+A. title/abstract
+- 不说 universal “default answer”
+- 8B 限定为 tested machine/software/window
+- context 改 maximum-sequence-length cap
+- seed 不说改变 data order
+
+B. novelty
+将宽泛：
+“first measurements”
+收窄为：
+failure-inclusive feasibility/machine-state characterization on a single
+16-GiB Apple M4 under the pinned MLX stack.
+
+C. axis order
+不要：
+“context, then batch, then scale” 作为普适结论。
+
+改成：
+“In separate one-factor probes around the tested base configurations,
+the first observed failures occurred along context-cap and micro-batch
+axes before the tested model-scale ceiling.”
+
+D. memory decomposition
+stored/on-disk weight bytes 必须叫 proxy。
+residual 不归因到具体 mechanism。
+
+E. p99
+叫 empirical p99；
+小样本同时报告 p95/max 或明确近似 sample maximum。
+
+F. 8B
+固定措辞：
+“completed all three preregistered seeds within one favorable observed
+machine-state window.”
+
+G. 14B
+不得说 impossible/OOM/stable。
+保持 boundary case。
+
+H. Figure 8(c)
+从真实 raw system_monitor 重生成。
+自动测试：
+- 三个 b8 trajectories 都被加载；
+- 数据 max 与 caption 中的 max 一致；
+- y limits 覆盖所有 plotted values；
+- figure source data 输出 JSON/CSV；
+- caption 数字从 source data 自动生成，不手写。
+
+I. Figure 11
+避免窄轴夸大 <2% rank effect；
+优先用相对变化或显式 annotation。
+
+J. metadata
+PDF title/author 与正文完全一致。
+
+====================
+14. REGENERATION CONTRACT
+====================
+
+完成后必须做到：
+
+1. 从 clean generated-output state 重新运行：
+   uv run python scripts/run_analysis.py
+
+2. 再运行：
+   uv run python scripts/audit_reproducibility.py
+   uv run python -m pytest tests/ -q
+
+3. 编译 paper。
+
+4. 验证：
+   - 无 undefined refs/citations
+   - 无 stale generated tables
+   - 所有论文 quantitative claims 能回溯 processed source
+   - processed source 能回溯 raw experiment IDs
+   - 不存在 paper-only handwritten quantitative result
+   - privacy scan 为 0 sensitive identifiers
+   - raw research evidence 没有被静默修改
+
+5. 输出：
+research/final_release_audit_20260921.md
+
+其中列出：
+- changed files
+- every issue S01-S42 status
+- commands actually run
+- verbatim PASS/FAIL output
+- remaining limitations
+- whether any numerical headline changed
+- whether any rerun is still recommended
+
+====================
+15. COMMIT STRATEGY
+====================
+
+不要一次巨型 commit。
+
+建议本地拆成：
+1. audit-only
+2. privacy/future collectors
+3. historical semantic overlays
+4. analysis single-source-of-truth
+5. paper claim corrections
+6. figure/table regeneration
+7. final audit/release
+
+在最终报告前不要 push、不要 force-push、不要创建 release/tag。
+
+最后停下来向我汇报，不自动提交 arXiv。
+```
+
+## 四、我建议 Codex 修改时采用的判断原则
+
+最关键的是把问题分成三种，不要让 Codex 混在一起：
+
+**历史实验事实错误**不能“修数据”，只能修解释。例如 shuffle、Adam、dataset split、second-resolution timestamps、dirty runs，这些已经发生了，只能建立 correction/overlay。
+
+**分析代码错误**可以重新从 raw 计算。例如 context actual token lengths、scaling fit 单一来源、Figure 8、audit semantics、table generation，这些应该真正修掉并全部重生。
+
+**未来采集器缺陷**可以改源码，但不能让新源码 retroactively 改变旧 experiment 的含义。例如 step streaming、microsecond timestamps、git patch、phase markers、initial shuffle、hardware collection。
+
+这三层分开以后，你这篇文章其实会更强，因为最后能够明确告诉 reviewer：
+
+> historical evidence was preserved; implementation mismatches were not retroactively corrected; all corrections were applied at the analysis and reporting layers with machine-readable provenance.
+
+---
+
+## 五、我会怎么决定是否重新实验
+
+在 Codex 完成上述修复后，先看 final audit。
+
+如果 headline 数字仍然是：
+
+```text id="6rkdv2"
+4-bit memory ratio ≈ 0.54–0.73×
+8B = 3/3 completed in one favorable window
+14B = boundary / not sustained formally
+4B BF16 = strong machine-state contrast
+```
+
+那就**不要再重跑大矩阵**。
+
+最多补一个很小的 post-hoc batch8 phase experiment，然后明确标为 post-hoc validation，不纳入 preregistered main matrix。
+
+真正需要优先解决的是 **S01 的公开隐私泄漏**。其次再让 Codex 做 S02–S42 的 audit/fix。完成这轮后，这个仓库才适合固定 `arxiv-v1` tag。
