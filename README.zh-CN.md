@@ -4,6 +4,11 @@
 
 在消费级 16 GB 统一内存 Apple Silicon Mac 上，对大语言模型微调（full / LoRA / QLoRA）进行可复现基准测试的研究仓库，基于 [MLX](https://ml-explore.github.io/mlx/) 与 MLX-LM 构建。
 
+> **隐私暂停（2026-09-21）**：历史 `raw_environment.txt` 对象含有未脱敏的
+> 持久设备标识。在完成
+> [research/privacy_remediation_plan_20260921.md](research/privacy_remediation_plan_20260921.md)
+> 前应限制公开访问；不得把标识值复制进 issue 或 commit。
+
 **实验已于 2026-09-15 冻结（`freeze-04f90a840b8ea8fb`）**：118 个 finalized 原始实验，预注册 formal 矩阵执行至声明的停止点（偏离 D1–D8 全部登记于 [research/deviations.md](research/deviations.md)）；论文中每个数字都经 [research/claim_ledger.csv](research/claim_ledger.csv) 追溯到原始记录。
 
 ## 研究问题
@@ -23,14 +28,14 @@ Loadable（可加载）→ Trainable（可训练）→ Practical（实用）→ 
 - **最高可复现训练配置**：8B 4-bit QLoRA（3/3 formal seeds）；14B 4-bit 作为 *system-state-dependent boundary case*（D8）报告，不作为已完成的 formal 格。
 - 4-bit QLoRA 在全部配对规模上将峰值内存降至 BF16 的 0.54–0.73×，步时比值落在预注册 ±25% 等价边距内。
 - 内存随模型规模**次线性**增长（log-log slope 0.57，固定开销稀释）；步时近似线性（slope 1.00）。
-- Context 是首要约束：可训练边界 ∈ [2048, 4096)；micro-batch 边界 ∈ [4, 8)，且 batch 放大单调降低吞吐。
+- 在相互独立的单因素探针中，2048 最大序列长度 cap 的 workload 完成，而首个 4096-cap 单 seed synthetic probe 失败；micro-batch 4 完成，batch 8 则在完成首个 optimizer step 前终止。
 - 可训练性是模型×系统驻留状态的联合属性（D1/D3/D7/D8 案例链）。
 
 ## 最小复现
 
 ```bash
 uv sync                                   # 锁定环境（Python 3.13, mlx 0.32.2）
-uv run python -m pytest tests/ -q         # 48 项测试
+uv run python -m pytest tests/ -q
 uv run python scripts/run_analysis.py     # 从冻结 raw 一键重建全部派生产物
 # 论文 LaTeX 源码有意不入库：生成的表格/图表写入 git-ignored 的
 # paper/submission/ 供维护者本地编译；论文经 arXiv 发布
@@ -46,9 +51,9 @@ uv run python scripts/run_analysis.py     # 从冻结 raw 一键重建全部派�
 | 示例配置 | ✅ 完成 — [configs/experiment.example.yaml](configs/experiment.example.yaml) |
 | Python 环境（uv 锁定） | ✅ 完成并验证 — [pyproject.toml](pyproject.toml) + [uv.lock](uv.lock) |
 | Qwen3 模型下载 | ✅ 完成 — 4 个仓库，已按字节校验（见[模型](#模型)） |
-| Experiment Supervisor | ✅ v0 已实现 — 8/8 测试通过，3 个验证运行见 [results/validation/supervisor-v0/](results/validation/supervisor-v0) |
-| 训练运行 | 🔄 探针：4bit QLoRA 规模线 4B→8B→14B 全部可训练（14B 峰值 GPU 8.79 GB = 预算 55%）；4B-4bit QLoRA 的 context 边界：ctx≤2048 可训练（swap 颠簸，53.9 s/步），ctx=4096 在第 1 步前被杀——Trainable 上界 ∈ [2048, 4096)；均为 probe 级证据，pre-registration 待冻结 |
-| Feasibility map、图表、论文 | ⬜ 未开始 |
+| Experiment Supervisor | ✅ future protocol v0.2 已修复 privacy/phase/streaming/provenance 采集；历史 v0 raw 保持不变 |
+| 冻结实验 | ✅ 118 个 finalized runs；coverage 118=118；失败同样保留 |
+| Feasibility map、图表、论文 | ✅ 一键重建；复现审计为 `PASS_WITH_DECLARED_WARNINGS` |
 
 ## 硬件
 

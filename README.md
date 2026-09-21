@@ -4,6 +4,12 @@ English | [中文](README.zh-CN.md)
 
 Reproducible benchmarks for fine-tuning large language models (full / LoRA / QLoRA) on a consumer 16 GB unified-memory Apple Silicon Mac, built on [MLX](https://ml-explore.github.io/mlx/) and MLX-LM.
 
+> **Privacy hold (2026-09-21):** historical `raw_environment.txt` objects contain
+> an unredacted persistent device identifier. Restrict public access until the
+> reviewed history-remediation plan in
+> [research/privacy_remediation_plan_20260921.md](research/privacy_remediation_plan_20260921.md)
+> is completed. Do not copy identifier values into issues or commits.
+
 **Experiment frozen 2026-09-15 (`freeze-04f90a840b8ea8fb`)**: 118 finalized raw experiments, preregistered formal matrix completed to its declared stopping points (deviations D1–D8 logged in [research/deviations.md](research/deviations.md)); every number in the paper traces to raw records via [research/claim_ledger.csv](research/claim_ledger.csv).
 
 ## Research Questions
@@ -23,7 +29,7 @@ Loadable → Trainable → Practical → Efficient
 - **Highest reproducibly trainable configuration**: 8B 4-bit QLoRA (3/3 formal seeds); 14B 4-bit is reported as a *system-state-dependent boundary case* (D8), not a completed formal cell.
 - 4-bit QLoRA cuts peak memory to 0.54–0.73× of BF16 at all paired scales, with step-time ratios inside the preregistered ±25% equivalence margin.
 - Memory scales **sublinearly** with model size (log-log slope 0.57) — fixed-overhead dilution; step time scales approximately linearly (slope 1.00).
-- Context is the binding constraint: trainable boundary ∈ [2048, 4096); micro-batch boundary ∈ [4, 8) with monotonically negative throughput returns.
+- In separate one-factor probes, the 2048 maximum-sequence-length-cap workload completed before the first 4096-cap single-seed synthetic-probe failure; micro-batch 4 completed before batch 8 terminated without a completed optimizer step.
 - Trainability is a joint property of model and system swap-residency state (D1/D3/D7/D8 case studies).
 
 ## Status
@@ -34,7 +40,7 @@ Loadable → Trainable → Practical → Efficient
 | Preregistration | ✅ frozen — [research/preregistration.md](research/preregistration.md) |
 | Formal benchmark | ✅ **frozen** — 118 finalized runs; coverage reconciliation 118=118 ([results/processed/coverage_report.json](results/processed/coverage_report.json)); [research/experiment_freeze.md](research/experiment_freeze.md) |
 | Deviation ledger | ✅ D1–D8 logged — [research/deviations.md](research/deviations.md) |
-| Analysis pipeline | ✅ one-command rebuild — `uv run python scripts/run_analysis.py` (tables/figures/key numbers/coverage/hypothesis audit) |
+| Analysis pipeline | ✅ one-command rebuild — `uv run python scripts/run_analysis.py` (all processed overlays/tables/figures/key numbers/coverage/hypothesis audit) |
 | Hypothesis audit (H1–H6) | ✅ [results/processed/hypothesis_audit.json](results/processed/hypothesis_audit.json) |
 | Paper | ✅ 15 pp final draft; **LaTeX source intentionally not tracked here** — this repo hosts the experiment process only; the paper is deposited on arXiv (link to follow after upload) |
 | Reproducibility audit | ✅ [research/reproducibility_audit.md](research/reproducibility_audit.md) |
@@ -51,7 +57,7 @@ uv sync
 uv run python scripts/run_analysis.py
 
 # 3. Verify the software layer
-uv run python -m pytest tests/ -q          # 48 tests
+uv run python -m pytest tests/ -q
 
 # 4. Recompute the audits
 uv run python scripts/audit_reproducibility.py

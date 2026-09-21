@@ -1,4 +1,4 @@
-# Reproducibility Audit — 2026-09-16（freeze-04f90a840b8ea8fb 之后）
+# Reproducibility Audit — 2026-09-21 final correction
 
 > 审计对象：冻结数据集（`research/experiment_freeze.md`）派生的全部
 > processed 产物、图表、论文定量声明与引用。程序化检查由
@@ -10,21 +10,19 @@
 | 检查 | 结果 | 说明 |
 | --- | --- | --- |
 | Coverage reconciliation | **PASS** | raw 118 == processed 118；每行机器可读 disposition（`coverage_report.json`，`reconciliation_ok=true`） |
-| Aggregated-run manifests | **PASS** | 46/46 `aggregation_included` run 的 SHA-256 manifest 复算通过 |
-| All-raw manifests | **WARNING** | 113/118 通过；5 个 run 无 manifest（timeout/interrupted 类的 supervisor finalize 缺陷，deviation **D6**；全部处于 taxonomy/probe 处置，零聚合影响；按协议 §7 不事后补写） |
-| Formal 3-seed completeness | **WARNING** | 15/16 组 3/3 success。`formal-axis1-4b-bf16-lora` 1/3（**D1**：1 success @零驻留 + 2 interrupted @高驻留，边界观测）；`formal-axis1-14b-4bit-qlora` 0/3（**D8**：probe success + interrupt + timeout，boundary case study——审计脚本的"3 seeds"规则不携带 D1/D8 语境，见 deviation ledger） |
+| All-raw manifests | **WARNING** | 112/118 digest 复算通过；6 个 run 的 manifest 在位但与 finalized 后日志不匹配（D6 及其勘误；零聚合影响；不回写 raw） |
+| Formal disposition | **PASS** | 19/19 formal groups 均有机器可读 success/failure/stopped disposition；failure-inclusive benchmark 不再要求每组必须 3/3 success |
 | Dataset SHA-256 | **PASS** | formal_sft_v1 两个文件 hash 一致（n_files=2） |
 | Model revisions | **PASS** | raw results 与 models/MANIFEST.md 无冲突 |
 | key_numbers traceability | **PASS** | 全部关键数字可回溯 raw |
 | Claim ledger | **PASS** | 15 条定量 claim 全部展开到 raw experiment IDs（`research/claim_ledger.csv`，claim → processed source → raw IDs → freeze ID） |
 | Citations | **PASS** | main.tex 引用 14 = references.bib 14，全部在 literature_ledger（16 行含验证日期与引用理由）；无 uncited bib 条目 |
-| LaTeX compile | **PASS** | pdflatex+bibtex 三轮：8 页，0 error，0 undefined reference |
-| Tests | **PASS** | `uv run python -m pytest tests/ -q`：48 passed（含 D5 padding 14 项回归） |
+| Reproducibility script | **PASS WITH DECLARED WARNINGS** | `overall_status=PASS_WITH_DECLARED_WARNINGS`；唯一 warning 为上述 6 个 manifest digest |
 
 ## 2. 图表输入与生成链
 
-- 全部 figures（fig1–fig8）/ tables（table1–table6）/ key_numbers /
-  coverage / hypothesis_audit 由 `scripts/run_analysis.py` 从冻结 raw
+- 全部 figures（fig1–fig12）/ tables / key_numbers / coverage /
+  hypothesis audit / final semantic overlays 由 `scripts/run_analysis.py` 从冻结 raw
   一键重生成（generator commit `5c8675d` 之后），旧 processed 已删除
   重建（非增量）。
 - 论文 PDF 只 include `results/figures/*.pdf` 与 `paper/tables/*.tex`
@@ -34,8 +32,9 @@
 ## 3. Git / 环境溯源
 
 - Freeze 点 commit：`dcf84db`（数据）/ 冻结文档提交 `5c8675d`。
-- 每个 raw run 记录 git commit + dirty 状态（80/81 历史 formal run 为
-  dirty，supervisor v0 未存 patch artifact——见 §4 WARNING）。
+- 46 个 aggregation-included run 的分类为：9 clean、33
+  dirty_dependency_files、3 dirty_nonexecution_artifact_only、1
+  dirty_source_code；supervisor v0 未存 patch artifact（见 §4 WARNING）。
 - 软件版本锁定：uv lock（Python 3.13.11 / mlx 0.32.2 / mlx-lm 0.31.3）。
 
 ## 4. Unresolved limitations（如实列出）
@@ -44,11 +43,11 @@
    `git_patch` 恒 null（schema 要求 dirty run 附 patch 未实现）。
    缓解：trainer 演进链由 D5 commit 边界显式声明；影响评估有限但
    未消除。**WARNING，未解决**。
-2. **全部时间类 formal 数据为 Tier-B**（D4：>50 MB swap-in/步）——绝对
-   步时不可跨窗口比较；论文只报告窗口内比值。**已声明限制**。
+2. **Paging 指标是 whole-run proxy**：before/after swap-in 增量除以完成步数，
+   含 load/validation/background，不是 optimizer-step paging rate。**已声明限制**。
 3. **14B 为 boundary case 而非 3-seed formal cell**（D8 停止决策）。
    **已声明决策**，见 `paper` §Boundary Behavior at 14B。
-4. **5 个 legacy run manifest 缺失**（D6）。**已登记，不可修复**
+4. **6 个 raw manifest digest warning**（D6 及勘误）。**已登记，不回写**
    （不可变原则），零聚合影响。
 5. **staging partials ×3**（未 finalize，含 2026-09-15 14B s123 被杀
    partial）留磁盘未提交，不作为正式 result。**按协议处理**。
