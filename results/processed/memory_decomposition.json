@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0.0",
- "generated_utc": "2026-09-21T05:58:00.770765+00:00",
- "generator_commit": "2972dfc",
+ "generated_utc": "2026-09-21T06:20:26.694521+00:00",
+ "generator_commit": "f63ecff",
  "analysis_kind": "post-hoc exploratory (deviations.md D12)",
  "accounting_assumptions": [
   "weights resident = safetensors bytes on disk (models/MANIFEST.md, Hub-verified; 4-bit models stay quantized in the allocator)",

@@ -421,7 +421,7 @@ def table4(df: pd.DataFrame) -> None:
 
 
 def _swapin_range(sub: pd.DataFrame) -> str:
-    """组内 swap-in MB/step 的 min–max（D4 口径，half-up 取整）。"""
+    """组内 whole-run swap-in/completed-step proxy 的 min–max。"""
     import math
     if "_swapin_per_step" not in sub.columns:
         return "--"
@@ -440,13 +440,14 @@ def table5(df: pd.DataFrame) -> None:
         "\\begin{table*}[t]\\centering",
         "\\caption{Batch axis (Qwen3-4B-4bit QLoRA, ctx512, r8, 20 steps, "
         "seeds \\{42,123,2026\\}, all cells rerun on the D5-fixed trainer in "
-        "one window; mean$\\pm$SD; swap-in is the D4 paging-intensity "
+        "one window; mean$\\pm$SD; paging is the D4 whole-run swap-in "
+        "delta normalized by completed training steps "
         "measure, all cells Tier-B; batch-8 kills recorded zero completed "
         "steps with empty stdout).}",
         "\\label{tab:batch}", "\\footnotesize\\setlength{\\tabcolsep}{2.8pt}",
         "\\begin{tabular}{rrrrrl}", "\\toprule",
         "Batch & Median step (s) & Tok/s & Peak mem (GiB) & "
-        "Swap-in (MB/step) & Status\\\\", "\\midrule",
+        "Paging proxy (MB/completed step) & Status\\\\", "\\midrule",
     ]
     for b, g in ((1, "formal-axis4-b1"), (2, "formal-axis4-b2"),
                  (4, "formal-axis4-b4")):
@@ -528,7 +529,7 @@ def _latex_escape(s: str) -> str:
 
 
 def table11(df: pd.DataFrame) -> None:
-    """H1-H6 预注册假设、冻结判定规则与审计结论。
+    """H1-H6 假设与当前审计计算；冻结/事后对照另表生成。
 
     数据源 results/processed/hypothesis_audit.json（由 hypothesis_audit.py
     从 raw 生成）；正文各处 "audit Hx" 均指向本表，规则原文不手改。
@@ -541,9 +542,8 @@ def table11(df: pd.DataFrame) -> None:
                    "insufficient": "Insufficient"}
     lines = [
         "\\begin{table*}[t]\\centering",
-        "\\caption{Preregistered hypotheses H1--H6 with their frozen "
-        "decision rules and audit verdicts (generated from the hypothesis "
-        "audit of the raw results). $^{\\dagger}$v2 rule: revised after "
+        "\\caption{Hypotheses H1--H6 with the current audit calculations "
+        "(generated from raw-derived processed data). $^{\\dagger}$v2 rule: revised after "
         "results under D9 (App.~\\ref{app:deviations}), with the "
         "preregistration-era v1 rule and counterfactual verdict disclosed "
         "there. ``audit Hx'' mentions throughout the text refer to this "
@@ -552,7 +552,7 @@ def table11(df: pd.DataFrame) -> None:
         "6, and the verdict is unchanged either way.}",
         "\\label{tab:hyp}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
         "\\begin{tabular}{@{}lp{4.0cm}p{5.8cm}rp{2.5cm}@{}}", "\\toprule",
-        "ID & Hypothesis (frozen) & Decision rule & $n$ & Verdict\\\\",
+        "ID & Hypothesis & Audit rule & $n$ & Verdict\\\\",
         "\\midrule",
     ]
     for hid, v in audit["hypotheses"].items():
@@ -647,15 +647,15 @@ def table13(df: pd.DataFrame) -> None:
               ("2048", "formal-axis2-ctx2048")]
     lines = [
         "\\begin{table}[t]\\centering",
-        "\\caption{Context axis (Qwen3-4B-4bit QLoRA, 20 steps; ctx512 "
+        "\\caption{Maximum sequence-length-cap axis (Qwen3-4B-4bit QLoRA, 20 steps; cap512 "
         "reuses the axis-1 100-step cell per preregistration; mean$\\pm$SD "
         "over completed seeds; the ctx2048 s123 rerun completed in a "
         "lower-residency window than its peers, Sec.~\\ref{sec:ctx}). "
-        "ctx4096/8192 probes were SIGKILLed before any step and have no "
+        "cap4096/8192 probes were SIGKILLed before any step and have no "
         "measurable medians. The non-monotonic medians (23.98 vs 20.66) reflect opposite window-state biases, not a context cliff (Sec.~\\ref{sec:ctx}).}",
         "\\label{tab:ctx}", "\\footnotesize\\setlength{\\tabcolsep}{3pt}",
         "\\begin{tabular}{lrrr}", "\\toprule",
-        "ctx & Med step (s) & Peak (GiB) & Seeds\\\\", "\\midrule",
+        "Cap & Med step (s) & Peak (GiB) & Seeds\\\\", "\\midrule",
     ]
     for label, g in groups:
         sub = df[(df["experiment.comparison_group_id"] == g)

@@ -218,6 +218,35 @@ def hypothesis_rule_comparison() -> dict:
     }
 
 
+def _write_rule_comparison_table(payload: dict) -> None:
+    lines = [
+        r"\begin{table*}[t]\centering",
+        r"\caption{Frozen confirmatory rules versus post-hoc sensitivity rules. The latter are reported for interpretation and do not replace the preregistered verdicts.}",
+        r"\label{tab:rule-comparison}",
+        r"\footnotesize\setlength{\tabcolsep}{3pt}",
+        r"\begin{tabular}{@{}lp{4.4cm}lp{5.4cm}l@{}}",
+        r"\toprule",
+        r"Hyp. & Frozen rule & Frozen verdict & Post-hoc rule & Post-hoc verdict\\",
+        r"\midrule",
+    ]
+    for row in payload["rule_comparison"]:
+        frozen = row["frozen_rule"].replace("AND", r"$\wedge$")
+        posthoc = (row["posthoc_rule"].replace("<=", r"$\le$")
+                   .replace(">=", r"$\ge$").replace("->", r"$\to$"))
+        lines.append(f"{row['hypothesis']} & {frozen} & "
+                     f"{row['frozen_verdict'].replace('_', ' ')} & "
+                     f"{posthoc} & {row['posthoc_verdict'].replace('_', ' ')}\\\\")
+    practical = payload["practical_comparison"]
+    lines += [r"\midrule",
+              "Practical & " + practical["frozen_practical"].replace(
+                  "AND", r"$\wedge$") + " & confirmatory & " +
+              practical["revised_operational_practical"].replace(
+                  "AND", r"$\wedge$") + " (D11) & post-hoc operational\\\\",
+              r"\bottomrule", r"\end{tabular}", r"\end{table*}", ""]
+    (TABLES / "table17_rule_comparison.tex").write_text(
+        "\n".join(lines), encoding="utf-8")
+
+
 def _write_context_table(payload: dict) -> None:
     lines = [
         r"\begin{table}[t]\centering",
@@ -257,10 +286,11 @@ def main() -> int:
                    ensure_ascii=False, default=str) + "\n", encoding="utf-8")
     git_provenance_audit(df).to_csv(PROC / "git_provenance_audit.csv", index=False)
     final_validity_audit(df).to_csv(PROC / "final_validity_audit.csv", index=False)
+    comparison = hypothesis_rule_comparison()
     (PROC / "hypothesis_rule_comparison.json").write_text(
-        json.dumps(hypothesis_rule_comparison(), indent=2, ensure_ascii=False) + "\n",
+        json.dumps(comparison, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")
+    _write_rule_comparison_table(comparison)
     print("[final-corrections] data order, context lengths, runtime, validity, "
           "git provenance, and hypothesis overlays generated")
     return 0
-

@@ -14,7 +14,8 @@ and existing processed JSONs. Outputs:
 Tier rule (D4, frozen 2026-09-12 04:40):
   swapins_delta_per_step = (vm_stat swapins after - before) * page_size
                            / successful_steps
-  Tier-A < 50 MB/step (compute-bound); Tier-B otherwise.
+  This is a whole-run paging-intensity proxy, not per-step attribution.
+  Tier-A < 50 MB/completed step (compute-bound); Tier-B otherwise.
 """
 
 from __future__ import annotations
@@ -106,9 +107,10 @@ def tier_table() -> dict:
             if math.isinf(g[k]):
                 g[k] = None
     out = {
-        "rule": "D4 frozen 2026-09-12: swapins_delta_per_step "
+        "rule": "D4 frozen 2026-09-12: whole-run swap-in delta "
                 "= (vm_stat swapins delta) * page_size / successful_steps; "
-                "Tier-A < 50 MB/step",
+                "system-wide proxy, not per-step attribution; "
+                "Tier-A < 50 MB/completed step",
         "n_runs_with_paging": len(rows),
         "per_run": rows,
         "per_group": per_group,
@@ -127,7 +129,9 @@ def tier_table() -> dict:
         "\\caption{Per-group paging stratification for the aggregated "
         "groups (D4 rule, computed from the frozen \\texttt{vm\\_stat} "
         "snapshots in each raw record): "
-        "Tier-A $=$ swap-in $<$50\\,MB/step (compute-bound), Tier-B otherwise. "
+        "Tier-A $=$ whole-run swap-in $<$50\\,MB/completed step "
+        "(compute-bound), Tier-B otherwise. This system-wide proxy is not "
+        "per-step attribution. "
         "Residency is the pre-run system swap level. The axis1b 300-step "
         "duplicate-retention group (D2) is aggregated in the 46 "
         "(Sec.~\\ref{sec:failures}) but outside these axis strata. Group prefixes "
@@ -135,7 +139,7 @@ def tier_table() -> dict:
         "rank, axis-4 micro-batch.}",
         "\\label{tab:tier}", "\\footnotesize\\setlength{\\tabcolsep}{4pt}",
         "\\begin{tabular}{lrrrrr}", "\\toprule",
-        "Group & Runs & Tier-A & Tier-B & Swap-in (MB/step) & "
+        "Group & Runs & Tier-A & Tier-B & Paging proxy (MB/completed step) & "
         "Residency (GiB)\\\\", "\\midrule",
     ]
     def _esc(s: str) -> str:

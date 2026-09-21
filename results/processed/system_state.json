@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0.0",
- "generated_utc": "2026-09-21T05:58:00.078222+00:00",
- "generator_commit": "2972dfc",
+ "generated_utc": "2026-09-21T06:20:25.972562+00:00",
+ "generator_commit": "f63ecff",
  "analysis_kind": "post-hoc exploratory (deviations.md D12)",
  "monitor_coverage": {
   "runs_total": 118,

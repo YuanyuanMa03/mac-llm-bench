@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-21T05:58:00+00:00",
-  "generator_commit": "2972dfc2a022d7975bc94f0166fdc0a44c483592",
+  "generated_utc": "2026-09-21T06:20:26+00:00",
+  "generator_commit": "f63ecff40edd095cc12687918dc5461bfb9df6cc",
   "rule_status": "H1/H3/H4/H5 frozen 2026-09-15; H2/H6 v2 are post-hoc revisions disclosed under D9",
   "hypotheses": {
     "H1": {

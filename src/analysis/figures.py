@@ -270,7 +270,7 @@ def fig2_feasibility(df: pd.DataFrame) -> None:
     ax.set_xlim(-0.5, len(ctxs) - 0.5)
     ax.set_ylim(0.5, -0.5)
     strip(ax)
-    ax.set_title("Context axis (4B-4bit)", fontsize=9.5)
+    ax.set_title("Maximum sequence-length cap (4B-4bit)", fontsize=9.5)
     _save(fig, "fig2_feasibility_map")
 
 
@@ -458,14 +458,14 @@ def fig5_context_scaling(df: pd.DataFrame) -> None:
                          color=KILL_COLOR, xytext=(0, 9),
                          textcoords="offset points", ha="center",
                          fontweight="bold")
-        legend_entries.append((KILL_COLOR, "SIGKILL before step 1 (ctx≥4096, probe)"))
+        legend_entries.append((KILL_COLOR, "SIGKILL before step 1 (cap≥4096, probe)"))
     axes[0].axvspan(4096, 8192, color="#f6d3d3", alpha=0.4, zorder=0)
     axes[0].set_yscale("log")
     axes[0].set_ylim(0.2, 300)
     _logx_ticks(axes[0], ctx_ticks)
     axes[0].set_xlim(400, 14000)
-    axes[0].set_xlabel("sequence length"); axes[0].set_ylabel("median step time (s)")
-    axes[0].set_title("Step time vs context (4B-4bit QLoRA, b1)", fontsize=9.5)
+    axes[0].set_xlabel("maximum sequence-length cap"); axes[0].set_ylabel("median step time (s)")
+    axes[0].set_title("Step time vs cap (4B-4bit QLoRA, b1)", fontsize=9.5)
 
     axes[1].errorbar(xs, [pts[x]["mem"]["mean"] / 2**30 for x in xs],
                      yerr=[(pts[x]["mem"]["sd"] or 0) / 2**30 for x in xs],
@@ -476,9 +476,9 @@ def fig5_context_scaling(df: pd.DataFrame) -> None:
     _logx_ticks(axes[1], ctx_ticks)
     axes[1].set_xlim(400, 14000)
     _ram_line(axes[1], 16, xfrac=0.985)
-    axes[1].set_xlabel("sequence length")
+    axes[1].set_xlabel("maximum sequence-length cap")
     axes[1].set_ylabel("MLX peak memory (GiB)")
-    axes[1].set_title("Peak memory vs context", fontsize=9.5)
+    axes[1].set_title("Peak memory vs cap", fontsize=9.5)
     _legend_out(fig, legend_entries, ncol=2)
     _save(fig, "fig5_context_scaling")
 

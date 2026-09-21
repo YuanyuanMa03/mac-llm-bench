@@ -1,5 +1,5 @@
 {
-  "rule": "D4 frozen 2026-09-12: swapins_delta_per_step = (vm_stat swapins delta) * page_size / successful_steps; Tier-A < 50 MB/step",
+  "rule": "D4 frozen 2026-09-12: whole-run swap-in delta = (vm_stat swapins delta) * page_size / successful_steps; system-wide proxy, not per-step attribution; Tier-A < 50 MB/completed step",
   "n_runs_with_paging": 46,
   "per_run": [
     {
