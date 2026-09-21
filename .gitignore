@@ -20,3 +20,7 @@ preferences/
 .agents/
 research/evidence/*.ips
 research/evidence/*.ips.sha256
+
+# local paper history archive (arXiv-only policy) + session dirs
+paper/archive/
+.zcode/

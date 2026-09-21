@@ -247,7 +247,7 @@ def threshold_sensitivity() -> dict:
     (PROC / "threshold_sensitivity.json").write_text(
         json.dumps(out, indent=2) + "\n")
     lines = [
-        "\\begin{table}[t]\\centering",
+        "\\begin{table*}[t]\\centering",
         "\\caption{Threshold sensitivity (preregistration Sect.~5: \\emph{results "
         "must be shown if conclusions flip under $\\pm 2\\times$ threshold "
         "changes}). Pass/fail of the frozen \\practical{} criteria P1 (swap "
@@ -271,7 +271,7 @@ def threshold_sensitivity() -> dict:
         p2 = "/".join("Y" if x else "N" for x in r["P2_pass_at_5_10_20"])
         ef = "/".join("Y" if x else "N" for x in r["eff_pass_at_50_100_200"])
         lines.append(f"\\texttt{{{cell.replace('_', '-')}}} & {p1} & {p2} & {ef}\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table8_sensitivity.tex").write_text("\n".join(lines) + "\n",
                                                    encoding="utf-8")
     print("[rev1] threshold_sensitivity.json + table8_sensitivity.tex")
@@ -368,7 +368,7 @@ def slope_confidence_intervals() -> dict:
     df = _load_aggregated()
     df = df[df["status.terminal_state"] == "success"]
     lines = [
-        "\\begin{table}[t]\\centering",
+        "\\begin{table*}[t]\\centering",
         "\\caption{Axis-1 cells, mean [95\\% $t$-CI] "
         "(preregistration Sect.~9: wide intervals reported honestly; "
         "CI $= t_{0.975,n-1}\\,\\mathrm{SD}/\\sqrt{n}$; per-seed SD in "
@@ -407,7 +407,7 @@ def slope_confidence_intervals() -> dict:
                      f"{cell_txt(sub, 'tm.median_step_time_seconds', 2)} & "
                      f"{cell_txt(sub, 'runtime.tokens_per_second', 0)} & "
                      f"{cell_txt(sub, 'metrics.validation_loss_final', 2)}\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     (TABLES / "table9_axis1_ci.tex").write_text("\n".join(lines) + "\n",
                                                 encoding="utf-8")
     print("[rev1] slope_confidence_intervals.json + table9_axis1_ci.tex")

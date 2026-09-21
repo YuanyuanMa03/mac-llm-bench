@@ -330,3 +330,44 @@ vm.swapusage used ≤ 8.5 GiB 方可启动（等待上限 1 小时）。
   （formal-axis1-0.6b-4bit-qlora 5.19 GiB、-0.6b-bf16-lora 4.18 GiB）
   将失去 Practical 判定；其余判定不变。
 - **影响面**：仅判定标签口径；全部数值、表格数据、假设审计结论不变。
+
+## D12 — 论文重写期新增事后探索性分析模块（2026-09-21 登记）
+
+- **动作**：paperwriting 分支上整篇重写论文，同期在冻结 raw 数据之上新增
+  四个**事后（post-hoc / exploratory）**分析模块，消费此前无人读取的两类
+  原始工件：
+  1. `src/analysis/step_dynamics.py` — 逐 step 计时动力学（分位数 p10/p50/
+     p90/p99、变异系数 cv、p99/p50、run 内前后半段漂移），数据源为各 raw
+     run 的 `step_timings.jsonl`（91 个成功 run，经 flatten 汇入
+     `results/processed/step_timings.parquet`）+ 逐 step 训练 loss 轨迹；
+  2. `src/analysis/system_state.py` — 1 Hz 系统状态轨迹（各 raw run 的
+     `system_monitor.jsonl`，98 个 run）：swap 起点/峰值/终点/振荡幅度、
+     步时与并发 swap 的对齐（75 个成功 run 可精确对齐）、14B 超时 run 的
+     stdout 步时轨迹解析（parquet 无该 run，因其未写出 step_timings.jsonl）、
+     batch-8 SIGKILL 三连的 swap 爬升曲线；
+  3. `src/analysis/memory_decomposition.py` — 记账式内存分解（磁盘权重
+     字节 + adapter 参数 + 优化器状态的解析账目 vs 实测 allocator peak，
+     残差只标注"未记账"，不估计内容）；
+  4. 先验知识定量对比表（Discussion 用，文献侧数字逐条对引用来源核验，
+     核不出处的一律标注"无已发表值"）。
+- **性质**：全部为对已观察数据的事后探索性分析；**不修改任何冻结判定规则、
+  门控（D11 口径不变）、H1–H6 审计规则与结论**；`results/raw/` 零改动；
+  所有新数字由 committed scripts 从 raw 单键重算（`scripts/run_analysis.py`），
+  新声明入 `research/claim_ledger.csv`（C16 起）。
+- **论文披露义务**：新分析在论文中一律标注 exploratory/post-hoc；14B 轨迹
+  对齐的间隙 caveat（70 步累计 ~57 min vs 120 min 窗口，~63 min 为启动/
+  验证/停滞）必须在图注与正文声明；2026-09-12 的 b8 三条为 exit-1 配置
+  错误（D5 invalid），不作为 SIGKILL 斜坡证据，仅 2026-09-15 三连进入。
+- **动机**：现有论文以汇总统计（中位数/均值/比值）呈现结果，未消费 step 级
+  与秒级动态数据；审稿史遗留的 DA-9（发现与既有认知的定量对比缺失）与
+  R3-W2（驻留状态单指标、无动力学刻画）由本次重写补齐。
+
+> **D6 勘误注（2026-09-21，论文重写版复核触发）**：本条上文记为
+> "5 个 run 缺 manifest.sha256（supervisor finalize 路径）"。复核当前
+> raw 状态：6 个受影响 run（5 个 legacy + 2026-09-15 14B timeout）的
+> manifest.sha256 文件**均在位**，但 digest 与 finalize 后日志不匹配
+> （experiments.csv `_manifest_verified=False` 恰为 6 条）。即准确口径为
+> "manifest 在位但校验失败"，而非"缺失"；写入时序（先写 manifest 后
+> 追加日志，或 finalize 路径分阶段写出）未重新推导，不作机制断言。
+> 论文 D6 摘要按"present but fail re-verification"口径。原文保留不改
+> （记录不可变原则）；聚合零影响结论不变（46 条聚合 run 全部复验通过）。

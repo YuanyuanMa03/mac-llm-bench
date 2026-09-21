@@ -122,3 +122,30 @@ peak system memory、peak swap（无周期采样）、page faults 语义、therm
    但需 formal 重复与更细 ctx 网格支撑。
 4. 尚不存在 formal benchmark、重复实验矩阵（除校准 3 重复）、validation loss、
    analysis pipeline、图表、论文 —— 均为后续 Phase 工作。
+
+---
+
+## 附：2026-09-21 论文重写版状态（paperwriting 分支）
+
+- **事件**：应用户决定整篇重写论文，同期在冻结 raw 数据上新增三个事后
+  探索性分析模块（D12）：`src/analysis/step_dynamics.py`、
+  `system_state.py`、`memory_decomposition.py`，注册入
+  `scripts/run_analysis.py`；旧稿整体归档 `paper/archive/v1-20260921/`
+  （git-ignored，同 arXiv-only 政策）。
+- **新数据消费**（此前零分析代码读取）：
+  - `step_timings.parquet`：7,180 步 / 91 个成功 run；
+  - 各 raw run `system_monitor.jsonl`（1 Hz swap）：101 个目录含文件、
+    95 个可解析（≥10 样本），中位节拍 1.015 s；
+  - 14B 超时 run 的 stdout 步时轨迹（70/100 步，9.4–105.1 s）。
+- **测试**：`pytest tests/ -q` = 56 passed（48 旧 + 8 新
+  `tests/test_deep_analysis.py`，2026-09-21 实际运行）。
+- **重建一致性**：全量 `run_analysis.py` 重建后，全部 `.tex` 表与旧版
+  字节一致（除 table8/9 刻意改为 `table*` 排版、table14 扩行）；
+  figure PNG 像素内容不变（PDF 哈希差异仅为 matplotlib CreationDate）。
+- **评审闭环**：两席相互隔离的模拟评审（一致性核查 + 新分析方法学）
+  完成；全部阻断项与中等问题已修复（8B P2 "misses by 0.039 s" 口径
+  统一、Tier-A 振幅诚实化 2.5–5.5 GiB/分钟级、幸存者条件与
+  构造恒等式披露、Table 14 扩行等）；视觉验收 20/20 页通过。
+- **台账**：claim_ledger 扩至 C22（C16–C22 为 D12 新声明）；
+  deviations.md 增 D12 条目与 D6 勘误注（2026-09-21）。
+- **raw 不变性**：`results/raw/` 全程零改动（冻结协议 §7 遵守）。

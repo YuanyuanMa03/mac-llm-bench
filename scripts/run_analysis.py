@@ -13,6 +13,8 @@ sys.path.insert(0, str(ROOT / "src"))
 def main() -> int:
     from analysis import failure_taxonomy, figures, flatten, summary, tables
     from analysis import context_boundary, coverage, hypothesis_audit
+    # D12 事后探索性分析（论文重写版新增；只读 raw，产物同管线规范）
+    from analysis import step_dynamics, system_state, memory_decomposition
 
     flatten.main()
     coverage.main()
@@ -21,6 +23,9 @@ def main() -> int:
     summary.main()
     figures.main()
     tables.main()
+    step_dynamics.main()
+    system_state.main()
+    memory_decomposition.main()
     hypothesis_audit.main()
     print("[analysis] 全部 processed/figures/tables 已从 raw results 重新生成")
     return 0

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "generated_utc": "2026-09-17T13:46:10+00:00",
-  "generator_commit": "0c2fe85c1646ce3424b2a5511e5faef92d5ae7af",
+  "generated_utc": "2026-09-21T02:15:57+00:00",
+  "generator_commit": "fedf6b4cbac1bae44d1310abdfe750fbca623ad3",
   "rules_frozen": "2026-09-15 (before 8B/14B formal results landed)",
   "hypotheses": {
     "H1": {
