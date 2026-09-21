@@ -3,10 +3,13 @@
 ## Confirmed exposure, without reproducing values
 
 A key-only scan found the persistent-device field `provisioning_UDID` in all
-118 historical `environment/raw_environment.txt` captures. The current source
-collector did not redact that key. Git-history search found the key in 100
-commits. No identifier value was copied into this report, tests, commit
-messages, or terminal output.
+118 historical `results/raw/**/environment/raw_environment.txt` captures, and
+a value-aware scan (2026-09-21) extended the scope to 19 further captures
+under `results/validation/**` (16 validation runs plus 3 supervisor-v0 runs)
+— 137 files in total. No non-environment file in the working tree contains
+the value. The current source collector did not redact that key. Git-history
+search found the key in 100 commits. No identifier value was copied into this
+report, tests, commit messages, or terminal output.
 
 This is a privacy incident, not a scientific-result correction. The research
 numbers and logs must not be silently edited in place.
