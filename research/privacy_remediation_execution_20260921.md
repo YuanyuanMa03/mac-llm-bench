@@ -93,3 +93,41 @@ above); the sanitized public copy is a separate lineage.
 - No benchmark was launched; no identifier value was printed, logged, or
   committed in this run (scans report counts and hashes only).
 - No remote mutation of any kind.
+
+## Addendum — repository recreation (2026-09-21, prompt20)
+
+The owner selected the "new repository" strategy ("删除，重建仓库") and this
+was executed as prompt20:
+
+1. Pre-recreation archive refreshed at the current HEAD:
+   `mac-llm-bench-pre-recreation.bundle` (verified complete history) and
+   `mac-llm-bench-gitdir-pre-recreation.tar.gz`, SHA-256 appended to
+   `archive/SHA256SUMS.txt` (pre-sanitization entries retained).
+2. prompt19 outputs (sanitizer, tests, this report, ledger rows) were ported
+   onto the sanitized lineage — the three new files are byte-identical to the
+   research-repo versions; commit `1347203` in the public lineage.
+3. Old repository `YuanyuanMa03/mac-llm-bench` deleted (`gh repo delete`,
+   after confirming the remote held nothing absent from local history:
+   only `master` @ `aef0276` and tag `v1.0.0-rc1`).
+4. New repository created **public** at the same name and URL, no
+   description/topics (none previously). Pushed from the sanitized checkout:
+   branch `master` (= sanitized `paperwriting` tip `1347203`; local `master`
+   is an ancestor, so full history is retained) and tag `v1.0.0-rc1`
+   (sanitized rewrite).
+5. End-to-end verification via a fresh clone of the public URL:
+   - working-tree files containing the real identifier value: **0**;
+   - every blob in the public history (2133 blobs): **0**;
+   - all 118 `results/raw` captures show `"provisioning_UDID": "[REDACTED]"`;
+   - `release_sanitization_manifest.jsonl` present with 137 entries;
+     sanitizer script and tests present.
+
+### New push workflow (important)
+
+- The public repository must only ever be pushed from
+  `~/mac-llm-bench-private/work/mac-llm-bench-sanitized-checkout`
+  (sanitized lineage; its `origin` is the public URL).
+- The research checkout's remote was renamed to
+  `unsanitized-private-do-not-push` to prevent accidental publication of the
+  unsanitized lineage. Publishing future changes requires porting diffs onto
+  the sanitized lineage, as done for the prompt19 outputs.
+
