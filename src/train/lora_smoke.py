@@ -14,6 +14,7 @@ import random
 import statistics
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import mlx.core as mx
@@ -50,6 +51,11 @@ def _pad_batch(chunk: list[list[int]],
     batch_ids = [s + [pad_id] * (max_len - len(s)) for s in chunk]
     lengths = [[0, len(s) - 1] for s in chunk]
     return batch_ids, lengths
+
+
+def _forward_validation_loss(model, batch, lengths):
+    """Validation has no gradient or optimizer-update path."""
+    return default_loss(model, batch, lengths)
 
 
 def _logical_parameter_count(model: nn.Module) -> int:
@@ -99,15 +105,33 @@ def run(config_path: Path) -> int:
 
     artifacts_dir = Path(os.environ.get("BENCH_EXPERIMENT_ARTIFACTS_DIR", "."))
     artifacts_dir.mkdir(parents=True, exist_ok=True)
+    progress_path = artifacts_dir / "training_progress.jsonl"
+    timing_path = artifacts_dir / "step_timings.jsonl"
+
+    def _append_jsonl(path: Path, record: dict) -> None:
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+            fh.flush()
+
+    def _phase(phase: str, **fields) -> None:
+        _append_jsonl(progress_path, {
+            "phase": phase,
+            "wall_utc": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"),
+            "monotonic_ns": time.monotonic_ns(),
+            **fields,
+        })
 
     seed = train_cfg["seed"]
     mx.random.seed(seed)
     rng = random.Random(seed)
 
     # ---- 加载模型（计时） ----
+    _phase("model_load_start")
     load_t0 = time.perf_counter()
     model, tokenizer = mlx_lm.load(model_cfg["local_path"])
     model_load_seconds = time.perf_counter() - load_t0
+    _phase("model_load_end")
 
     # ---- 冻结 + LoRA（mlx_lm.lora 的标准流程） ----
     parameter_count_base = sum(v.size for _, v in tree_flatten(model.parameters()))
@@ -131,6 +155,7 @@ def run(config_path: Path) -> int:
         ).get("quantization") or {}
     except (OSError, json.JSONDecodeError):
         pass
+    _phase("adapter_setup_start")
     model.freeze()
     if train_cfg["method"] == "full":
         # full fine-tuning：解冻全部参数（LoRA 包装跳过）
@@ -150,6 +175,7 @@ def run(config_path: Path) -> int:
         )
         trainable_parameters = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
         total_parameters = sum(v.size for _, v in tree_flatten(model.parameters()))
+    _phase("adapter_setup_end")
 
     # ---- 数据：本地 jsonl 的 text 字段，截断到 max_sequence_length ----
     seq_len = data_cfg["max_sequence_length"]
@@ -178,8 +204,8 @@ def run(config_path: Path) -> int:
         for i in range(0, len(val_samples), batch_size):
             batch_ids, lengths = _pad_batch(
                 val_samples[i:i + batch_size], pad_id)
-            (loss, toks), _ = grad_fn(model, mx.array(batch_ids),
-                                      mx.array(lengths))
+            loss, toks = _forward_validation_loss(
+                model, mx.array(batch_ids), mx.array(lengths))
             mx.eval(loss, toks)
             total_loss += float(loss) * int(toks)
             total_toks += int(toks)
@@ -193,11 +219,15 @@ def run(config_path: Path) -> int:
     eval_interval = train_cfg.get("evaluation_interval_steps")
     validation_trajectory: list[dict] = []
     if val_samples:
+        _phase("initial_validation_start")
         pre = _eval_validation_loss()
         validation_trajectory.append({"step": 0, "loss": pre})
         print(f"[val] step 0 loss={pre:.4f}", flush=True)
+        _phase("initial_validation_end")
 
     order = list(range(len(samples)))
+    if data_cfg.get("shuffle", False):
+        rng.shuffle(order)
     cursor = 0
     step_records: list[dict] = []
     losses: list[float] = []
@@ -207,6 +237,22 @@ def run(config_path: Path) -> int:
         mx.metal.reset_peak_memory()
     except Exception:
         pass
+    resolved_runtime = {
+        "protocol_version": "0.2.0",
+        "optimizer_declared": (train_cfg.get("optimizer") or {}).get("name"),
+        "optimizer_effective": "mlx.optimizers.Adam",
+        "shuffle_declared": bool(data_cfg.get("shuffle", False)),
+        "initial_shuffle_effective": bool(data_cfg.get("shuffle", False)),
+        "scheduler_declared": (train_cfg.get("scheduler") or {}).get("name"),
+        "scheduler_effective": "constant/no explicit scheduler",
+        "gradient_accumulation_effective": 1,
+        "validation_effective": "forward-only default_loss",
+        "step_timing_write_mode": "append-and-flush per completed optimizer step",
+    }
+    (artifacts_dir / "resolved_runtime_config.json").write_text(
+        json.dumps(resolved_runtime, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    _phase("training_loop_start")
     loop_t0 = time.perf_counter()
     for step in range(1, max_steps + 1):
         chunk = []
@@ -221,32 +267,44 @@ def run(config_path: Path) -> int:
         batch = mx.array(batch_ids)
         lens = mx.array(lengths)
 
+        _phase("train_step_start", step=step)
+        monotonic_ns_start = time.monotonic_ns()
         t0 = time.perf_counter()
         (loss, toks), grad = grad_fn(model, batch, lens)
         optimizer.update(model, grad)
         mx.eval(model.parameters(), optimizer.state)
         step_seconds = time.perf_counter() - t0
+        monotonic_ns_end = time.monotonic_ns()
 
         loss_value = float(loss)
         toks_value = int(toks)
         losses.append(loss_value)
         tokens_total += toks_value
         samples_total += batch_size
-        step_records.append({
+        step_record = {
             "step": step,
             "loss": loss_value,
             "loss_bearing_tokens": toks_value,
             "step_time_seconds": step_seconds,
-            "wall_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        })
+            "wall_utc": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"),
+            "monotonic_ns_start": monotonic_ns_start,
+            "monotonic_ns_end": monotonic_ns_end,
+        }
+        step_records.append(step_record)
+        _append_jsonl(timing_path, step_record)
+        _phase("train_step_end", step=step)
         print(f"step {step}/{max_steps} loss={loss_value:.4f} "
               f"tokens={toks_value} step_time={step_seconds:.3f}s", flush=True)
         if val_samples and eval_interval and (step % eval_interval == 0
                                               or step == max_steps):
+            _phase("scheduled_validation_start", step=step)
             v = _eval_validation_loss()
             validation_trajectory.append({"step": step, "loss": v})
             print(f"[val] step {step} loss={v:.4f}", flush=True)
+            _phase("scheduled_validation_end", step=step)
     training_loop_seconds = time.perf_counter() - loop_t0
+    _phase("training_loop_end")
 
     try:
         peak_gpu_bytes = int(mx.metal.get_peak_memory())
@@ -287,6 +345,13 @@ def run(config_path: Path) -> int:
                                   if validation_trajectory else None),
         "validation_loss_trajectory": validation_trajectory,
         "validation_n_samples": len(val_samples),
+        "optimizer_declared": (train_cfg.get("optimizer") or {}).get("name"),
+        "optimizer_effective": "mlx.optimizers.Adam",
+        "shuffle_declared": bool(data_cfg.get("shuffle", False)),
+        "initial_shuffle_effective": bool(data_cfg.get("shuffle", False)),
+        "scheduler_declared": (train_cfg.get("scheduler") or {}).get("name"),
+        "scheduler_effective": "constant/no explicit scheduler",
+        "gradient_accumulation_effective": 1,
         "method_effective": train_cfg["method"],
         "lora_scale": scale if train_cfg["method"] != "full" else None,
         "lora_scale_formula": "alpha / rank",
@@ -313,9 +378,6 @@ def run(config_path: Path) -> int:
             "mx.metal.get_peak_memory()，GPU 侧峰值；进程级峰值内存仍为 unresolved",
     }
 
-    (artifacts_dir / "step_timings.jsonl").write_text(
-        "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in step_records),
-        encoding="utf-8")
     (artifacts_dir / "training_metrics.json").write_text(
         json.dumps(metrics, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

@@ -21,13 +21,14 @@ from pathlib import Path
 import mlx.core as mx
 import mlx.nn as nn
 import pytest
+from mlx.utils import tree_flatten
 
 SRC = Path(__file__).resolve().parents[1]
 TRAIN_DIR = SRC / "src" / "train"
 if str(TRAIN_DIR) not in sys.path:
     sys.path.insert(0, str(TRAIN_DIR))
 
-from lora_smoke import _pad_batch  # noqa: E402
+from lora_smoke import _forward_validation_loss, _pad_batch  # noqa: E402
 from mlx_lm.tuner.trainer import default_loss  # noqa: E402
 
 PAD_ID = 0  # 与 trainer 回退值一致；样本 token id 刻意避开 0
@@ -96,17 +97,19 @@ def test_variable_length_batches_do_not_crash(model, batch_size):
     assert total_toks == sum(len(s) - 1 for s in VAL_SAMPLES)
 
 
-def test_grad_wrapped_path_variable_batch(model):
-    """validation 实际代码路径是 nn.value_and_grad 包装的 default_loss，
-    用同一包装在变长 b=4 下前向（梯度不影响 loss 数值）。"""
-    grad_fn = nn.value_and_grad(model, default_loss)
+def test_validation_is_forward_only_and_does_not_update_parameters(model):
+    """validation 只调用 forward loss；模型参数在调用前后逐元素不变。"""
     chunk = VAL_SAMPLES[:4]
     batch_ids, lens = _pad_batch(chunk, PAD_ID)
-    (loss, toks), _grad = grad_fn(
+    before = [mx.array(value) for _, value in tree_flatten(model.parameters())]
+    loss, toks = _forward_validation_loss(
         model, mx.array(batch_ids), mx.array(lens))
     mx.eval(loss, toks)
+    after = [value for _, value in tree_flatten(model.parameters())]
     assert math.isfinite(float(loss))
     assert int(toks) == sum(len(s) - 1 for s in chunk)
+    assert all(mx.array_equal(left, right).item()
+               for left, right in zip(before, after, strict=True))
 
 
 # ---- B：padding mask 正确性 ----

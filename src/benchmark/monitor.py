@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,6 +35,7 @@ class SwapSampler:
         value, raw = env_mod.collect_swap_bytes()
         record = {
             "t_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "monotonic_ns": time.monotonic_ns(),
             "swap_used_bytes": value,
             "raw": raw.strip() if raw else None,
         }

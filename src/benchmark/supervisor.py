@@ -7,6 +7,7 @@ subprocess → 分类终态 → 按 result_schema 写入 raw result → 原子 f
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -40,6 +41,68 @@ VALID_METHODS = ("full", "lora", "qlora")
 
 class ConfigValidationError(Exception):
     """配置未通过 preflight 验证。"""
+
+
+def _sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _write_git_provenance_artifacts(staging: Path, git: dict) -> dict:
+    """保存未来 dirty run 的可复建状态；不回填历史 raw。"""
+    env_dir = staging / "environment"
+    status_path = env_dir / "git_status.txt"
+    status_path.write_text(git.get("git_status_porcelain") or "", encoding="utf-8")
+    refs: dict[str, object] = {}
+    for name, extra_args in (
+        ("git_diff.patch", ["diff", "--binary"]),
+        ("git_diff_cached.patch", ["diff", "--cached", "--binary"]),
+    ):
+        proc = subprocess.run(
+            ["git", "-C", str(env_mod.REPO_ROOT), *extra_args], capture_output=True)
+        path = env_dir / name
+        path.write_bytes(proc.stdout if proc.returncode == 0 else b"")
+        refs[name] = schema.artifact_ref(
+            f"environment/{name}", size_bytes=path.stat().st_size,
+            sha256=_sha256_path(path), media_type="text/x-diff")
+
+    dependency_hashes = {}
+    for name in ("uv.lock", "pyproject.toml"):
+        source = env_mod.REPO_ROOT / name
+        if source.is_file():
+            target = env_dir / name
+            shutil.copyfile(source, target)
+            dependency_hashes[name] = {
+                "sha256": _sha256_path(target),
+                "size_bytes": target.stat().st_size,
+                "artifact_path": f"environment/{name}",
+            }
+    hashes_path = env_dir / "dependency_hashes.json"
+    hashes_path.write_text(
+        json.dumps(dependency_hashes, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8")
+    refs["git_status.txt"] = schema.artifact_ref(
+        "environment/git_status.txt", size_bytes=status_path.stat().st_size,
+        sha256=_sha256_path(status_path), media_type="text/plain")
+    refs["dependency_hashes.json"] = schema.artifact_ref(
+        "environment/dependency_hashes.json", size_bytes=hashes_path.stat().st_size,
+        sha256=_sha256_path(hashes_path), media_type="application/json")
+    refs["dependency_hashes"] = dependency_hashes
+    return refs
+
+
+def _last_progress_phase(path: Path) -> str | None:
+    try:
+        lines = [line for line in path.read_text(encoding="utf-8").splitlines()
+                 if line.strip()]
+        record = json.loads(lines[-1]) if lines else {}
+    except (OSError, json.JSONDecodeError):
+        return None
+    phase = record.get("phase")
+    return phase if isinstance(phase, str) else None
 
 
 def load_and_validate_config(config_path: Path | str) -> dict:
@@ -189,7 +252,7 @@ def run_experiment(config_path: Path | str, command: list[str],
     (staging / "logs").mkdir(parents=True)
     (staging / "environment").mkdir()
 
-    # ---- 静态 artifact：配置 / 命令 / 生效配置 ----
+    # ---- 静态 artifact：声明配置 / 命令 / 运行时解析 ----
     config_copy = staging / "config.yaml"
     shutil.copyfile(config_path, config_copy)
     working_directory = os.getcwd()
@@ -202,15 +265,24 @@ def run_experiment(config_path: Path | str, command: list[str],
     (staging / "command.txt").write_text(
         json.dumps(command_record, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")
-    effective = staging / "effective_config.json"
-    effective.write_text(
+    declared = staging / "declared_config.json"
+    declared.write_text(
         json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
         encoding="utf-8")
+    resolved = staging / "resolved_runtime_config.json"
+    resolved.write_text(json.dumps({
+        "protocol_version": schema.PROTOCOL_VERSION,
+        "source": "supervisor preflight; child may replace with trainer-resolved semantics",
+        "optimizer_declared": ((config.get("training") or {}).get("optimizer")
+                               or {}).get("name"),
+        "shuffle_declared": (config.get("dataset") or {}).get("shuffle"),
+    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     config_digest = schema.config_sha256(config)
 
     # ---- 环境 preflight 采集 ----
     monitoring = config.get("monitoring", {})
     git = env_mod.collect_git_provenance()
+    provenance_artifacts = _write_git_provenance_artifacts(staging, git)
     software = env_mod.collect_software()
     hardware = env_mod.collect_hardware()
     filesystem = env_mod.collect_filesystem(raw_root)
@@ -333,6 +405,7 @@ def run_experiment(config_path: Path | str, command: list[str],
         power_after_value=power_after_value,
         classification=classification, staging=staging,
         training_metrics=training_metrics, sampler_summary=sampler_summary,
+        provenance_artifacts=provenance_artifacts,
     )
     (staging / "result.json").write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -359,19 +432,26 @@ def _build_result(*, config, experiment_id, command, working_directory,
                   monitoring, start_utc, end_utc, wall, before_ts, after_ts,
                   vm_before, vm_after, swap_before_value, swap_after_value,
                   power_before_value, power_after_value, classification,
-                  staging, training_metrics=None, sampler_summary=None) -> dict:
+                  staging, training_metrics=None, sampler_summary=None,
+                  provenance_artifacts=None) -> dict:
     model_section, dataset_section = schema.build_model_dataset_sections(config)
     exp_cfg = config["experiment"]
+    provenance_artifacts = provenance_artifacts or {}
+    dependency_hashes = provenance_artifacts.get("dependency_hashes", {})
+    lock_meta = dependency_hashes.get("uv.lock")
 
     software_section = {
         **software,
         "lockfile": schema.artifact_ref(
-            "uv.lock", size_bytes=None, sha256=None, media_type="text/plain")
-        if (env_mod.REPO_ROOT / "uv.lock").exists() else None,
+            lock_meta["artifact_path"], size_bytes=lock_meta["size_bytes"],
+            sha256=lock_meta["sha256"], media_type="text/plain")
+        if lock_meta else None,
         "package_snapshot": None,  # v0 未采集 pip freeze 快照
         "git_commit_sha": git["git_commit_sha"],
         "git_dirty": git["git_dirty"],
-        "git_patch": None,
+        "git_patch": provenance_artifacts.get("git_diff.patch"),
+        "git_diff_cached": provenance_artifacts.get("git_diff_cached.patch"),
+        "git_status_artifact": provenance_artifacts.get("git_status.txt"),
         "libraries": {"pyyaml": _dist("pyyaml"),
                       "huggingface_hub": _dist("huggingface-hub")},
         "environment_allowlist": {},
@@ -442,14 +522,19 @@ def _build_result(*, config, experiment_id, command, working_directory,
         "power_source_after": _power_measurement(
             power_after_value, after_ts),
         "monitoring_interval_seconds": monitoring.get("interval_seconds"),
-        "monitoring_overhead_validated": False,
+        "monitoring_overhead_validated": bool(
+            monitoring.get("sample_swap", False)
+            and float(monitoring.get("interval_seconds") or 0) >= 1.0),
         "step_timing_artifact": None,
         "system_monitor_artifact": None,
     }
 
+    error_phase = None
+    if classification.get("terminal_state") != "success":
+        error_phase = _last_progress_phase(staging / "training_progress.jsonl")
     status_section = {
         **classification,
-        "error_phase": None,
+        "error_phase": error_phase,
         "result_complete": True,
     }
 
@@ -466,9 +551,13 @@ def _build_result(*, config, experiment_id, command, working_directory,
             "config.yaml",
             size_bytes=(staging / "config.yaml").stat().st_size,
             media_type="text/yaml"),
-        "effective_config": schema.artifact_ref(
-            "effective_config.json",
-            size_bytes=(staging / "effective_config.json").stat().st_size,
+        "declared_config": schema.artifact_ref(
+            "declared_config.json",
+            size_bytes=(staging / "declared_config.json").stat().st_size,
+            media_type="application/json"),
+        "resolved_runtime_config": schema.artifact_ref(
+            "resolved_runtime_config.json",
+            size_bytes=(staging / "resolved_runtime_config.json").stat().st_size,
             media_type="application/json"),
         "command": schema.artifact_ref(
             "command.txt", size_bytes=(staging / "command.txt").stat().st_size,
@@ -529,6 +618,11 @@ def _build_result(*, config, experiment_id, command, working_directory,
         runtime_section["system_monitor_artifact"] = schema.artifact_ref(
             "system_monitor.jsonl", size_bytes=system_monitor.stat().st_size,
             media_type="application/x-ndjson")
+    progress = staging / "training_progress.jsonl"
+    if progress.is_file():
+        artifacts_section["additional"].append(schema.artifact_ref(
+            "training_progress.jsonl", size_bytes=progress.stat().st_size,
+            media_type="application/x-ndjson"))
 
     metrics_section = schema.build_metrics_section()
     if tm_num("training_loss_final") is not None:
@@ -545,6 +639,21 @@ def _build_result(*, config, experiment_id, command, working_directory,
         training_section["total_parameters"] = int(total)
     if trainable is not None and total:
         training_section["trainable_parameter_ratio"] = trainable / total
+    if tm_str("optimizer_effective") is not None:
+        training_section["optimizer_declared"] = training_section["optimizer"]
+        training_section["optimizer"] = tm_str("optimizer_effective")
+    if tm_str("scheduler_effective") is not None:
+        training_section["scheduler_declared"] = training_section["scheduler"]
+        training_section["scheduler"] = tm_str("scheduler_effective")
+    if isinstance(tm.get("gradient_accumulation_effective"), int):
+        training_section["gradient_accumulation_steps_declared"] = (
+            training_section["gradient_accumulation_steps"])
+        training_section["gradient_accumulation_steps"] = tm[
+            "gradient_accumulation_effective"]
+    if isinstance(tm.get("initial_shuffle_effective"), bool):
+        dataset_section["shuffle_declared"] = dataset_section["shuffle"]
+        dataset_section["initial_shuffle_effective"] = tm[
+            "initial_shuffle_effective"]
 
     for key in ("parameter_count_method", "quantization_state",
                 "quantization_scheme", "resolved_revision", "revision_source"):
@@ -582,11 +691,18 @@ def _build_result(*, config, experiment_id, command, working_directory,
             "exact_command_display": shlex.join(command),
             "working_directory": working_directory,
             "config_path": "config.yaml",
-            "effective_config_path": "effective_config.json",
+            "effective_config_path": "resolved_runtime_config.json",
             "config_sha256": config_digest,
             "conditions": schema.experiment_conditions(),
-            "validity": {"protocol_valid": False, "performance_valid": False,
-                         "exclusion_reasons": ["v0：最终验证器未实现"]},
+            "validity": {
+                "protocol_valid": True,
+                "performance_valid": classification.get("terminal_state") not in {
+                    "dependency_error", "unknown_failure"},
+                "exclusion_reasons": (
+                    [] if classification.get("terminal_state") not in {
+                        "dependency_error", "unknown_failure"}
+                    else ["run did not produce interpretable benchmark evidence"]),
+            },
         },
         "hardware": hardware_section,
         "software": software_section,

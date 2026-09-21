@@ -384,7 +384,32 @@ def test_training_metrics_artifact_enriches_runtime(tmp_path: Path) -> None:
         assert result["model"]["quantization_state"] == "quantized"
         assert result["model"]["quantization_bits"] == 4
         assert result["model"]["quantization_scheme"] == "WQ4B"
+        assert result["artifacts"]["declared_config"]["path"] == "declared_config.json"
+        assert result["artifacts"]["resolved_runtime_config"]["path"] == (
+            "resolved_runtime_config.json")
+        assert result["software"]["lockfile"]["sha256"]
+        assert result["software"]["lockfile"]["size_bytes"] > 0
         _assert_manifest_matches_files(result_dir)
+    finally:
+        _make_tree_writable(result_dir)
+
+
+def test_failed_child_reports_last_flushed_phase(tmp_path: Path) -> None:
+    config_path = tmp_path / "experiment.yaml"
+    _write_config(config_path, tmp_path / "raw")
+    writer = (
+        "import json, os, pathlib\n"
+        "d = pathlib.Path(os.environ['BENCH_EXPERIMENT_ARTIFACTS_DIR'])\n"
+        "p = d / 'training_progress.jsonl'\n"
+        "p.write_text(json.dumps({'phase':'initial_validation_start'}) + '\\n')\n"
+        "raise SystemExit(7)\n"
+    )
+    result_dir = run_experiment(config_path, [sys.executable, "-c", writer])
+    try:
+        result = _read_result(result_dir)
+        assert result["status"]["error_phase"] == "initial_validation_start"
+        assert any(a["path"] == "training_progress.jsonl"
+                   for a in result["artifacts"]["additional"])
     finally:
         _make_tree_writable(result_dir)
 
@@ -410,6 +435,68 @@ def test_git_dirty_ignores_results_artifacts(tmp_path: Path) -> None:
     assert env_mod.collect_git_provenance(repo_root=repo)["git_dirty"] is True
 
 
+def test_hardware_redaction_is_recursive_and_covers_persistent_ids() -> None:
+    """Fixtures use synthetic values only; no real device identifier is stored."""
+    import benchmark.environment as env_mod
+
+    synthetic = {
+        "SPHardwareDataType": [{
+            "serial_number": "[REDACTED]",
+            "platform_UUID": "[REDACTED]",
+            "nested": [{
+                "provisioning_UDID": "[REDACTED]",
+                "crashReporterKey": "[REDACTED]",
+            }],
+            "machine_model": "MacSynthetic1,1",
+        }]
+    }
+    redacted = json.loads(env_mod.redact_hardware_json(json.dumps(synthetic)))
+    item = redacted["SPHardwareDataType"][0]
+    assert item["serial_number"] == "[REDACTED]"
+    assert item["platform_UUID"] == "[REDACTED]"
+    assert item["nested"][0]["provisioning_UDID"] == "[REDACTED]"
+    assert item["nested"][0]["crashReporterKey"] == "[REDACTED]"
+    assert item["machine_model"] == "MacSynthetic1,1"
+
+
+def test_hardware_redaction_fallback_covers_sensitive_keys() -> None:
+    import benchmark.environment as env_mod
+
+    malformed = ('{"provisioning_UDID":"[REDACTED]",'
+                 '"crashReporterKey":"[REDACTED]", trailing}')
+    output = env_mod.redact_hardware_json(malformed)
+    assert "FAKE-UDID" not in output
+    assert "FAKE-KEY" not in output
+    assert output.count("[REDACTED]") == 2
+
+
+def test_hardware_memory_prefers_sysctl_and_parses_profiler_fallback(monkeypatch) -> None:
+    import benchmark.environment as env_mod
+
+    env_mod._hardware_snapshot_cached.cache_clear()
+
+    def fake_run(command, timeout=15.0):
+        if command[:2] == ["system_profiler", "-json"]:
+            return json.dumps({"SPHardwareDataType": [{
+                "machine_model": "MacSynthetic1,1",
+                "chip_type": "Synthetic Chip",
+                "physical_memory": "8 GB",
+            }]})
+        if command == ["sysctl", "-n", "hw.memsize"]:
+            return str(16 * 1024 ** 3)
+        if command == ["sysctl", "-n", "hw.physicalcpu"]:
+            return "4"
+        if command == ["sysctl", "-n", "hw.logicalcpu"]:
+            return "8"
+        return None
+
+    monkeypatch.setattr(env_mod, "_run", fake_run)
+    snapshot = env_mod._hardware_snapshot_cached()
+    assert snapshot["unified_memory_bytes"] == 16 * 1024 ** 3
+    assert snapshot["gpu_cores"] is None
+    env_mod._hardware_snapshot_cached.cache_clear()
+
+
 def test_resolve_local_revision_sidecar(tmp_path: Path) -> None:
     """ModelScope 等非 hf 缓存布局通过 REVISION sidecar 解析 revision。"""
     from train.lora_smoke import _resolve_local_revision
@@ -427,7 +514,7 @@ def test_swap_sampler_tracks_peak_and_stops(tmp_path: Path, monkeypatch) -> None
     seq = iter([1000, 2000, 1500, None, 3000])
 
     def fake_collect():
-        return next(seq), "total = 4.00M used = 1.95M"
+        return next(seq, 3000), "total = 4.00M used = 1.95M"
 
     monkeypatch.setattr("benchmark.monitor.env_mod.collect_swap_bytes", fake_collect)
     out = tmp_path / "system_monitor.jsonl"
@@ -439,7 +526,8 @@ def test_swap_sampler_tracks_peak_and_stops(tmp_path: Path, monkeypatch) -> None
     assert summary["peak_swap_bytes"] == 3000
     assert summary["n_samples"] >= 3 and summary["errors"] >= 1
     lines = [json.loads(l) for l in out.read_text().splitlines() if l.strip()]
-    assert all("t_utc" in r and "swap_used_bytes" in r for r in lines)
+    assert all("t_utc" in r and "monotonic_ns" in r and "swap_used_bytes" in r
+               for r in lines)
     assert max(r["swap_used_bytes"] for r in lines if r["swap_used_bytes"] is not None) == 3000
 
 

@@ -24,8 +24,29 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# 绝不写入结果或 raw evidence 的硬件键（协议 §3.2：不得存储序列号）
-_REDACTED_HARDWARE_KEYS = {"serial_number", "serial_number_system", "platform_UUID"}
+# 绝不写入结果或 raw evidence 的持久设备标识。键名先归一化，以覆盖
+# system_profiler 在不同 macOS 版本中的大小写与下划线变化。
+_REDACTED_HARDWARE_KEYS = {
+    "serialnumber",
+    "serialnumbersystem",
+    "platformuuid",
+    "provisioningudid",
+    "crashreporterkey",
+    "hardwareuuid",
+    "machineuuid",
+    "deviceuuid",
+    "uniquechipid",
+}
+
+
+def _normalized_hardware_key(key: object) -> str:
+    return re.sub(r"[^a-z0-9]+", "", str(key).lower())
+
+
+def _is_sensitive_hardware_key(key: object) -> bool:
+    normalized = _normalized_hardware_key(key)
+    return (normalized in _REDACTED_HARDWARE_KEYS
+            or normalized.startswith("serialnumber"))
 
 
 def utc_now() -> str:
@@ -98,14 +119,15 @@ def collect_software() -> dict:
 def _hardware_snapshot_cached() -> dict:
     sp_json = _run(["system_profiler", "-json", "SPHardwareDataType"], timeout=30.0)
     mac_model = chip = None
-    unified_memory = None
+    unified_memory_profiler = None
     if sp_json:
         try:
             data = json.loads(sp_json)
             item = data.get("SPHardwareDataType", [{}])[0]
             mac_model = item.get("machine_model")
             chip = item.get("chip_type")
-            unified_memory = item.get("physicalMemory")
+            unified_memory_profiler = (item.get("physical_memory")
+                                       or item.get("physicalMemory"))
         except (json.JSONDecodeError, IndexError, AttributeError):
             pass
 
@@ -117,6 +139,24 @@ def _hardware_snapshot_cached() -> dict:
             return int(text.strip())
         except ValueError:
             return None
+
+    def profiler_memory_bytes(value) -> int | None:
+        if isinstance(value, int):
+            return value
+        if not isinstance(value, str):
+            return None
+        match = re.fullmatch(r"\s*([\d.]+)\s*(KB|MB|GB|TB)\s*", value,
+                             flags=re.IGNORECASE)
+        if not match:
+            return None
+        scales = {"KB": 1024, "MB": 1024 ** 2, "GB": 1024 ** 3,
+                  "TB": 1024 ** 4}
+        return int(float(match.group(1)) * scales[match.group(2).upper()])
+
+    # hw.memsize 是经过验证的字节计数来源；profiler 只作为兼容回退。
+    unified_memory = sysctl_int("hw.memsize")
+    if unified_memory is None:
+        unified_memory = profiler_memory_bytes(unified_memory_profiler)
 
     return {
         "mac_model": mac_model,
@@ -197,18 +237,23 @@ def collect_power_source() -> tuple[str | None, str | None]:
 
 
 def redact_hardware_json(sp_raw: str | None) -> str:
-    """system_profiler 原文脱敏：序列号与平台 UUID 替换为 [REDACTED]。"""
+    """递归脱敏 system_profiler 中的持久设备标识。"""
     if not sp_raw:
         return ""
     try:
         data = json.loads(sp_raw)
     except json.JSONDecodeError:
-        return re.sub(r'("(?:serial_number[^"]*|platform_UUID)"\s*:\s*)"[^"]*"',
-                      r'\1"[REDACTED]"', sp_raw)
+        sensitive = (r"serial[_ -]*number(?:[_ -]*system)?|platform[_ -]*uuid|"
+                     r"provisioning[_ -]*udid|crash[_ -]*reporter[_ -]*key|"
+                     r"hardware[_ -]*uuid|machine[_ -]*uuid|device[_ -]*uuid|"
+                     r"unique[_ -]*chip[_ -]*id")
+        return re.sub(
+            rf'("(?:{sensitive})"\s*:\s*)"[^"]*"',
+            r'\1"[REDACTED]"', sp_raw, flags=re.IGNORECASE)
 
     def redact(node):
         if isinstance(node, dict):
-            return {k: ("[REDACTED]" if k in _REDACTED_HARDWARE_KEYS else redact(v))
+            return {k: ("[REDACTED]" if _is_sensitive_hardware_key(k) else redact(v))
                     for k, v in node.items()}
         if isinstance(node, list):
             return [redact(item) for item in node]
