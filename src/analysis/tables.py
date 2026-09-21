@@ -443,7 +443,7 @@ def table5(df: pd.DataFrame) -> None:
         "one window; mean$\\pm$SD; paging is the D4 whole-run swap-in "
         "delta normalized by completed training steps "
         "measure, all cells Tier-B; batch-8 kills recorded zero completed "
-        "steps with empty stdout).}",
+        "steps with empty stdout, so the MLX allocator peak is unavailable).}",
         "\\label{tab:batch}", "\\footnotesize\\setlength{\\tabcolsep}{2.8pt}",
         "\\begin{tabular}{rrrrrl}", "\\toprule",
         "Batch & Median step (s) & Tok/s & Peak mem (GiB) & "
@@ -472,7 +472,7 @@ def table5(df: pd.DataFrame) -> None:
                                   errors="coerce").max()
         swap_txt = (f"near {swap_peak / 2**30:.0f}\\,GiB"
                     if pd.notna(swap_peak) else "")
-        lines.append(f"8 & -- & -- & $>$16 & -- & "
+        lines.append(f"8 & -- & -- & -- & -- & "
                      f"SIGKILL$\\times${len(b8)} (exit 137; system swap "
                      f"{swap_txt})\\\\")
     else:

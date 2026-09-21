@@ -1,6 +1,6 @@
 # Public preregistration deviation summary
 
-The preregistration was frozen before formal execution. This record reports D1-D12 in a normalized scientific format. Raw evidence remains immutable.
+The preregistration was frozen before formal execution. This record reports D1-D12 in a normalized scientific format. Public raw evidence preserves the scientific content; privacy-only transformations are explicitly mapped.
 
 ## D1
 

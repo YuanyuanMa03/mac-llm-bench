@@ -557,10 +557,14 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
 
     axes[1].errorbar(xs, mem, yerr=meme, marker="o", ms=4, lw=1.4,
                      color=Q4_COLOR, capsize=2)
-    axes[1].scatter([8], [16], marker="x", s=70, color=KILL_COLOR, zorder=5)
-    axes[1].annotate("SIGKILL ×3\n(system swap→~20 GiB)",
-                     xy=(8, 16), fontsize=8, color=KILL_COLOR,
-                     xytext=(-10, -20), textcoords="offset points", ha="right",
+    # Place the failure marker at the panel top rather than at a measured
+    # y-value: historical b8 instrumentation recorded no MLX allocator peak.
+    axes[1].plot([8], [0.94], marker="x", ms=8, color=KILL_COLOR,
+                 transform=axes[1].get_xaxis_transform(), zorder=5)
+    axes[1].annotate("SIGKILL ×3; MLX peak unavailable\nsystem swap 19.5–20.4 GiB",
+                     xy=(8, 0.94), xycoords=axes[1].get_xaxis_transform(),
+                     fontsize=8, color=KILL_COLOR,
+                     xytext=(-10, -4), textcoords="offset points", ha="right",
                      va="top",
                      bbox=dict(boxstyle="square,pad=0.18", fc="white",
                                ec="none", alpha=1.0))
@@ -571,7 +575,7 @@ def fig7_batch_axis(df: pd.DataFrame) -> None:
     axes[1].set_title("Peak memory vs batch (batch boundary ∈ [4,8))",
                       fontsize=9.5)
     _legend_out(fig, [(Q4_COLOR, "trainable (3 seeds)", "o"),
-                      (KILL_COLOR, "SIGKILL ×3 (probe)", "x")], ncol=2)
+                      (KILL_COLOR, "SIGKILL ×3 (MLX peak unavailable)", "x")], ncol=2)
     _save(fig, "fig7_batch_axis")
 
 
